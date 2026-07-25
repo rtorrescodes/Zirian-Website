@@ -103,6 +103,32 @@ try {
         ':ubicacion'              => $ubicacion
     ]);
     
+    // Send email notification via SMTP
+    require_once 'enviar_correo.php';
+    
+    $asunto = "Nuevo Lead registrado: " . $nombre . " (" . $tipo_lead . ")";
+    $cuerpoHtml = "
+    <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 10px;'>
+        <h2 style='color: #0066FF; border-bottom: 2px solid #00D2FF; padding-bottom: 10px;'>Nuevo Registro en Zirian Website</h2>
+        <p>Se ha recibido un nuevo registro de lead:</p>
+        <table style='width: 100%; border-collapse: collapse; margin-top: 15px;'>
+            <tr style='background-color: #f9f9f9;'><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Nombre:</td><td style='padding: 8px; border: 1px solid #ddd;'>{$nombre}</td></tr>
+            <tr><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Teléfono / WhatsApp:</td><td style='padding: 8px; border: 1px solid #ddd;'>{$telefono}</td></tr>
+            <tr style='background-color: #f9f9f9;'><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Email:</td><td style='padding: 8px; border: 1px solid #ddd;'>" . (!empty($email) ? $email : 'No proporcionado') . "</td></tr>
+            <tr><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Ubicación:</td><td style='padding: 8px; border: 1px solid #ddd;'>{$ubicacion}</td></tr>
+            <tr style='background-color: #f9f9f9;'><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Tipo de Lead:</td><td style='padding: 8px; border: 1px solid #ddd;'>{$tipo_lead}</td></tr>
+            <tr><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Marca EV:</td><td style='padding: 8px; border: 1px solid #ddd;'>" . (!empty($marca_ev) ? $marca_ev : 'N/A') . "</td></tr>
+            <tr style='background-color: #f9f9f9;'><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Tipo Instalación:</td><td style='padding: 8px; border: 1px solid #ddd;'>" . (!empty($tipo_instalacion) ? $tipo_instalacion : 'N/A') . "</td></tr>
+            <tr><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Distancia Carga:</td><td style='padding: 8px; border: 1px solid #ddd;'>" . (!empty($distancia_centro_carga) ? $distancia_centro_carga : 'N/A') . "</td></tr>
+            <tr style='background-color: #f9f9f9;'><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Fecha Registro:</td><td style='padding: 8px; border: 1px solid #ddd;'>" . date('Y-m-d H:i:s') . "</td></tr>
+        </table>
+        <br>
+        <p style='text-align: center;'><a href='https://zirian.com/admin_dashboard.php' style='display: inline-block; padding: 10px 20px; background-color: #0066FF; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;'>Ver en Dashboard CRM</a></p>
+    </div>
+    ";
+    
+    enviarCorreoSMTP($asunto, $cuerpoHtml);
+
     // Return success response
     http_response_code(201);
     echo json_encode([

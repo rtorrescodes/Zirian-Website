@@ -133,6 +133,34 @@ try {
         ':foto_path'     => $foto_path
     ]);
     
+    // Send email notification via SMTP
+    require_once 'enviar_correo.php';
+    
+    $asunto = "Nuevo Ticket de Soporte Levantado: Folio {$folio_cliente}";
+    
+    $imagenHtml = "";
+    if ($foto_path) {
+        $imageUrl = "https://zirian.com/" . $foto_path;
+        $imagenHtml = "<tr><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Imagen Adjunta:</td><td style='padding: 8px; border: 1px solid #ddd;'><a href='{$imageUrl}' target='_blank'>Ver Imagen Adjunta</a></td></tr>";
+    }
+    
+    $cuerpoHtml = "
+    <div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; border: 1px solid #eee; padding: 20px; border-radius: 10px;'>
+        <h2 style='color: #FF3366; border-bottom: 2px solid #FF0055; padding-bottom: 10px;'>Nuevo Ticket de Soporte - Zirian</h2>
+        <p>Se ha levantado un nuevo reporte técnico / de garantía:</p>
+        <table style='width: 100%; border-collapse: collapse; margin-top: 15px;'>
+            <tr style='background-color: #f9f9f9;'><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Folio Cliente:</td><td style='padding: 8px; border: 1px solid #ddd;'>{$folio_cliente}</td></tr>
+            <tr><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Descripción del Problema:</td><td style='padding: 8px; border: 1px solid #ddd;'>" . nl2br($descripcion) . "</td></tr>
+            {$imagenHtml}
+            <tr style='background-color: #f9f9f9;'><td style='padding: 8px; border: 1px solid #ddd; font-weight: bold;'>Fecha de Reporte:</td><td style='padding: 8px; border: 1px solid #ddd;'>" . date('Y-m-d H:i:s') . "</td></tr>
+        </table>
+        <br>
+        <p style='text-align: center;'><a href='https://zirian.com/admin_dashboard.php' style='display: inline-block; padding: 10px 20px; background-color: #FF3366; color: #fff; text-decoration: none; border-radius: 5px; font-weight: bold;'>Ver en Dashboard CRM</a></p>
+    </div>
+    ";
+    
+    enviarCorreoSMTP($asunto, $cuerpoHtml);
+
     http_response_code(201);
     echo json_encode([
         'success' => true,
