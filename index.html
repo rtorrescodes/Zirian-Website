@@ -105,26 +105,13 @@
     }
     </script>
     <style>
-        @keyframes float-slow-1 {
-            0%, 100% { transform: translateY(0px) rotate(3deg); }
-            50% { transform: translateY(-12px) rotate(5deg); }
+        .preserve-3d {
+            transform-style: preserve-3d;
         }
-        @keyframes float-slow-2 {
-            0%, 100% { transform: translateY(0px) rotate(-3deg); }
-            50% { transform: translateY(-8px) rotate(-1deg); }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
         }
-        @keyframes float-slow-3 {
-            0%, 100% { transform: translateY(0px) rotate(-1deg); }
-            50% { transform: translateY(-10px) rotate(1deg); }
-        }
-        @keyframes float-slow-4 {
-            0%, 100% { transform: translateY(0px) rotate(4deg); }
-            50% { transform: translateY(-14px) rotate(2deg); }
-        }
-        .animate-float-1 { animation: float-slow-1 6s ease-in-out infinite; }
-        .animate-float-2 { animation: float-slow-2 7s ease-in-out infinite; }
-        .animate-float-3 { animation: float-slow-3 6.5s ease-in-out infinite; }
-        .animate-float-4 { animation: float-slow-4 5.5s ease-in-out infinite; }
     </style>
 </head>
 <body class="bg-brand-dark text-gray-200 font-sans antialiased overflow-x-hidden">
@@ -182,80 +169,45 @@
          HERO SECTION
          ========================================== -->
     <section id="inicio" class="relative pt-20 min-h-screen flex items-center bg-black overflow-hidden">
-        <!-- Background Image with Overlay -->
-        <div class="absolute inset-0 z-0">
-            <img src="assets/images/hero_ev_charger.jpg" alt="Instalación de Cargador EV en Los Cabos" class="w-full h-full object-cover opacity-35 object-center">
-            <div class="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/85 to-transparent"></div>
+        <!-- Background Slider (Grid Tiles) -->
+        <div id="hero-bg-tiles" class="absolute inset-0 z-0 grid grid-cols-4 grid-rows-3 overflow-hidden">
+            <!-- Dynamically populated tiles -->
         </div>
+        <!-- Static Fallback/Initial Background (for loading and SEO) -->
+        <div id="hero-bg-fallback" class="absolute inset-0 z-0 bg-cover bg-center opacity-35" style="background-image: url('assets/images/hero_ev_charger.jpg');"></div>
+        
+        <!-- High-tech Grid overlays for readability -->
+        <div class="absolute inset-0 bg-brand-dark/65 mix-blend-multiply" style="z-index: 1;"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/80 to-transparent" style="z-index: 1;"></div>
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-20 lg:py-32">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                <!-- Text Column -->
-                <div class="lg:col-span-7">
-                    <!-- Top Badge -->
-                    <span class="inline-block border-l-4 border-brand-green bg-brand-charcoal text-white font-title uppercase tracking-widest text-[10px] sm:text-xs font-bold px-4 py-2 mb-6">
-                        Líderes en Electromovilidad e Ingeniería en Los Cabos
-                    </span>
-                    
-                    <h1 class="font-title text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-tight uppercase tracking-tight">
-                        Alta Ingeniería en <span class="text-brand-blue">Cargadores EV</span> & Sistemas
-                    </h1>
-                    
-                    <p class="mt-6 text-base sm:text-lg text-gray-300 max-w-2xl leading-relaxed">
-                        Instalación profesional de cargadores para vehículos eléctricos certificada bajo normas CFE y NOM-001 en Los Cabos y La Paz. Trabajamos con marcas líderes como <strong>Tesla, <span class="text-brand-green font-bold">BYD</span>, Geely, Mercedes-Benz, Nissan, Audi</strong> y más. Conectamos tecnología residencial, domótica Savant, audio profesional, redes y seguridad de vanguardia.
-                    </p>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative w-full py-20 lg:py-32" style="z-index: 10;">
+            <div class="max-w-3xl">
+                <!-- Top Badge -->
+                <span class="inline-block border-l-4 border-brand-green bg-brand-charcoal text-white font-title uppercase tracking-widest text-[10px] sm:text-xs font-bold px-4 py-2 mb-6">
+                    Líderes en Electromovilidad e Ingeniería en Los Cabos
+                </span>
+                
+                <h1 class="font-title text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-tight uppercase tracking-tight">
+                    Alta Ingeniería en <span class="text-brand-blue">Cargadores EV</span> & Sistemas
+                </h1>
+                
+                <p class="mt-6 text-base sm:text-lg text-gray-300 max-w-2xl leading-relaxed">
+                    Instalación profesional de cargadores para vehículos eléctricos certificada bajo normas CFE y NOM-001 en Los Cabos y La Paz. Trabajamos con marcas líderes como <strong>Tesla, <span class="text-brand-green font-bold">BYD</span>, Geely, Mercedes-Benz, Nissan, Audi</strong> y más. Conectamos tecnología residencial, domótica Savant, audio profesional, redes y seguridad de vanguardia.
+                </p>
 
-                    <div class="mt-10 flex flex-col sm:flex-row gap-4">
-                        <a href="#cotizador" class="bg-brand-green hover:bg-brand-greenDark text-brand-dark px-8 py-4 font-title uppercase tracking-widest text-xs font-black text-center transition-all duration-300 hover:scale-105">
-                            Cotizar la instalación de mi cargador
-                        </a>
-                        <a href="#servicios" class="border border-white/40 hover:border-brand-blue hover:text-brand-blue text-white px-8 py-4 font-title uppercase tracking-widest text-xs font-bold text-center transition-all duration-300">
-                            Otros Servicios
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Rotating/Floating Tiles Column -->
-                <div class="lg:col-span-5 hidden lg:flex justify-center items-center relative h-[450px]">
-                    <div class="grid grid-cols-2 gap-4 w-full max-w-[400px]">
-                        <!-- Tile 1: EV Chargers -->
-                        <div class="animate-float-1 group/tile relative aspect-square overflow-hidden border border-brand-border bg-brand-charcoal rounded shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-0 hover:z-20 cursor-pointer">
-                            <img src="assets/images/hero_ev_charger.jpg" alt="Instalador de Cargadores EV Zirian" class="w-full h-full object-cover group-hover/tile:scale-110 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent flex items-end p-3">
-                                <span class="text-[10px] font-title uppercase tracking-widest font-black text-brand-blue">Cargadores EV</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Tile 2: Smart Home Savant -->
-                        <div class="animate-float-2 group/tile relative aspect-square overflow-hidden border border-brand-border bg-brand-charcoal rounded shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-0 hover:z-20 cursor-pointer mt-6">
-                            <img src="assets/images/smart_home_savant.jpg" alt="Domotica Savant Los Cabos" class="w-full h-full object-cover group-hover/tile:scale-110 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent flex items-end p-3">
-                                <span class="text-[10px] font-title uppercase tracking-widest font-black text-brand-green">Domótica Savant</span>
-                            </div>
-                        </div>
-
-                        <!-- Tile 3: Net & Security -->
-                        <div class="animate-float-3 group/tile relative aspect-square overflow-hidden border border-brand-border bg-brand-charcoal rounded shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-0 hover:z-20 cursor-pointer -mt-6">
-                            <img src="assets/images/security_network_vps.jpg" alt="Redes y CCTV Los Cabos" class="w-full h-full object-cover group-hover/tile:scale-110 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent flex items-end p-3">
-                                <span class="text-[10px] font-title uppercase tracking-widest font-black text-brand-blue">Sistemas & Redes</span>
-                            </div>
-                        </div>
-
-                        <!-- Tile 4: Solar Panels -->
-                        <div class="animate-float-4 group/tile relative aspect-square overflow-hidden border border-brand-border bg-brand-charcoal rounded shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-0 hover:z-20 cursor-pointer">
-                            <img src="assets/images/solar_panels_batteries.jpg" alt="Paneles Solares Los Cabos Zirian" class="w-full h-full object-cover group-hover/tile:scale-110 transition-transform duration-500">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent flex items-end p-3">
-                                <span class="text-[10px] font-title uppercase tracking-widest font-black text-brand-green">Solar & Baterías</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="mt-10 flex flex-col sm:flex-row gap-4">
+                    <a href="#cotizador" class="bg-brand-green hover:bg-brand-greenDark text-brand-dark px-8 py-4 font-title uppercase tracking-widest text-xs font-black text-center transition-all duration-300 hover:scale-105">
+                        Cotizar la instalación de mi cargador
+                    </a>
+                    <a href="#servicios" class="border border-white/40 hover:border-brand-blue hover:text-brand-blue text-white px-8 py-4 font-title uppercase tracking-widest text-xs font-bold text-center transition-all duration-300">
+                        Otros Servicios
+                    </a>
                 </div>
             </div>
         </div>
 
         <!-- Vertical Accent Stripe -->
-        <div class="hidden xl:block absolute right-0 top-0 h-full w-24 border-l border-brand-border bg-brand-charcoal/10 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+        <div class="hidden xl:block absolute right-0 top-0 h-full w-24 border-l border-brand-border bg-brand-charcoal/10 backdrop-blur-sm" style="z-index: 10;">
             <span class="transform rotate-90 whitespace-nowrap text-brand-green font-title tracking-widest text-xs uppercase font-extrabold">ZIRIAN ENGINEERING • LOS CABOS</span>
         </div>
     </section>
@@ -1112,6 +1064,113 @@
                 ticketStatus.innerText = 'Error al subir el ticket. Compruebe el tamaño de su archivo.';
             });
         });
+
+        // --- 7. Hero Background 3D Tiles transition ---
+        const bgContainer = document.getElementById('hero-bg-tiles');
+        const fallbackBg = document.getElementById('hero-bg-fallback');
+        
+        const bgImages = [
+            'assets/images/hero_ev_charger.jpg',
+            'assets/images/smart_home_savant.jpg',
+            'assets/images/security_network_vps.jpg',
+            'assets/images/solar_panels_batteries.jpg'
+        ];
+        
+        let currentBgIndex = 0;
+        const gridCols = 4;
+        const gridRows = 3;
+        const gridTiles = [];
+
+        // Initialize grid tiles
+        if (bgContainer) {
+            // Hide fallback background after grid is loaded
+            fallbackBg.style.display = 'none';
+            
+            bgContainer.innerHTML = '';
+            for (let r = 0; r < gridRows; r++) {
+                for (let c = 0; c < gridCols; c++) {
+                    const cell = document.createElement('div');
+                    cell.style.position = 'relative';
+                    cell.style.overflow = 'hidden';
+                    cell.style.perspective = '1000px';
+                    cell.style.width = '100%';
+                    cell.style.height = '100%';
+                    
+                    const card = document.createElement('div');
+                    card.style.position = 'absolute';
+                    card.style.width = '100%';
+                    card.style.height = '100%';
+                    card.style.transformStyle = 'preserve-3d';
+                    card.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                    card.className = 'preserve-3d';
+                    
+                    const front = document.createElement('div');
+                    front.style.position = 'absolute';
+                    front.style.width = '100%';
+                    front.style.height = '100%';
+                    front.className = 'backface-hidden bg-cover bg-center';
+                    front.style.backgroundImage = `url('${bgImages[0]}')`;
+                    front.style.backgroundSize = `${gridCols * 100}% ${gridRows * 100}%`;
+                    front.style.backgroundPosition = `${(c / (gridCols - 1)) * 100}% ${(r / (gridRows - 1)) * 100}%`;
+                    front.style.backgroundRepeat = 'no-repeat';
+                    front.style.opacity = '0.35'; // Keep the opacity matching the initial design!
+                    
+                    const back = document.createElement('div');
+                    back.style.position = 'absolute';
+                    back.style.width = '100%';
+                    back.style.height = '100%';
+                    back.className = 'backface-hidden bg-cover bg-center';
+                    back.style.transform = 'rotateY(180deg)';
+                    back.style.backgroundSize = `${gridCols * 100}% ${gridRows * 100}%`;
+                    back.style.backgroundPosition = `${(c / (gridCols - 1)) * 100}% ${(r / (gridRows - 1)) * 100}%`;
+                    back.style.backgroundRepeat = 'no-repeat';
+                    back.style.opacity = '0.35';
+                    
+                    card.appendChild(front);
+                    card.appendChild(back);
+                    cell.appendChild(card);
+                    bgContainer.appendChild(cell);
+                    
+                    gridTiles.push({ card, front, back, r, c });
+                }
+            }
+        }
+
+        function triggerBgTransition() {
+            if (!bgContainer || gridTiles.length === 0) return;
+            
+            const nextBgIndex = (currentBgIndex + 1) % bgImages.length;
+            const nextImg = bgImages[nextBgIndex];
+            
+            // Set the back face image to the next background
+            gridTiles.forEach(tile => {
+                tile.back.style.backgroundImage = `url('${nextImg}')`;
+            });
+            
+            // Flip the tiles with staggered delay
+            gridTiles.forEach(tile => {
+                const delay = (tile.c + tile.r) * 100; // Stagger diagonal reveal
+                setTimeout(() => {
+                    tile.card.style.transform = 'rotateY(180deg)';
+                }, delay);
+            });
+            
+            // After animation finishes, swap and reset
+            setTimeout(() => {
+                gridTiles.forEach(tile => {
+                    tile.card.style.transition = 'none';
+                    tile.front.style.backgroundImage = `url('${nextImg}')`;
+                    tile.card.style.transform = 'rotateY(0deg)';
+                    // Force DOM reflow
+                    tile.card.offsetHeight;
+                    tile.card.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                });
+                currentBgIndex = nextBgIndex;
+            }, 1800); // 1.0s delay max + 0.8s animation transition
+        }
+        
+        // Cycle background every 6.5 seconds
+        setInterval(triggerBgTransition, 6500);
     </script>
 </body>
 </html>
