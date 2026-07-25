@@ -118,6 +118,18 @@
         p {
             text-align: justify;
         }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            display: flex;
+            width: max-content;
+            animation: marquee 25s linear infinite;
+        }
+        .animate-marquee:hover {
+            animation-play-state: paused;
+        }
     </style>
 </head>
 <body class="bg-brand-dark text-gray-200 font-sans antialiased overflow-x-hidden">
@@ -236,9 +248,108 @@
                     <span class="text-brand-blue font-title font-extrabold text-2xl tracking-wide">1 AÑO</span>
                     <span class="text-[10px] text-gray-400 font-title uppercase tracking-widest mt-1">Garantía Mano de Obra</span>
                 </div>
-                <div class="flex flex-col items-center justify-center p-3 last:border-0">
-                    <span class="text-white font-title font-extrabold text-2xl tracking-wide">100%</span>
-                    <span class="text-[10px] text-gray-400 font-title uppercase tracking-widest mt-1">Marcas Compatibles</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         BRANDS MARQUEE (Cintillo de Marcas)
+         ========================================== -->
+    <section class="py-8 bg-[#0a0d14] border-b border-brand-border overflow-hidden relative">
+        <div class="max-w-7xl mx-auto px-4 mb-4 text-center">
+            <span class="text-gray-500 font-title uppercase tracking-widest text-[9px] font-extrabold">TECNOLOGÍA E INFRAESTRUCTURA DE VANGUARDIA</span>
+        </div>
+        <div class="relative w-full flex overflow-x-hidden">
+            <!-- Left and Right Gradient Fades to blend the marquee edges -->
+            <div class="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-[#0a0d14] to-transparent z-10 pointer-events-none"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-[#0a0d14] to-transparent z-10 pointer-events-none"></div>
+            
+            <!-- Marquee Track (Repeated twice for seamless loop) -->
+            <div class="animate-marquee flex items-center space-x-16">
+                <!-- Group 1 -->
+                <div class="flex items-center space-x-16">
+                    <!-- Tesla -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-5 w-auto fill-current" viewBox="0 0 24 24" style="width: 20px;"><path d="M12 .002c-.066 0-.13.003-.194.008l-.134.02C8.363.385 5.516 3.125 4.542 6.55c-.173.61-.318 1.458-.291 1.761.026.27.185.39.467.35.474-.067 1.05-.125 1.547-.156.249-.015.378-.145.452-.375.318-.992.83-1.892 1.547-2.617a6.236 6.236 0 014.283-1.83c1.554-.047 3.037.491 4.148 1.516.76.7 1.303 1.576 1.621 2.559.088.27.228.373.518.396.483.038 1.05.086 1.516.14.296.035.438-.09.47-.36.034-.298-.106-1.127-.27-1.745C19.167 3.228 16.276.444 12.92.032l-.17-.015a13.3 13.3 0 00-.75-.015zm0 8.012c-.93 0-1.83.08-2.69.24-.265.048-.388.21-.365.485.023.275.05.7.078 1.01.03.328.2.473.51.413.79-.15 1.6-.228 2.467-.228s1.677.078 2.467.228c.31.06.48-.085.51-.413.028-.31.055-.735.078-1.01.023-.275-.1-.437-.365-.485a15.86 15.86 0 00-2.69-.24zm0 4.004c-1.89 0-3.67.38-5.22 1.07-.26.11-.34.3-.23.55.11.25.32.74.45 1.01.13.27.31.33.56.22 1.34-.6 2.82-.93 4.44-.93s3.1.33 4.44.93c.25.11.43.05.56-.22.13-.27.34-.76.45-1.01.11-.25.03-.44-.23-.55-1.55-.69-3.33-1.07-5.22-1.07z"/></svg>
+                        <span class="font-title text-sm font-extrabold tracking-wider">TESLA</span>
+                    </div>
+                    <!-- BYD -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-5 w-auto fill-current" viewBox="0 0 24 24" style="width: 24px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-4.5 14h-1v-8h2c1.38 0 2.5 1.12 2.5 2.5 0 .85-.43 1.58-1.07 2 .8.41 1.07 1.15 1.07 2 0 1.38-1.12 1.5-2.5 1.5h-1zm5.5 0h-1v-8h1.25l1.75 3.5 1.75-3.5H19v8h-1v-6.5l-2 4h-1l-2-4v6.5z"/></svg>
+                        <span class="font-title text-sm font-extrabold tracking-wider">BYD</span>
+                    </div>
+                    <!-- Google -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-5 w-auto fill-current" viewBox="0 0 24 24" style="width: 20px;"><path d="M12.24 10.285V13.4h6.887C18.2 15.614 15.645 18 12.24 18c-3.86 0-7-3.14-7-7s3.14-7 7-7c1.821 0 3.488.7 4.742 1.84l2.42-2.42C17.067 1.378 14.817 0 12.24 0c-6.075 0-11 4.925-11 11s4.925 11 11 11c5.96 0 10.87-4.66 10.87-11 0-.665-.08-1.3-.22-1.715H12.24z"/></svg>
+                        <span class="font-title text-sm font-extrabold tracking-wider">GOOGLE</span>
+                    </div>
+                    <!-- CentOS -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-5 w-auto fill-current" viewBox="0 0 24 24" style="width: 20px;"><path d="M12 0L8 8H16L12 0z M4 12L12 8L12 16L4 12z M20 12L12 8L12 16L20 12z M12 24L8 16H16L12 24z"/></svg>
+                        <span class="font-title text-sm font-extrabold tracking-wider">CENTOS</span>
+                    </div>
+                    <!-- Savant -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-4 w-auto fill-current" viewBox="0 0 24 24" style="width: 18px;"><path d="M12 2L2 22h20L12 2zm0 4l6.5 13H5.5L12 6z"/></svg>
+                        <span class="font-title text-sm font-black tracking-widest">SAVANT</span>
+                    </div>
+                    <!-- Lutron -->
+                    <div class="flex items-center text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <span class="font-title text-sm font-black tracking-widest">LUTRON</span>
+                    </div>
+                    <!-- Ubiquiti -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-5 w-auto fill-current" viewBox="0 0 24 24" style="width: 20px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-3-9c0-1.66 1.34-3 3-3s3 1.34 3 3-1.34 3-3 3-3-1.34-3-3z"/></svg>
+                        <span class="font-title text-sm font-extrabold tracking-wider">UBIQUITI</span>
+                    </div>
+                    <!-- Cisco -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-5 w-auto fill-current" viewBox="0 0 24 24" style="width: 20px;"><rect x="2" y="10" width="2" height="4"/><rect x="5" y="8" width="2" height="8"/><rect x="8" y="6" width="2" height="12"/><rect x="11" y="4" width="2" height="16"/><rect x="14" y="4" width="2" height="16"/><rect x="17" y="6" width="2" height="12"/><rect x="20" y="8" width="2" height="8"/><rect x="23" y="10" width="2" height="4"/></svg>
+                        <span class="font-title text-sm font-extrabold tracking-wider">CISCO</span>
+                    </div>
+                </div>
+                
+                <!-- Group 2 -->
+                <div class="flex items-center space-x-16">
+                    <!-- Tesla -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-5 w-auto fill-current" viewBox="0 0 24 24" style="width: 20px;"><path d="M12 .002c-.066 0-.13.003-.194.008l-.134.02C8.363.385 5.516 3.125 4.542 6.55c-.173.61-.318 1.458-.291 1.761.026.27.185.39.467.35.474-.067 1.05-.125 1.547-.156.249-.015.378-.145.452-.375.318-.992.83-1.892 1.547-2.617a6.236 6.236 0 014.283-1.83c1.554-.047 3.037.491 4.148 1.516.76.7 1.303 1.576 1.621 2.559.088.27.228.373.518.396.483.038 1.05.086 1.516.14.296.035.438-.09.47-.36.034-.298-.106-1.127-.27-1.745C19.167 3.228 16.276.444 12.92.032l-.17-.015a13.3 13.3 0 00-.75-.015zm0 8.012c-.93 0-1.83.08-2.69.24-.265.048-.388.21-.365.485.023.275.05.7.078 1.01.03.328.2.473.51.413.79-.15 1.6-.228 2.467-.228s1.677.078 2.467.228c.31.06.48-.085.51-.413.028-.31.055-.735.078-1.01.023-.275-.1-.437-.365-.485a15.86 15.86 0 00-2.69-.24zm0 4.004c-1.89 0-3.67.38-5.22 1.07-.26.11-.34.3-.23.55.11.25.32.74.45 1.01.13.27.31.33.56.22 1.34-.6 2.82-.93 4.44-.93s3.1.33 4.44.93c.25.11.43.05.56-.22.13-.27.34-.76.45-1.01.11-.25.03-.44-.23-.55-1.55-.69-3.33-1.07-5.22-1.07z"/></svg>
+                        <span class="font-title text-sm font-extrabold tracking-wider">TESLA</span>
+                    </div>
+                    <!-- BYD -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-5 w-auto fill-current" viewBox="0 0 24 24" style="width: 24px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-4.5 14h-1v-8h2c1.38 0 2.5 1.12 2.5 2.5 0 .85-.43 1.58-1.07 2 .8.41 1.07 1.15 1.07 2 0 1.38-1.12 1.5-2.5 1.5h-1zm5.5 0h-1v-8h1.25l1.75 3.5 1.75-3.5H19v8h-1v-6.5l-2 4h-1l-2-4v6.5z"/></svg>
+                        <span class="font-title text-sm font-extrabold tracking-wider">BYD</span>
+                    </div>
+                    <!-- Google -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-5 w-auto fill-current" viewBox="0 0 24 24" style="width: 20px;"><path d="M12.24 10.285V13.4h6.887C18.2 15.614 15.645 18 12.24 18c-3.86 0-7-3.14-7-7s3.14-7 7-7c1.821 0 3.488.7 4.742 1.84l2.42-2.42C17.067 1.378 14.817 0 12.24 0c-6.075 0-11 4.925-11 11s4.925 11 11 11c5.96 0 10.87-4.66 10.87-11 0-.665-.08-1.3-.22-1.715H12.24z"/></svg>
+                        <span class="font-title text-sm font-extrabold tracking-wider">GOOGLE</span>
+                    </div>
+                    <!-- CentOS -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-5 w-auto fill-current" viewBox="0 0 24 24" style="width: 20px;"><path d="M12 0L8 8H16L12 0z M4 12L12 8L12 16L4 12z M20 12L12 8L12 16L20 12z M12 24L8 16H16L12 24z"/></svg>
+                        <span class="font-title text-sm font-extrabold tracking-wider">CENTOS</span>
+                    </div>
+                    <!-- Savant -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-4 w-auto fill-current" viewBox="0 0 24 24" style="width: 18px;"><path d="M12 2L2 22h20L12 2zm0 4l6.5 13H5.5L12 6z"/></svg>
+                        <span class="font-title text-sm font-black tracking-widest">SAVANT</span>
+                    </div>
+                    <!-- Lutron -->
+                    <div class="flex items-center text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <span class="font-title text-sm font-black tracking-widest">LUTRON</span>
+                    </div>
+                    <!-- Ubiquiti -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-5 w-auto fill-current" viewBox="0 0 24 24" style="width: 20px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-3-9c0-1.66 1.34-3 3-3s3 1.34 3 3-1.34 3-3 3-3-1.34-3-3z"/></svg>
+                        <span class="font-title text-sm font-extrabold tracking-wider">UBIQUITI</span>
+                    </div>
+                    <!-- Cisco -->
+                    <div class="flex items-center space-x-2 text-white/45 hover:text-brand-blue transition-colors duration-300">
+                        <svg class="h-5 w-auto fill-current" viewBox="0 0 24 24" style="width: 20px;"><rect x="2" y="10" width="2" height="4"/><rect x="5" y="8" width="2" height="8"/><rect x="8" y="6" width="2" height="12"/><rect x="11" y="4" width="2" height="16"/><rect x="14" y="4" width="2" height="16"/><rect x="17" y="6" width="2" height="12"/><rect x="20" y="8" width="2" height="8"/><rect x="23" y="10" width="2" height="4"/></svg>
+                        <span class="font-title text-sm font-extrabold tracking-wider">CISCO</span>
+                    </div>
                 </div>
             </div>
         </div>
