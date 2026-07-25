@@ -214,8 +214,8 @@
         </div>
         
         <!-- High-tech Grid overlays for readability -->
-        <div class="absolute inset-0 bg-brand-dark/65 mix-blend-multiply" style="z-index: 1;"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/80 to-transparent" style="z-index: 1;"></div>
+        <div class="absolute inset-0 bg-brand-dark/45 mix-blend-multiply" style="z-index: 1;"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/40 to-transparent" style="z-index: 1;"></div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative w-full py-20 lg:py-32" style="z-index: 10;">
             <div class="max-w-3xl">
@@ -599,13 +599,18 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
                 
                 <!-- Left Column: Software Interface Composition Mockup -->
-                <div class="lg:col-span-6 relative flex items-center justify-center min-h-[360px] sm:min-h-[420px]">
+                <div class="lg:col-span-6 relative flex items-center justify-center min-h-[380px] sm:min-h-[460px] px-6 sm:px-12">
                     <!-- Background glowing aura -->
-                    <div class="absolute w-72 h-72 bg-brand-blue/20 rounded-full blur-3xl"></div>
-                    <div class="absolute w-60 h-60 bg-brand-green/10 rounded-full blur-3xl -bottom-10 -left-10"></div>
+                    <div class="absolute w-80 h-80 bg-brand-blue/20 rounded-full blur-3xl text-brand-blue"></div>
+                    <div class="absolute w-60 h-60 bg-brand-green/10 rounded-full blur-3xl -bottom-10 -left-10 text-brand-green"></div>
                     
+                    <!-- Left Phone (Guard App - QR Scan) -->
+                    <div class="absolute -left-2 sm:left-4 bottom-2 w-28 sm:w-36 rounded-2xl overflow-hidden border border-brand-border/80 shadow-2xl z-20 transform -rotate-4 transition-all duration-500 hover:rotate-0 hover:scale-105">
+                        <img src="assets/images/alddea_guard.png" alt="Alddea Seguridad QR" class="w-full h-auto object-cover">
+                    </div>
+
                     <!-- Dashboard Web Mockup (Base Layer) -->
-                    <div class="relative w-11/12 mr-6 sm:mr-12 rounded-lg overflow-hidden border border-brand-border/60 shadow-2xl bg-brand-charcoal/90 transform -rotate-1.5 transition-all duration-500 hover:rotate-0 hover:scale-102 z-10">
+                    <div class="relative w-full rounded-lg overflow-hidden border border-brand-border/60 shadow-2xl bg-brand-charcoal/90 transform -rotate-1.5 transition-all duration-500 hover:rotate-0 hover:scale-102 z-10 mx-6 sm:mx-12">
                         <!-- Browser Top Bar -->
                         <div class="flex items-center justify-between px-3.5 py-2.5 bg-brand-dark/85 border-b border-brand-border/50">
                             <div class="flex space-x-1.5">
@@ -618,8 +623,8 @@
                         <img src="assets/images/alddea_dashboard.png" alt="Alddea Admin Dashboard" class="w-full h-auto object-cover opacity-95">
                     </div>
 
-                    <!-- Mobile App Mockup (Overlay Layer) -->
-                    <div class="absolute -right-2 -bottom-6 w-32 sm:w-44 rounded-2xl overflow-hidden border border-brand-border/80 shadow-2xl z-20 transform rotate-2.5 transition-all duration-500 hover:rotate-0 hover:scale-105">
+                    <!-- Right Phone (Resident App) -->
+                    <div class="absolute -right-2 sm:right-4 -bottom-6 w-28 sm:w-36 rounded-2xl overflow-hidden border border-brand-border/80 shadow-2xl z-20 transform rotate-4 transition-all duration-500 hover:rotate-0 hover:scale-105">
                         <img src="assets/images/alddea_mobile.png" alt="Alddea Resident App" class="w-full h-auto object-cover">
                     </div>
                 </div>
