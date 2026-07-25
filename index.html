@@ -195,12 +195,15 @@
          HERO SECTION
          ========================================== -->
     <section id="inicio" class="relative pt-20 min-h-screen flex items-center bg-black overflow-hidden">
-        <!-- Background Slider (Grid Tiles) -->
-        <div id="hero-bg-tiles" class="absolute inset-0 z-0 grid grid-cols-4 grid-rows-3 overflow-hidden">
-            <!-- Dynamically populated tiles -->
+        <!-- Background Slider Wrapper with Parallax clipping -->
+        <div class="absolute inset-0 overflow-hidden" style="clip-path: inset(0); z-index: 0;">
+            <!-- Background Slider (Grid Tiles) -->
+            <div id="hero-bg-tiles" class="fixed inset-0 grid grid-cols-4 grid-rows-3 overflow-hidden">
+                <!-- Dynamically populated tiles -->
+            </div>
+            <!-- Static Fallback/Initial Background (for loading and SEO) -->
+            <div id="hero-bg-fallback" class="fixed inset-0 bg-cover bg-center opacity-35" style="background-image: url('assets/images/hero_ev_charger.jpg');"></div>
         </div>
-        <!-- Static Fallback/Initial Background (for loading and SEO) -->
-        <div id="hero-bg-fallback" class="absolute inset-0 z-0 bg-cover bg-center opacity-35" style="background-image: url('assets/images/hero_ev_charger.jpg');"></div>
         
         <!-- High-tech Grid overlays for readability -->
         <div class="absolute inset-0 bg-brand-dark/65 mix-blend-multiply" style="z-index: 1;"></div>
