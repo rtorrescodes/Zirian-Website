@@ -105,6 +105,9 @@
     }
     </script>
     <style>
+        html {
+            scroll-padding-top: 5rem; /* 80px offset for the fixed header */
+        }
         .preserve-3d {
             transform-style: preserve-3d;
         }
@@ -130,11 +133,11 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <!-- Brand Logo -->
             <a href="#" class="flex items-center space-x-2">
-                <img src="assets/images/logo.png" alt="Logo Zirian" class="h-10 sm:h-12 w-auto object-contain">
+                <img src="assets/images/logo.png" alt="Logo Zirian" class="h-8 sm:h-10 md:h-11 w-auto object-contain">
             </a>
 
             <!-- Desktop Navigation -->
-            <nav class="hidden md:flex space-x-8 items-center font-title uppercase tracking-wider text-xs font-semibold">
+            <nav class="hidden lg:flex space-x-6 xl:space-x-8 items-center font-title uppercase tracking-wider text-xs font-semibold">
                 <a href="#inicio" class="text-white hover:text-brand-blue transition-colors">Inicio</a>
                 <a href="#cargadores" class="text-gray-300 hover:text-brand-blue transition-colors">Cargadores EV</a>
                 <a href="#servicios" class="text-gray-300 hover:text-brand-blue transition-colors">Ingeniería & Domótica</a>
@@ -143,14 +146,14 @@
             </nav>
 
             <!-- Desktop CTA -->
-            <div class="hidden md:block">
+            <div class="hidden lg:block">
                 <a href="#contacto" class="bg-brand-green hover:bg-brand-greenDark text-brand-dark px-6 py-2.5 font-title uppercase tracking-widest text-xs font-black transition-all duration-300 hover:scale-105 inline-block">
                     Contáctanos
                 </a>
             </div>
 
             <!-- Mobile Menu Toggle Button -->
-            <button id="menu-btn" class="md:hidden text-white focus:outline-none p-2" aria-label="Abrir Menú">
+            <button id="menu-btn" class="lg:hidden text-white focus:outline-none p-2" aria-label="Abrir Menú">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path id="menu-icon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
@@ -158,7 +161,7 @@
         </div>
 
         <!-- Mobile Drawer Navigation -->
-        <div id="mobile-menu" class="hidden md:hidden bg-brand-dark/98 border-b border-brand-border/80 font-title uppercase tracking-wider text-sm font-semibold py-4 px-6 flex flex-col space-y-4">
+        <div id="mobile-menu" class="hidden lg:hidden bg-brand-dark/98 border-b border-brand-border/80 font-title uppercase tracking-wider text-sm font-semibold py-4 px-6 flex flex-col space-y-4">
             <a href="#inicio" class="text-white hover:text-brand-blue py-2 border-b border-brand-border/40 transition-colors">Inicio</a>
             <a href="#cargadores" class="text-gray-300 hover:text-brand-blue py-2 border-b border-brand-border/40 transition-colors">Cargadores EV</a>
             <a href="#servicios" class="text-gray-300 hover:text-brand-blue py-2 border-b border-brand-border/40 transition-colors">Ingeniería & Domótica</a>
@@ -655,36 +658,65 @@
                 <!-- Contact Info Column -->
                 <div class="lg:col-span-5 flex flex-col justify-between">
                     <div>
-                        <span class="text-brand-blueDark font-title uppercase tracking-widest text-xs font-bold">OFICINAS Y PROYECTOS</span>
-                        <h2 class="font-title text-3xl lg:text-5xl font-black text-brand-dark uppercase tracking-tight mt-2">
+                        <span class="inline-block bg-brand-dark/10 border border-brand-blueDark/25 text-brand-blueDark font-title uppercase tracking-widest text-[10px] font-bold px-3.5 py-1.5 mb-3 rounded">
+                            OFICINAS Y PROYECTOS
+                        </span>
+                        <h2 class="font-title text-3xl lg:text-5xl font-black text-brand-dark uppercase tracking-tight mt-1">
                             ¿Listo para Empezar?
                         </h2>
-                        <div class="h-1 w-20 bg-brand-blueDark mt-4 mb-6"></div>
+                        <div class="h-1 w-24 bg-gradient-to-r from-brand-blueDark to-brand-green mt-4 mb-6"></div>
                         <p class="text-gray-600 text-sm leading-relaxed mb-8">
                             Agenda una visita de inspección técnica sin compromiso para tu residencia o negocio en cualquier zona de Los Cabos. 
                         </p>
 
-                        <!-- Contact Details -->
-                        <div class="space-y-4 text-xs font-title uppercase tracking-widest font-bold">
-                            <div class="flex items-center text-brand-dark">
-                                <span class="text-brand-blueDark mr-3">TEL/WA:</span>
-                                <a href="https://wa.me/526246220525" target="_blank" class="hover:text-brand-blueDark transition-colors">+52 624 622 0525</a>
-                            </div>
-                            <div class="flex items-center text-brand-dark">
-                                <span class="text-brand-blueDark mr-3">EMAIL:</span>
-                                <a href="mailto:admin@alddea.com" class="hover:text-brand-blueDark transition-colors">admin@alddea.com</a>
-                            </div>
-                            <div class="flex items-center text-brand-dark">
-                                <span class="text-brand-blueDark mr-3">ZONA:</span>
-                                <span>Los Cabos y La Paz, BCS, México</span>
+                        <!-- Contact Details Cards -->
+                        <div class="space-y-4">
+                            <!-- Phone & WA Card -->
+                            <a href="https://wa.me/526246220525" target="_blank" class="flex items-center p-4 bg-white border border-gray-200 rounded shadow-sm hover:border-brand-blueDark transition-colors group block">
+                                <div class="flex items-center justify-center w-10 h-10 rounded bg-brand-blueDark/10 text-brand-blueDark group-hover:bg-brand-blueDark group-hover:text-white transition-colors mr-4">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <span class="block text-[9px] font-title uppercase tracking-widest text-gray-500 font-bold">Teléfono & WhatsApp</span>
+                                    <span class="text-sm font-title font-extrabold text-brand-dark group-hover:text-brand-blueDark transition-colors">+52 624 622 0525</span>
+                                </div>
+                            </a>
+
+                            <!-- Email Card -->
+                            <a href="mailto:admin@alddea.com" class="flex items-center p-4 bg-white border border-gray-200 rounded shadow-sm hover:border-brand-blueDark transition-colors group block">
+                                <div class="flex items-center justify-center w-10 h-10 rounded bg-brand-blueDark/10 text-brand-blueDark group-hover:bg-brand-blueDark group-hover:text-white transition-colors mr-4">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <span class="block text-[9px] font-title uppercase tracking-widest text-gray-500 font-bold">Correo de Contacto</span>
+                                    <span class="text-sm font-title font-extrabold text-brand-dark group-hover:text-brand-blueDark transition-colors">admin@alddea.com</span>
+                                </div>
+                            </a>
+
+                            <!-- Location Card -->
+                            <div class="flex items-center p-4 bg-white border border-gray-200 rounded shadow-sm hover:border-brand-blueDark transition-colors group">
+                                <div class="flex items-center justify-center w-10 h-10 rounded bg-brand-blueDark/10 text-brand-blueDark group-hover:bg-brand-blueDark group-hover:text-white transition-colors mr-4">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <span class="block text-[9px] font-title uppercase tracking-widest text-gray-500 font-bold">Zonas de Cobertura</span>
+                                    <span class="text-sm font-title font-extrabold text-brand-dark">Los Cabos y La Paz, BCS, México</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Green mobile WA button -->
                     <div class="mt-8 border-t border-gray-300 pt-6">
-                        <p class="text-xs text-gray-500 uppercase tracking-widest mb-3">Atención Inmediata de Ventas</p>
-                        <a href="https://wa.me/526246220525" target="_blank" onclick="trackWhatsAppClick()" class="inline-flex items-center bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 font-title uppercase tracking-widest text-xs font-bold transition-all w-full sm:w-auto justify-center rounded">
+                        <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold mb-3">Atención Inmediata de Ventas</p>
+                        <a href="https://wa.me/526246220525" target="_blank" onclick="trackWhatsAppClick()" class="inline-flex items-center bg-brand-green hover:bg-brand-greenDark text-brand-dark px-6 py-3.5 font-title uppercase tracking-widest text-xs font-black transition-all w-full sm:w-auto justify-center rounded shadow-sm hover:shadow-md">
                             <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.625 1.451 5.403.002 9.803-4.386 9.805-9.778.001-2.612-1.013-5.068-2.859-6.915C16.37 2.062 13.924.979 11.32.979 5.922.979 1.523 5.367 1.52 10.76c-.001 1.505.4 2.97 1.161 4.264l-.999 3.65 3.754-.984c1.238.675 2.58 1.026 3.911 1.028zm10.793-6.284c-.296-.147-1.748-.863-2.019-.961-.27-.099-.467-.147-.663.148-.196.295-.761.961-.933 1.158-.172.196-.344.22-.64.073-.296-.147-1.252-.461-2.385-1.471-.881-.786-1.476-1.756-1.649-2.05-.173-.296-.018-.456.13-.603.133-.132.296-.345.444-.517.149-.172.197-.295.296-.492.099-.197.05-.369-.024-.517-.075-.147-.663-1.598-.909-2.189-.239-.575-.483-.497-.663-.506-.172-.008-.368-.01-.565-.01-.196 0-.515.073-.784.369-.27.295-1.03 1.009-1.03 2.46 0 1.452 1.055 2.855 1.202 3.053.147.197 2.078 3.174 5.034 4.451.703.303 1.252.484 1.68.621.71.226 1.356.194 1.866.118.568-.084 1.748-.713 1.994-1.402.245-.689.245-1.279.172-1.402-.074-.123-.27-.197-.567-.345z"/></svg>
                             WhatsApp Ventas
                         </a>
@@ -692,40 +724,40 @@
                 </div>
 
                 <!-- Contact Form Column -->
-                <div class="lg:col-span-7 bg-white border border-gray-200 p-8 sm:p-10 rounded shadow-sm">
+                <div class="lg:col-span-7 bg-white border border-gray-200 p-8 sm:p-10 rounded-lg shadow-md">
                     <h3 class="font-title text-xl font-bold uppercase text-brand-dark tracking-wide mb-6">Envíanos un Mensaje</h3>
                     
                     <form id="contact-form" class="space-y-4">
                         <input type="hidden" name="tipo_lead" value="Contacto Directo">
                         
                         <div>
-                            <label class="block text-xs uppercase tracking-widest font-title text-gray-500 mb-1">Nombre Completo *</label>
-                            <input type="text" name="nombre" required class="w-full bg-gray-50 border border-gray-300 focus:border-brand-blueDark p-3 text-sm focus:outline-none rounded">
+                            <label class="block text-[10px] uppercase tracking-widest font-title text-gray-500 font-bold mb-1.5">Nombre Completo *</label>
+                            <input type="text" name="nombre" required class="w-full bg-gray-50/50 border border-gray-250 focus:border-brand-blueDark focus:ring-1 focus:ring-brand-blueDark p-3 text-sm focus:outline-none rounded transition-all">
                         </div>
                         
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs uppercase tracking-widest font-title text-gray-500 mb-1">Teléfono o Celular *</label>
-                                <input type="tel" name="telefono" required class="w-full bg-gray-50 border border-gray-300 focus:border-brand-blueDark p-3 text-sm focus:outline-none rounded">
+                                <label class="block text-[10px] uppercase tracking-widest font-title text-gray-500 font-bold mb-1.5">Teléfono o Celular *</label>
+                                <input type="tel" name="telefono" required class="w-full bg-gray-50/50 border border-gray-250 focus:border-brand-blueDark focus:ring-1 focus:ring-brand-blueDark p-3 text-sm focus:outline-none rounded transition-all">
                             </div>
                             <div>
-                                <label class="block text-xs uppercase tracking-widest font-title text-gray-500 mb-1">Correo Electrónico</label>
-                                <input type="email" name="email" class="w-full bg-gray-50 border border-gray-300 focus:border-brand-blueDark p-3 text-sm focus:outline-none rounded">
+                                <label class="block text-[10px] uppercase tracking-widest font-title text-gray-500 font-bold mb-1.5">Correo Electrónico</label>
+                                <input type="email" name="email" class="w-full bg-gray-50/50 border border-gray-250 focus:border-brand-blueDark focus:ring-1 focus:ring-brand-blueDark p-3 text-sm focus:outline-none rounded transition-all">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs uppercase tracking-widest font-title text-gray-500 mb-1">Villa, Fraccionamiento o Código Postal *</label>
-                            <input type="text" name="ubicacion" required class="w-full bg-gray-50 border border-gray-300 focus:border-brand-blueDark p-3 text-sm focus:outline-none rounded">
+                            <label class="block text-[10px] uppercase tracking-widest font-title text-gray-500 font-bold mb-1.5">Villa, Fraccionamiento o Código Postal *</label>
+                            <input type="text" name="ubicacion" required class="w-full bg-gray-50/50 border border-gray-250 focus:border-brand-blueDark focus:ring-1 focus:ring-brand-blueDark p-3 text-sm focus:outline-none rounded transition-all">
                         </div>
 
                         <div>
-                            <label class="block text-xs uppercase tracking-widest font-title text-gray-500 mb-1">¿Cómo te podemos ayudar? (Opcional)</label>
-                            <textarea name="mensaje" rows="4" class="w-full bg-gray-50 border border-gray-300 focus:border-brand-blueDark p-3 text-sm focus:outline-none rounded"></textarea>
+                            <label class="block text-[10px] uppercase tracking-widest font-title text-gray-500 font-bold mb-1.5">¿Cómo te podemos ayudar? (Opcional)</label>
+                            <textarea name="mensaje" rows="4" class="w-full bg-gray-50/50 border border-gray-250 focus:border-brand-blueDark focus:ring-1 focus:ring-brand-blueDark p-3 text-sm focus:outline-none rounded transition-all"></textarea>
                         </div>
 
                         <div class="pt-2">
-                            <button type="submit" class="w-full bg-brand-dark hover:bg-brand-charcoal text-white py-4 font-title uppercase tracking-widest text-xs font-bold transition-all rounded">
+                            <button type="submit" class="w-full bg-brand-green hover:bg-brand-greenDark text-brand-dark py-4 font-title uppercase tracking-widest text-xs font-black transition-all rounded shadow-sm hover:shadow-md">
                                 Solicitar Información
                             </button>
                         </div>
