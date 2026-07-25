@@ -462,29 +462,41 @@
                     <div id="step-1" class="step-container">
                         <h3 class="font-title text-lg font-bold uppercase text-white tracking-wider mb-4">¿De qué marca es tu vehículo eléctrico?</h3>
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            <label class="border border-brand-border p-4 text-center rounded cursor-pointer hover:border-brand-blue transition-all block">
-                                <input type="radio" name="marca_ev" value="Tesla" class="hidden" required>
-                                <span class="block text-xs uppercase tracking-widest font-title text-white">Tesla</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="marca_ev" value="Tesla" class="peer hidden" required>
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 text-center rounded hover:border-brand-blue transition-all">
+                                    <span class="block text-xs uppercase tracking-widest font-title text-white">Tesla</span>
+                                </div>
                             </label>
-                            <label class="border border-brand-border p-4 text-center rounded cursor-pointer hover:border-brand-blue transition-all block">
-                                <input type="radio" name="marca_ev" value="BYD" class="hidden">
-                                <span class="block text-xs uppercase tracking-widest font-title text-white">BYD</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="marca_ev" value="BYD" class="peer hidden">
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 text-center rounded hover:border-brand-blue transition-all">
+                                    <span class="block text-xs uppercase tracking-widest font-title text-white">BYD</span>
+                                </div>
                             </label>
-                            <label class="border border-brand-border p-4 text-center rounded cursor-pointer hover:border-brand-blue transition-all block">
-                                <input type="radio" name="marca_ev" value="Geely" class="hidden">
-                                <span class="block text-xs uppercase tracking-widest font-title text-white">Geely</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="marca_ev" value="Geely" class="peer hidden">
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 text-center rounded hover:border-brand-blue transition-all">
+                                    <span class="block text-xs uppercase tracking-widest font-title text-white">Geely</span>
+                                </div>
                             </label>
-                            <label class="border border-brand-border p-4 text-center rounded cursor-pointer hover:border-brand-blue transition-all block">
-                                <input type="radio" name="marca_ev" value="Volvo" class="hidden">
-                                <span class="block text-xs uppercase tracking-widest font-title text-white">Volvo</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="marca_ev" value="Volvo" class="peer hidden">
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 text-center rounded hover:border-brand-blue transition-all">
+                                    <span class="block text-xs uppercase tracking-widest font-title text-white">Volvo</span>
+                                </div>
                             </label>
-                            <label class="border border-brand-border p-4 text-center rounded cursor-pointer hover:border-brand-blue transition-all block">
-                                <input type="radio" name="marca_ev" value="BMW" class="hidden">
-                                <span class="block text-xs uppercase tracking-widest font-title text-white">BMW</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="marca_ev" value="BMW" class="peer hidden">
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 text-center rounded hover:border-brand-blue transition-all">
+                                    <span class="block text-xs uppercase tracking-widest font-title text-white">BMW</span>
+                                </div>
                             </label>
-                            <label class="border border-brand-border p-4 text-center rounded cursor-pointer hover:border-brand-blue transition-all block">
-                                <input type="radio" name="marca_ev" value="Otro" class="hidden">
-                                <span class="block text-xs uppercase tracking-widest font-title text-white">Otro / Multimarcas</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="marca_ev" value="Otro" class="peer hidden">
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 text-center rounded hover:border-brand-blue transition-all">
+                                    <span class="block text-xs uppercase tracking-widest font-title text-white">Otro / Multimarcas</span>
+                                </div>
                             </label>
                         </div>
                         <div class="mt-8 flex justify-end">
@@ -496,25 +508,33 @@
                     <div id="step-2" class="step-container hidden">
                         <h3 class="font-title text-lg font-bold uppercase text-white tracking-wider mb-4">¿Qué tipo de inmueble es?</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <label class="border border-brand-border p-4 rounded cursor-pointer hover:border-brand-blue transition-all block">
-                                <input type="radio" name="tipo_instalacion" value="Residencial Casa" class="hidden" required>
-                                <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">Casa Habitación / Villa</span>
-                                <span class="block text-xxs text-gray-400 mt-1">Cochera techada o aire libre.</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="tipo_instalacion" value="Residencial Casa" class="peer hidden" required>
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 rounded hover:border-brand-blue transition-all">
+                                    <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">Casa Habitación / Villa</span>
+                                    <span class="block text-xxs text-gray-400 mt-1">Cochera techada o aire libre.</span>
+                                </div>
                             </label>
-                            <label class="border border-brand-border p-4 rounded cursor-pointer hover:border-brand-blue transition-all block">
-                                <input type="radio" name="tipo_instalacion" value="Condominio" class="hidden">
-                                <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">Condominio / Edificio</span>
-                                <span class="block text-xxs text-gray-400 mt-1">Requiere canalizaciones a áreas comunes.</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="tipo_instalacion" value="Condominio" class="peer hidden">
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 rounded hover:border-brand-blue transition-all">
+                                    <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">Condominio / Edificio</span>
+                                    <span class="block text-xxs text-gray-400 mt-1">Requiere canalizaciones a áreas comunes.</span>
+                                </div>
                             </label>
-                            <label class="border border-brand-border p-4 rounded cursor-pointer hover:border-brand-blue transition-all block">
-                                <input type="radio" name="tipo_instalacion" value="Comercial" class="hidden">
-                                <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">Comercial / Oficina</span>
-                                <span class="block text-xxs text-gray-400 mt-1">Estacionamiento para empleados o clientes.</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="tipo_instalacion" value="Comercial" class="peer hidden">
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 rounded hover:border-brand-blue transition-all">
+                                    <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">Comercial / Oficina</span>
+                                    <span class="block text-xxs text-gray-400 mt-1">Estacionamiento para empleados o clientes.</span>
+                                </div>
                             </label>
-                            <label class="border border-brand-border p-4 rounded cursor-pointer hover:border-brand-blue transition-all block">
-                                <input type="radio" name="tipo_instalacion" value="Flotilla" class="hidden">
-                                <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">Flotilla / Industrial</span>
-                                <span class="block text-xxs text-gray-400 mt-1">Infraestructura de alta capacidad para empresas.</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="tipo_instalacion" value="Flotilla" class="peer hidden">
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 rounded hover:border-brand-blue transition-all">
+                                    <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">Flotilla / Industrial</span>
+                                    <span class="block text-xxs text-gray-400 mt-1">Infraestructura de alta capacidad para empresas.</span>
+                                </div>
                             </label>
                         </div>
                         <div class="mt-8 flex justify-between">
@@ -527,26 +547,32 @@
                     <div id="step-3" class="step-container hidden">
                         <h3 class="font-title text-lg font-bold uppercase text-white tracking-wider mb-4">Distancia aproximada al centro de carga</h3>
                         <div class="space-y-4">
-                            <label class="border border-brand-border p-4 rounded cursor-pointer hover:border-brand-blue transition-all block flex items-center justify-between">
-                                <div>
-                                    <input type="radio" name="distancia_centro_carga" value="Corta (1-10 metros)" class="hidden" required>
-                                    <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">De 1 a 10 Metros</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="distancia_centro_carga" value="Corta (1-10 metros)" class="peer hidden" required>
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 rounded hover:border-brand-blue transition-all flex items-center justify-between">
+                                    <div>
+                                        <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">De 1 a 10 Metros</span>
+                                    </div>
+                                    <span class="text-xs text-brand-blue font-bold font-title">Corta distancia</span>
                                 </div>
-                                <span class="text-xs text-brand-blue font-bold font-title">Corta distancia</span>
                             </label>
-                            <label class="border border-brand-border p-4 rounded cursor-pointer hover:border-brand-blue transition-all block flex items-center justify-between">
-                                <div>
-                                    <input type="radio" name="distancia_centro_carga" value="Media (11-30 metros)" class="hidden">
-                                    <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">De 11 a 30 Metros</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="distancia_centro_carga" value="Media (11-30 metros)" class="peer hidden">
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 rounded hover:border-brand-blue transition-all flex items-center justify-between">
+                                    <div>
+                                        <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">De 11 a 30 Metros</span>
+                                    </div>
+                                    <span class="text-xs text-white font-bold font-title">Media distancia</span>
                                 </div>
-                                <span class="text-xs text-white font-bold font-title">Media distancia</span>
                             </label>
-                            <label class="border border-brand-border p-4 rounded cursor-pointer hover:border-brand-blue transition-all block flex items-center justify-between">
-                                <div>
-                                    <input type="radio" name="distancia_centro_carga" value="Larga (Mas de 30 metros)" class="hidden">
-                                    <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">Más de 30 Metros</span>
+                            <label class="cursor-pointer block">
+                                <input type="radio" name="distancia_centro_carga" value="Larga (Mas de 30 metros)" class="peer hidden">
+                                <div class="border border-brand-border peer-checked:border-brand-blue peer-checked:bg-brand-charcoal/60 p-4 rounded hover:border-brand-blue transition-all flex items-center justify-between">
+                                    <div>
+                                        <span class="block text-sm uppercase tracking-wider font-title text-white font-bold">Más de 30 Metros</span>
+                                    </div>
+                                    <span class="text-xs text-brand-blue font-bold font-title">Instalación compleja</span>
                                 </div>
-                                <span class="text-xs text-brand-blue font-bold font-title">Instalación compleja</span>
                             </label>
                         </div>
                         <div class="mt-8 flex justify-between">
