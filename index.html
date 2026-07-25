@@ -104,6 +104,28 @@
       ]
     }
     </script>
+    <style>
+        @keyframes float-slow-1 {
+            0%, 100% { transform: translateY(0px) rotate(3deg); }
+            50% { transform: translateY(-12px) rotate(5deg); }
+        }
+        @keyframes float-slow-2 {
+            0%, 100% { transform: translateY(0px) rotate(-3deg); }
+            50% { transform: translateY(-8px) rotate(-1deg); }
+        }
+        @keyframes float-slow-3 {
+            0%, 100% { transform: translateY(0px) rotate(-1deg); }
+            50% { transform: translateY(-10px) rotate(1deg); }
+        }
+        @keyframes float-slow-4 {
+            0%, 100% { transform: translateY(0px) rotate(4deg); }
+            50% { transform: translateY(-14px) rotate(2deg); }
+        }
+        .animate-float-1 { animation: float-slow-1 6s ease-in-out infinite; }
+        .animate-float-2 { animation: float-slow-2 7s ease-in-out infinite; }
+        .animate-float-3 { animation: float-slow-3 6.5s ease-in-out infinite; }
+        .animate-float-4 { animation: float-slow-4 5.5s ease-in-out infinite; }
+    </style>
 </head>
 <body class="bg-brand-dark text-gray-200 font-sans antialiased overflow-x-hidden">
     <!-- Google Tag Manager (noscript) -->
@@ -167,27 +189,67 @@
         </div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-20 lg:py-32">
-            <div class="max-w-3xl">
-                <!-- Top Badge -->
-                <span class="inline-block border-l-4 border-brand-green bg-brand-charcoal text-white font-title uppercase tracking-widest text-[10px] sm:text-xs font-bold px-4 py-2 mb-6">
-                    Líderes en Electromovilidad e Ingeniería en Los Cabos
-                </span>
-                
-                <h1 class="font-title text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-tight uppercase tracking-tight">
-                    Alta Ingeniería en <span class="text-brand-blue">Cargadores EV</span> & Sistemas
-                </h1>
-                
-                <p class="mt-6 text-base sm:text-lg text-gray-300 max-w-2xl leading-relaxed">
-                    Instalación profesional de cargadores para vehículos eléctricos certificada bajo normas CFE y NOM-001 en Los Cabos y La Paz. Trabajamos con marcas líderes como <strong>Tesla, <span class="text-brand-green font-bold">BYD</span>, Geely, Mercedes-Benz, Nissan, Audi</strong> y más. Conectamos tecnología residencial, domótica Savant, audio profesional, redes y seguridad de vanguardia.
-                </p>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <!-- Text Column -->
+                <div class="lg:col-span-7">
+                    <!-- Top Badge -->
+                    <span class="inline-block border-l-4 border-brand-green bg-brand-charcoal text-white font-title uppercase tracking-widest text-[10px] sm:text-xs font-bold px-4 py-2 mb-6">
+                        Líderes en Electromovilidad e Ingeniería en Los Cabos
+                    </span>
+                    
+                    <h1 class="font-title text-4xl sm:text-5xl lg:text-7xl font-extrabold text-white leading-tight uppercase tracking-tight">
+                        Alta Ingeniería en <span class="text-brand-blue">Cargadores EV</span> & Sistemas
+                    </h1>
+                    
+                    <p class="mt-6 text-base sm:text-lg text-gray-300 max-w-2xl leading-relaxed">
+                        Instalación profesional de cargadores para vehículos eléctricos certificada bajo normas CFE y NOM-001 en Los Cabos y La Paz. Trabajamos con marcas líderes como <strong>Tesla, <span class="text-brand-green font-bold">BYD</span>, Geely, Mercedes-Benz, Nissan, Audi</strong> y más. Conectamos tecnología residencial, domótica Savant, audio profesional, redes y seguridad de vanguardia.
+                    </p>
 
-                <div class="mt-10 flex flex-col sm:flex-row gap-4">
-                    <a href="#cotizador" class="bg-brand-green hover:bg-brand-greenDark text-brand-dark px-8 py-4 font-title uppercase tracking-widest text-xs font-black text-center transition-all duration-300 hover:scale-105">
-                        Cotizar la instalación de mi cargador
-                    </a>
-                    <a href="#servicios" class="border border-white/40 hover:border-brand-blue hover:text-brand-blue text-white px-8 py-4 font-title uppercase tracking-widest text-xs font-bold text-center transition-all duration-300">
-                        Otros Servicios
-                    </a>
+                    <div class="mt-10 flex flex-col sm:flex-row gap-4">
+                        <a href="#cotizador" class="bg-brand-green hover:bg-brand-greenDark text-brand-dark px-8 py-4 font-title uppercase tracking-widest text-xs font-black text-center transition-all duration-300 hover:scale-105">
+                            Cotizar la instalación de mi cargador
+                        </a>
+                        <a href="#servicios" class="border border-white/40 hover:border-brand-blue hover:text-brand-blue text-white px-8 py-4 font-title uppercase tracking-widest text-xs font-bold text-center transition-all duration-300">
+                            Otros Servicios
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Rotating/Floating Tiles Column -->
+                <div class="lg:col-span-5 hidden lg:flex justify-center items-center relative h-[450px]">
+                    <div class="grid grid-cols-2 gap-4 w-full max-w-[400px]">
+                        <!-- Tile 1: EV Chargers -->
+                        <div class="animate-float-1 group/tile relative aspect-square overflow-hidden border border-brand-border bg-brand-charcoal rounded shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-0 hover:z-20 cursor-pointer">
+                            <img src="assets/images/hero_ev_charger.jpg" alt="Instalador de Cargadores EV Zirian" class="w-full h-full object-cover group-hover/tile:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent flex items-end p-3">
+                                <span class="text-[10px] font-title uppercase tracking-widest font-black text-brand-blue">Cargadores EV</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Tile 2: Smart Home Savant -->
+                        <div class="animate-float-2 group/tile relative aspect-square overflow-hidden border border-brand-border bg-brand-charcoal rounded shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-0 hover:z-20 cursor-pointer mt-6">
+                            <img src="assets/images/smart_home_savant.jpg" alt="Domotica Savant Los Cabos" class="w-full h-full object-cover group-hover/tile:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent flex items-end p-3">
+                                <span class="text-[10px] font-title uppercase tracking-widest font-black text-brand-green">Domótica Savant</span>
+                            </div>
+                        </div>
+
+                        <!-- Tile 3: Net & Security -->
+                        <div class="animate-float-3 group/tile relative aspect-square overflow-hidden border border-brand-border bg-brand-charcoal rounded shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-0 hover:z-20 cursor-pointer -mt-6">
+                            <img src="assets/images/security_network_vps.jpg" alt="Redes y CCTV Los Cabos" class="w-full h-full object-cover group-hover/tile:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent flex items-end p-3">
+                                <span class="text-[10px] font-title uppercase tracking-widest font-black text-brand-blue">Sistemas & Redes</span>
+                            </div>
+                        </div>
+
+                        <!-- Tile 4: Solar Panels -->
+                        <div class="animate-float-4 group/tile relative aspect-square overflow-hidden border border-brand-border bg-brand-charcoal rounded shadow-2xl transition-all duration-500 hover:scale-105 hover:rotate-0 hover:z-20 cursor-pointer">
+                            <img src="assets/images/solar_panels_batteries.jpg" alt="Paneles Solares Los Cabos Zirian" class="w-full h-full object-cover group-hover/tile:scale-110 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent flex items-end p-3">
+                                <span class="text-[10px] font-title uppercase tracking-widest font-black text-brand-green">Solar & Baterías</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -377,7 +439,7 @@
                 <!-- Service 3: Paneles Solares -->
                 <div class="bg-white border border-gray-200 rounded overflow-hidden flex flex-col h-full shadow-sm hover:shadow-md transition-all duration-300 group">
                     <div class="h-52 overflow-hidden relative">
-                        <img src="assets/images/smart_home_luxury.jpg" alt="Energia solar y sustentabilidad Zirian" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90">
+                        <img src="assets/images/solar_panels_batteries.jpg" alt="Energia solar y sustentabilidad Zirian" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90">
                         <div class="absolute top-4 left-4 bg-brand-greenDark text-white font-title font-bold text-[10px] tracking-widest px-3 py-1 uppercase">Energía Limpia</div>
                     </div>
                     <div class="p-6 flex-grow flex flex-col justify-between">
@@ -391,41 +453,50 @@
                 </div>
 
                 <!-- Service 4: Audio Profesional -->
-                <div class="bg-white border border-gray-200 p-6 rounded flex flex-col justify-between h-full shadow-sm hover:border-brand-blueDark transition-colors">
-                    <div>
-                        <div class="h-12 w-12 bg-brand-blueDark/10 flex items-center justify-center mb-4">
-                            <svg class="h-6 w-6 text-brand-blueDark" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/></svg>
+                <div class="bg-white border border-gray-200 rounded overflow-hidden flex flex-col h-full shadow-sm hover:shadow-md transition-all duration-300 group">
+                    <div class="h-52 overflow-hidden relative">
+                        <img src="assets/images/audio_professional.jpg" alt="Audio Profesional en Los Cabos Zirian" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute top-4 left-4 bg-brand-blueDark text-white font-title font-bold text-[10px] tracking-widest px-3 py-1 uppercase">Audio Hi-Fi</div>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-title text-xl font-bold uppercase tracking-wide text-brand-dark">Audio Profesional</h3>
+                            <p class="text-sm text-gray-600 mt-2 leading-relaxed">
+                                Sonorización premium multi-zona para terrazas, jardines y albercas en villas vacacionales, calibrados profesionalmente para una acústica perfecta.
+                            </p>
                         </div>
-                        <h3 class="font-title text-lg font-bold uppercase tracking-wide text-brand-dark">Audio Profesional</h3>
-                        <p class="text-xs text-gray-600 mt-2 leading-relaxed">
-                            Sonorización premium multi-zona para terrazas, jardines y albercas en villas vacacionales, calibrados profesionalmente para una acústica perfecta.
-                        </p>
                     </div>
                 </div>
 
                 <!-- Service 5: Seguridad y Control -->
-                <div class="bg-white border border-gray-200 p-6 rounded flex flex-col justify-between h-full shadow-sm hover:border-brand-blueDark transition-colors">
-                    <div>
-                        <div class="h-12 w-12 bg-brand-blueDark/10 flex items-center justify-center mb-4">
-                            <svg class="h-6 w-6 text-brand-blueDark" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                <div class="bg-white border border-gray-200 rounded overflow-hidden flex flex-col h-full shadow-sm hover:shadow-md transition-all duration-300 group">
+                    <div class="h-52 overflow-hidden relative">
+                        <img src="assets/images/cctv_security.jpg" alt="Cámaras de Seguridad CCTV Los Cabos" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute top-4 left-4 bg-brand-dark text-white font-title font-bold text-[10px] tracking-widest px-3 py-1 uppercase">Seguridad</div>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-title text-xl font-bold uppercase tracking-wide text-brand-dark">CCTV & Alertas de Intrusión</h3>
+                            <p class="text-sm text-gray-600 mt-2 leading-relaxed">
+                                Cámaras de seguridad inteligentes con analítica de movimiento artificial, control de acceso de visitantes y sistemas de alarma monitoreada.
+                            </p>
                         </div>
-                        <h3 class="font-title text-lg font-bold uppercase tracking-wide text-brand-dark">CCTV & Alertas de Intrusión</h3>
-                        <p class="text-xs text-gray-600 mt-2 leading-relaxed">
-                            Cámaras de seguridad inteligentes con analítica de movimiento artificial, control de acceso de visitantes y sistemas de alarma monitoreada.
-                        </p>
                     </div>
                 </div>
 
                 <!-- Service 6: Portones y Electromecánica -->
-                <div class="bg-white border border-gray-200 p-6 rounded flex flex-col justify-between h-full shadow-sm hover:border-brand-blueDark transition-colors">
-                    <div>
-                        <div class="h-12 w-12 bg-brand-blueDark/10 flex items-center justify-center mb-4">
-                            <svg class="h-6 w-6 text-brand-blueDark" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                <div class="bg-white border border-gray-200 rounded overflow-hidden flex flex-col h-full shadow-sm hover:shadow-md transition-all duration-300 group">
+                    <div class="h-52 overflow-hidden relative">
+                        <img src="assets/images/gate_automation.jpg" alt="Portones Electricos Automatizados Los Cabos Zirian" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <div class="absolute top-4 left-4 bg-brand-greenDark text-white font-title font-bold text-[10px] tracking-widest px-3 py-1 uppercase">Accesos</div>
+                    </div>
+                    <div class="p-6 flex-grow flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-title text-xl font-bold uppercase tracking-wide text-brand-dark">Portones Eléctricos</h3>
+                            <p class="text-sm text-gray-600 mt-2 leading-relaxed">
+                                Automatización de accesos vehiculares de alta velocidad, mantenimiento preventivo de motores industriales y sistemas de apertura remota por app.
+                            </p>
                         </div>
-                        <h3 class="font-title text-lg font-bold uppercase tracking-wide text-brand-dark">Portones Eléctricos</h3>
-                        <p class="text-xs text-gray-600 mt-2 leading-relaxed">
-                            Automatización de accesos vehiculares de alta velocidad, mantenimiento preventivo de motores industriales y sistemas de apertura remota por app.
-                        </p>
                     </div>
                 </div>
             </div>
