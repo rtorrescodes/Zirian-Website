@@ -1019,14 +1019,14 @@
             });
         });
 
-        // Shrink header on scroll
+        // Shrink header on scroll (adds shadow and solid background without altering height)
         window.addEventListener('scroll', () => {
             if (window.scrollY > 50) {
-                header.classList.remove('h-20');
-                header.classList.add('h-16', 'shadow-lg');
+                header.classList.add('shadow-lg', 'bg-brand-dark');
+                header.classList.remove('bg-brand-dark/95');
             } else {
-                header.classList.remove('h-16', 'shadow-lg');
-                header.classList.add('h-20');
+                header.classList.remove('shadow-lg', 'bg-brand-dark');
+                header.classList.add('bg-brand-dark/95');
             }
         });
 
