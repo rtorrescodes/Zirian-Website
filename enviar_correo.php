@@ -10,7 +10,7 @@ function enviarCorreoSMTP($asunto, $cuerpoHtml) {
     $smtpUser = "admin@alddea.com";
     $smtpPass = "g8LccgL6hy(N43Aw";
     $smtpFrom = "admin@alddea.com";
-    $smtpTo   = "rodrigo@zirian.com"; // El correo receptor de los formularios
+    $smtpTo   = "admin@alddea.com"; // El correo receptor de los formularios
 
     // Abrir conexión socket segura SSL
     $socket = fsockopen("ssl://" . $smtpHost, $smtpPort, $errno, $errstr, 15);
