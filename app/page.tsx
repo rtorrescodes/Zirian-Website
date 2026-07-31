@@ -61,6 +61,7 @@ export default function LandingPage() {
   const [currentBgIndex, setCurrentBgIndex] = useState(0);
   const [nextBgIndex, setNextBgIndex] = useState(1);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [disableTransition, setDisableTransition] = useState(false);
   const [bgGridReady, setBgGridReady] = useState(false);
 
   // Grid dimensions
@@ -88,9 +89,15 @@ export default function LandingPage() {
 
       // Wait for the staggering rotation to complete, then swap images and reset flip state
       setTimeout(() => {
+        setDisableTransition(true);
         setCurrentBgIndex((prev) => (prev + 1) % bgImages.length);
         setNextBgIndex((prev) => (prev + 1) % bgImages.length);
         setIsFlipped(false);
+        
+        // Re-enable transition after state has flushed to DOM
+        setTimeout(() => {
+          setDisableTransition(false);
+        }, 50);
       }, 1200); // 1.2s to fully flip and reset
     }, 5500); // Rotate every 5.5s
 
@@ -413,10 +420,10 @@ export default function LandingPage() {
                   return (
                     <div key={`${r}-${c}`} className="relative overflow-hidden w-full h-full [perspective:1000px]">
                       <div
-                        className={`absolute w-full h-full [transform-style:preserve-3d] transition-transform duration-600`}
+                        className={`absolute w-full h-full [transform-style:preserve-3d] ${disableTransition ? "transition-none" : "transition-transform duration-600"}`}
                         style={{
                           transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-                          transitionDelay: `${delay}ms`,
+                          transitionDelay: disableTransition ? "0ms" : `${delay}ms`,
                         }}
                       >
                         {/* Front Face (Current Image) */}
