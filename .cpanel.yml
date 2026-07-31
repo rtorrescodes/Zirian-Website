@@ -1,7 +1,0 @@
----
-deployment:
-  tasks:
-    - export DEPLOYPATH=/home2/qjgjivmy/public_html/
-    - /bin/rsync -avz --exclude '.git' --exclude '.cpanel.yml' ./ $DEPLOYPATH
-    - /bin/find $DEPLOYPATH -type d -exec chmod 755 {} +
-    - /bin/find $DEPLOYPATH -type f -exec chmod 644 {} +

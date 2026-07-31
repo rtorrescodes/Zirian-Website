@@ -1,0 +1,40 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Lead {
+  id                     Int      @id @default(autoincrement())
+  nombre                 String   @db.VarChar(100)
+  telefono               String   @db.VarChar(20)
+  email                  String?  @db.VarChar(100)
+  marca_ev               String?  @db.VarChar(50)
+  tipo_instalacion       String?  @db.VarChar(50)
+  distancia_centro_carga String?  @db.VarChar(50)
+  tipo_lead              String   @default("Contacto Directo") @db.VarChar(50)
+  ubicacion              String   @db.VarChar(100)
+  status                 String   @default("Nuevo") @db.VarChar(50)
+  fecha_visita           DateTime?
+  fecha_creacion         DateTime @default(now())
+
+  @@index([status])
+  @@index([tipo_lead])
+  @@index([fecha_creacion])
+}
+
+model SupportTicket {
+  id             Int      @id @default(autoincrement())
+  nombre_cliente String   @db.VarChar(100) // Requerido para identificar a la persona que reporta.
+  folio_cliente  String?  @db.VarChar(50)  // Opcional mientras se termina la migración de folios.
+  descripcion    String   @db.Text
+  foto_path      String?  @db.VarChar(255)
+  status         String   @default("Abierto") @db.VarChar(50)
+  fecha_creacion DateTime @default(now())
+
+  @@index([status])
+  @@index([folio_cliente])
+}

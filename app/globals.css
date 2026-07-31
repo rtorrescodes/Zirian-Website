@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #0B0F19;
+  --color-brand-charcoal: #131A26;
+  --color-brand-blue: #00D2FF;
+  --color-brand-blue-dark: #0066FF;
+  --color-brand-green: #00FF66;
+  --color-brand-green-dark: #10B981;
+  --color-brand-light-bg: #CAD2DE; /* soft slate-gray background from user design preferences */
+  --color-brand-border: #1F293D;
+
+  --font-sans: "Inter", sans-serif;
+  --font-title: "Barlow", sans-serif;
+}
+
+html {
+  scroll-padding-top: 5rem; /* 80px offset for the fixed header */
+  scroll-behavior: smooth;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+p {
+  text-align: justify;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.bg-premium-mesh-light {
+  background-color: #CAD2DE;
+  background-image: 
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 0 L56 16 L56 48.5 L28 64.5 L0 48.5 L0 16 Z M0 64.5 L28 80.5 L28 97 M56 64.5 L28 80.5' fill='none' stroke='rgba(11,15,25,0.09)' stroke-width='1'/%3E%3C/svg%3E"),
+      linear-gradient(135deg, rgba(0, 210, 255, 0.08) 0%, rgba(0, 255, 102, 0.06) 50%, #CAD2DE 100%);
+  background-attachment: fixed;
+  background-size: 56px 97px, 100% 100%;
+}
+
+.bg-premium-mesh-dark {
+  background-color: #0B0F19;
+  background-image: 
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'%3E%3Cpath d='M28 0 L56 16 L56 48.5 L28 64.5 L0 48.5 L0 16 Z M0 64.5 L28 80.5 L28 97 M56 64.5 L28 80.5' fill='none' stroke='rgba(255,255,255,0.035)' stroke-width='1'/%3E%3C/svg%3E"),
+      linear-gradient(135deg, rgba(0, 102, 255, 0.12) 0%, rgba(0, 255, 102, 0.07) 50%, #0B0F19 100%);
+  background-attachment: fixed;
+  background-size: 56px 97px, 100% 100%;
+}
