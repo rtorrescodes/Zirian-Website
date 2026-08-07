@@ -20,6 +20,7 @@ import {
   FileText,
   HelpCircle,
 } from "lucide-react";
+import { AppShell } from "@/components/panel/app-shell";
 
 interface Lead {
   id: number;
@@ -68,6 +69,8 @@ export default function AdminDashboardPage() {
 
   const router = useRouter();
 
+  const [user, setUser] = useState<{name: string, role: string} | null>(null);
+
   // Authentication and Data Loading
   useEffect(() => {
     async function initDashboard() {
@@ -78,6 +81,8 @@ export default function AdminDashboardPage() {
           return;
         }
 
+        const authData = await authRes.json();
+        setUser(authData.user);
         setAuthorized(true);
 
         // Fetch CRM records
@@ -253,34 +258,9 @@ export default function AdminDashboardPage() {
   if (!authorized) return null;
 
   return (
-    <div className="bg-brand-dark min-h-screen text-slate-100 font-sans p-4 sm:p-6 lg:p-8 bg-premium-mesh-dark">
-      
-      {/* HEADER: Zirian Control Center */}
-      <header className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 pb-6 border-b border-brand-border/60">
-        <div className="flex items-center space-x-3">
-          <Image
-            src="/assets/images/logo.png"
-            alt="Logo Zirian"
-            width={120}
-            height={33}
-            className="h-8 w-auto object-contain"
-          />
-          <span className="h-6 w-px bg-slate-800 hidden sm:inline" />
-          <span className="text-xs font-tech text-slate-500 hidden sm:inline uppercase tracking-wider mt-1">
-            CRM Portal Administrativo
-          </span>
-        </div>
-
-        <button
-          onClick={handleLogout}
-          className="flex items-center space-x-2 bg-slate-900 border border-slate-800 hover:border-red-500/40 hover:text-red-400 px-4 py-2 rounded-xl text-xs font-bold font-title uppercase tracking-wider transition cursor-pointer"
-        >
-          <LogOut className="w-4 h-4" />
-          <span>Cerrar Sesión</span>
-        </button>
-      </header>
-
-      <main className="max-w-7xl mx-auto space-y-8">
+    <AppShell title="Dashboard" subtitle="Control Center - Operaciones y Vista General" user={user || undefined}>
+      <div className="text-slate-100 font-sans">
+        <main className="max-w-7xl mx-auto space-y-8">
         
         {/* BANNER WELCOME PROFILE (Rodrigo Gerente Access) */}
         <section className="bg-gradient-to-r from-slate-900 via-slate-900 to-blue-950/20 border border-slate-800 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm shadow-xl">
@@ -289,12 +269,12 @@ export default function AdminDashboardPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div className="flex items-center space-x-4">
               <div className="w-14 h-14 bg-gradient-to-br from-brand-blue to-brand-blue-dark rounded-xl flex items-center justify-center font-bold text-white text-xl shadow-lg shadow-brand-blue/20">
-                R
+                {user ? user.name.substring(0, 1).toUpperCase() : 'Z'}
               </div>
               <div>
                 <div className="flex items-center space-x-2.5">
                   <h1 className="font-title text-2xl font-black uppercase text-white tracking-wide">
-                    Hola Rodrigo
+                    Hola {user ? user.name : 'Usuario'}
                   </h1>
                   <span className="flex h-2.5 w-2.5 relative">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -302,7 +282,7 @@ export default function AdminDashboardPage() {
                   </span>
                 </div>
                 <p className="text-xs font-tech text-brand-blue font-semibold uppercase tracking-widest mt-1">
-                  Tienes acceso de Gerente
+                  Tienes acceso de {user ? user.role : 'Invitado'}
                 </p>
               </div>
             </div>
@@ -850,6 +830,7 @@ export default function AdminDashboardPage() {
         ZIRIAN CONTROL CENTER &copy; {new Date().getFullYear()} • DESARROLLO DE ALTA INGENIERÍA EN ENERGÍA EV.
       </footer>
 
-    </div>
+      </div>
+    </AppShell>
   );
 }

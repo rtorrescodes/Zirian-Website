@@ -1,0 +1,32 @@
+import { getClientById, getClientActivities } from '@/app/actions/clients';
+import { ClientEditor } from '@/components/clientes/client-editor';
+import { prisma } from '@/lib/prisma';
+import { notFound } from 'next/navigation';
+import { AppShell } from '@/components/panel/app-shell';
+
+export const dynamic = 'force-dynamic';
+
+export default async function EditClientPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const id = parseInt(params.id, 10);
+  const client = await getClientById(id);
+
+  if (!client) {
+    notFound();
+  }
+
+  const partners = await prisma.partner.findMany({
+    where: { activo: true },
+    orderBy: { nombre: 'asc' }
+  });
+
+  const activities = await getClientActivities(id);
+
+  return (
+    <AppShell title={`Editar Cliente: ${client.nombre}`} subtitle="Actualiza la información del cliente y revisa su historial">
+      <div className="py-6">
+        <ClientEditor initialData={client} partners={partners} initialActivities={activities} />
+      </div>
+    </AppShell>
+  );
+}

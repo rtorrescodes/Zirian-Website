@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 export default function AdminLoginPage() {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,7 +20,7 @@ export default function AdminLoginPage() {
       const response = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
@@ -59,13 +60,31 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-5">
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2 font-tech"
+            >
+              Correo Electrónico
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="usuario@zirian.com"
+              className="w-full bg-brand-dark border border-brand-border focus:border-brand-blue focus:ring-1 focus:ring-brand-blue text-white px-4 py-3 text-sm rounded-xl focus:outline-none transition"
+            />
+          </div>
+
           <div>
             <label
               htmlFor="password"
               className="block text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2 font-tech"
             >
-              Clave de Seguridad Administrativa
+              Contraseña
             </label>
             <input
               type="password"
@@ -84,7 +103,7 @@ export default function AdminLoginPage() {
             </div>
           )}
 
-          <div>
+          <div className="pt-2">
             <button
               type="submit"
               disabled={loading}

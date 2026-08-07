@@ -17,7 +17,10 @@ export async function GET() {
   }
 
   try {
-    const leads = await prisma.lead.findMany({
+    const leads = await prisma.client.findMany({
+      where: {
+        status: "Lead"
+      },
       orderBy: {
         fecha_creacion: "desc",
       },
@@ -53,17 +56,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Insert into DB
-    const newLead = await prisma.lead.create({
+    const newLead = await prisma.client.create({
       data: {
         nombre,
         telefono,
         email: email || null,
-        marca_ev: marca_ev || null,
-        tipo_instalacion: tipo_instalacion || null,
-        distancia_centro_carga: distancia_centro_carga || null,
-        tipo_lead,
+        notas: `Marca EV: ${marca_ev || "N/A"}\nTipo Instalacion: ${tipo_instalacion || "N/A"}\nDistancia: ${distancia_centro_carga || "N/A"}\nTipo Lead: ${tipo_lead}`,
         ubicacion,
-        status: "Nuevo",
+        status: "Lead",
       },
     });
 
@@ -130,7 +130,7 @@ export async function PUT(req: NextRequest) {
       updateData.fecha_visita = null;
     }
 
-    const updatedLead = await prisma.lead.update({
+    const updatedLead = await prisma.client.update({
       where: { id: parseInt(id, 10) },
       data: updateData,
     });
