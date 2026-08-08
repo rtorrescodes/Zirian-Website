@@ -12,6 +12,7 @@ interface Activity {
   descripcion: string;
   fecha_actividad: Date;
   quoteId?: number;
+  url?: string | null;
 }
 
 export function ClientActivities({ clientId, initialActivities }: { clientId: number, initialActivities: Activity[] }) {
@@ -111,8 +112,13 @@ export function ClientActivities({ clientId, initialActivities }: { clientId: nu
                   </span>
                 </div>
                 <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">{act.descripcion}</p>
-                {act.quoteId && (
-                  <a href={`/admin/cotizaciones/${act.quoteId}`} className="mt-3 inline-flex items-center text-[10px] font-bold font-tech uppercase tracking-widest text-brand-blue hover:text-brand-cyan hover:underline transition-all">
+                {act.url && (
+                  <a href={act.url} className="mt-3 inline-flex items-center text-[10px] font-bold font-tech uppercase tracking-widest text-brand-blue hover:text-brand-cyan hover:underline transition-all">
+                    Abrir Enlace →
+                  </a>
+                )}
+                {!act.url && act.quoteId && (
+                  <a href={`/admin/cotizador?editId=${act.quoteId}`} className="mt-3 inline-flex items-center text-[10px] font-bold font-tech uppercase tracking-widest text-brand-blue hover:text-brand-cyan hover:underline transition-all">
                     Abrir Cotización →
                   </a>
                 )}

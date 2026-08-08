@@ -43,8 +43,9 @@ model ClientActivity {
   id               Int      @id @default(autoincrement())
   clientId         Int
   client           Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  tipo             String   @db.VarChar(50) // Llamada, Visita, Correo, Nota General
+  tipo             String   @db.VarChar(50) // Llamada, Visita, Correo, Nota General, Diseño CCTV, Presupuesto
   descripcion      String   @db.Text
+  url              String?  @db.VarChar(255) // Para vincular directamente a cotizaciones o planos
   fecha_actividad  DateTime @default(now())
   
   @@index([clientId])
