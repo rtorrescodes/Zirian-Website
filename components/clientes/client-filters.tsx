@@ -27,11 +27,14 @@ export function ClientFilters() {
   );
 
   useEffect(() => {
+    const currentQ = searchParams?.get('q') || '';
+    if (query === currentQ) return;
+
     const timeoutId = setTimeout(() => {
       router.push(pathname + '?' + createQueryString('q', query));
     }, 500);
     return () => clearTimeout(timeoutId);
-  }, [query, pathname, router, createQueryString]);
+  }, [query, pathname, router, createQueryString, searchParams]);
 
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;

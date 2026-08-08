@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Phone, Mail, MapPin, FileText, Plus, Loader2 } from 'lucide-react';
+import { Phone, Mail, MapPin, FileText, Plus, Loader2, Calculator } from 'lucide-react';
 import { createClientActivity } from '@/app/actions/clients';
 
 interface Activity {
@@ -11,6 +11,7 @@ interface Activity {
   tipo: string;
   descripcion: string;
   fecha_actividad: Date;
+  quoteId?: number;
 }
 
 export function ClientActivities({ clientId, initialActivities }: { clientId: number, initialActivities: Activity[] }) {
@@ -44,6 +45,7 @@ export function ClientActivities({ clientId, initialActivities }: { clientId: nu
       case 'Llamada': return <Phone className="h-4 w-4" />;
       case 'Correo': return <Mail className="h-4 w-4" />;
       case 'Visita': return <MapPin className="h-4 w-4" />;
+      case 'Cotización': return <Calculator className="h-4 w-4" />;
       default: return <FileText className="h-4 w-4" />;
     }
   };
@@ -53,6 +55,7 @@ export function ClientActivities({ clientId, initialActivities }: { clientId: nu
       case 'Llamada': return 'bg-blue-900/50 text-blue-400 border-blue-500/50 shadow-[0_0_10px_rgba(59,130,246,0.3)]';
       case 'Correo': return 'bg-purple-900/50 text-purple-400 border-purple-500/50 shadow-[0_0_10px_rgba(168,85,247,0.3)]';
       case 'Visita': return 'bg-emerald-900/50 text-emerald-400 border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.3)]';
+      case 'Cotización': return 'bg-amber-900/50 text-amber-400 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.3)]';
       default: return 'bg-slate-800 text-slate-300 border-slate-600 shadow-none';
     }
   };
@@ -108,6 +111,11 @@ export function ClientActivities({ clientId, initialActivities }: { clientId: nu
                   </span>
                 </div>
                 <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">{act.descripcion}</p>
+                {act.quoteId && (
+                  <a href={`/admin/cotizaciones/${act.quoteId}`} className="mt-3 inline-flex items-center text-[10px] font-bold font-tech uppercase tracking-widest text-brand-blue hover:text-brand-cyan hover:underline transition-all">
+                    Abrir Cotización →
+                  </a>
+                )}
               </div>
             </div>
           ))

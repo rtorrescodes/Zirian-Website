@@ -35,7 +35,8 @@ export async function GET(
           include: {
             brochure: true
           }
-        }
+        },
+        cctvProject: true
       }
     });
 
@@ -89,6 +90,37 @@ export async function GET(
         }
       } catch (err) {
         console.error(`Error merging brochure from ${brochureUrl}`, err);
+      }
+    }
+
+    // Embed CCTV Preview if exists
+    if (quote.cctvProject && quote.cctvProject.previewImage) {
+      try {
+        const base64Data = quote.cctvProject.previewImage.replace(/^data:image\/\w+;base64,/, "");
+        const imageBuffer = Buffer.from(base64Data, 'base64');
+        const isPng = quote.cctvProject.previewImage.includes('image/png');
+        const image = isPng ? await pdfDoc.embedPng(imageBuffer) : await pdfDoc.embedJpg(imageBuffer);
+        
+        const page = pdfDoc.addPage([612, 792]); // Letter size
+        const { width, height } = page.getSize();
+        
+        // Add Title
+        page.drawText(`Anexo: Diseño CCTV - ${quote.cctvProject.nombre}`, {
+          x: 40,
+          y: height - 60,
+          size: 16,
+        });
+
+        // Fit image
+        const imgDims = image.scaleToFit(width - 80, height - 120);
+        page.drawImage(image, {
+          x: (width - imgDims.width) / 2,
+          y: height - 100 - imgDims.height,
+          width: imgDims.width,
+          height: imgDims.height,
+        });
+      } catch (err) {
+        console.error("Error embedding CCTV preview", err);
       }
     }
 

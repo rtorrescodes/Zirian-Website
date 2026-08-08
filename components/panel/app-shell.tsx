@@ -19,6 +19,7 @@ import {
   Plus,
   Map,
   LogOut,
+  Camera,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -37,10 +38,12 @@ interface NavItem {
 
 const nav: NavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-  { label: 'Cotizador', href: '/admin/cotizador', icon: FileText },
+  { label: 'Cotizador', href: '/admin/cotizador', icon: Plus },
+  { label: 'Cotizaciones', href: '/admin/cotizaciones', icon: FileText },
   { label: 'Productos / Catálogo', href: '/admin/productos', icon: Settings },
   { label: 'Clientes / CRM', href: '/admin/clientes', icon: Users },
   { label: 'Levantamientos', href: '/admin/levantamientos', icon: Map },
+  { label: 'Diseño CCTV', href: '/admin/diseno-cctv', icon: Camera },
   { label: 'Mantenimientos', href: '/admin/mantenimientos', icon: Wrench },
   { label: 'Tickets', href: '/admin/tickets', icon: LifeBuoy, badge: '9' },
   { label: 'Reportes', href: '#reportes', icon: BarChart3, soon: true },

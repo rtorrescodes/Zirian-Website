@@ -29,7 +29,7 @@ import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
-import { createQuote } from '@/app/actions/quotes'
+import { createQuote, updateQuote } from '@/app/actions/quotes'
 
 interface Category {
   id: number
@@ -81,6 +81,7 @@ interface QuoteBuilderProps {
   initialProducts: any[]
   initialCategories: any[]
   initialClientId?: number
+  initialQuote?: any
 }
 
 const clientTypeColor: Record<string, string> = {
@@ -94,10 +95,15 @@ export function QuoteBuilder({
   initialProducts,
   initialCategories,
   initialClientId,
+  initialQuote,
 }: QuoteBuilderProps) {
-  const [selectedClient, setSelectedClient] = useState<any | null>(
-    initialClientId ? initialClients.find(c => c.id === initialClientId) || null : null
-  )
+  const getInitialClient = () => {
+    if (initialQuote?.clientId) return initialClients.find(c => c.id === initialQuote.clientId) || null
+    if (initialClientId) return initialClients.find(c => c.id === initialClientId) || null
+    return null
+  }
+
+  const [selectedClient, setSelectedClient] = useState<any | null>(getInitialClient())
   const [clientOpen, setClientOpen] = useState(false)
   const [clientQuery, setClientQuery] = useState('')
 
@@ -109,13 +115,26 @@ export function QuoteBuilder({
   const [qty, setQty] = useState(1)
   const [itemDetails, setItemDetails] = useState('')
 
-  const [items, setItems] = useState<LineItem[]>([])
+  const getInitialItems = () => {
+    if (!initialQuote?.items) return []
+    return initialQuote.items.map((i: any) => {
+      const details = i.descripcion.replace(i.product.nombre, '').trim()
+      return {
+        product: i.product,
+        qty: i.cantidad,
+        detalles: details
+      }
+    })
+  }
+
+  const [items, setItems] = useState<LineItem[]>(getInitialItems())
   const [attachments, setAttachments] = useState<Attachment[]>([
     { id: 'a1', name: 'Catálogo_Cargadores_2026.pdf', size: '2.4 MB' },
   ])
   const fileRef = useRef<HTMLInputElement>(null)
   const [saved, setSaved] = useState(false)
-  const [savedQuoteId, setSavedQuoteId] = useState<number | null>(null)
+  const [savedQuoteId, setSavedQuoteId] = useState<number | null>(initialQuote?.id || null)
+  const [mostrarDesglose, setMostrarDesglose] = useState(initialQuote?.mostrar_desglose ?? false)
 
   const resetBuilder = () => {
     setSaved(false)
@@ -184,13 +203,13 @@ export function QuoteBuilder({
 
   const handleSave = async () => {
     if (!selectedClient || items.length === 0) return
-
     try {
-      const quote = await createQuote({
+      const payload = {
         clientId: selectedClient.id,
         subtotal: subtotal,
         impuestos: iva,
         total: total,
+        mostrar_desglose: mostrarDesglose,
         items: items.map(i => ({
           productId: i.product.id,
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
@@ -198,7 +217,15 @@ export function QuoteBuilder({
           precio_unitario: Number(i.product.precio_base),
           total: Number(i.product.precio_base) * i.qty
         }))
-      })
+      }
+      
+      let quote;
+      if (initialQuote?.id) {
+        quote = await updateQuote(initialQuote.id, payload);
+      } else {
+        quote = await createQuote(payload);
+      }
+      
       setSaved(true)
       setSavedQuoteId(quote.id)
     } catch (error) {
@@ -248,7 +275,7 @@ export function QuoteBuilder({
                     autoFocus
                     value={clientQuery}
                     onChange={(e) => setClientQuery(e.target.value)}
-                    placeholder="Buscar producto por nombre..."
+                    placeholder="Buscar cliente por nombre..."
                     className="h-9 border-0 bg-transparent pl-8 text-white focus-visible:ring-0 placeholder:text-slate-500"
                   />
                 </div>
@@ -258,7 +285,8 @@ export function QuoteBuilder({
                     <li key={c.id}>
                       <button
                         type="button"
-                        onClick={() => {
+                        onMouseDown={(e) => {
+                          e.preventDefault()
                           setSelectedClient(c)
                           setClientOpen(false)
                           setClientQuery('')
@@ -342,7 +370,10 @@ export function QuoteBuilder({
               <li key={p.id}>
                 <button
                   type="button"
-                  onClick={() => setPickedProductId(p.id)}
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    setPickedProductId(p.id)
+                  }}
                   className={cn(
                     'flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors',
                     pickedProductId === p.id
@@ -621,7 +652,7 @@ export function QuoteBuilder({
                 ) : (
                   <>
                     <Save className="h-4 w-4 mr-2" />
-                    Generar cotización y guardar
+                    {initialQuote?.id ? 'Guardar cambios' : 'Generar cotización y guardar'}
                   </>
                 )}
               </Button>

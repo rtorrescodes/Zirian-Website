@@ -61,7 +61,7 @@ export default async function RootLayout({
                 `,
               }}
             />
-            {/* Meta Pixel (Facebook) */}
+            {/* Meta Pixel (Facebook) - Disabled pending valid PixelID
             <script
               dangerouslySetInnerHTML={{
                 __html: `
@@ -78,6 +78,7 @@ export default async function RootLayout({
                 `,
               }}
             />
+            */}
           </>
         )}
 

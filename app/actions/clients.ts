@@ -19,7 +19,7 @@ export async function getClients(query?: string, statusFilter?: string) {
     whereClause.status = statusFilter;
   }
 
-  return await prisma.client.findMany({
+  const clients = await prisma.client.findMany({
     where: whereClause,
     orderBy: { fecha_creacion: 'desc' },
     include: {
@@ -29,6 +29,14 @@ export async function getClients(query?: string, statusFilter?: string) {
       }
     }
   });
+
+  return clients.map(client => ({
+    ...client,
+    quotes: client.quotes.map(q => ({
+      ...q,
+      total: q.total ? Number(q.total) : 0
+    }))
+  }));
 }
 
 export async function getClientById(id: number) {
@@ -60,6 +68,7 @@ export async function createClient(data: {
   });
   revalidatePath('/admin/clientes');
   revalidatePath('/admin/dashboard');
+  revalidatePath('/admin/cotizador');
   return client;
 }
 
@@ -88,6 +97,7 @@ export async function updateClient(id: number, data: {
   revalidatePath('/admin/clientes');
   revalidatePath(`/admin/clientes/editor/${id}`);
   revalidatePath('/admin/dashboard');
+  revalidatePath('/admin/cotizador');
   return client;
 }
 

@@ -58,7 +58,7 @@ export default async function ProductosAdminPage(props: { searchParams?: Promise
           ) : (
             <div className="overflow-x-auto w-full">
               <table className="w-full text-sm text-left border-collapse">
-                <thead className="bg-slate-950/40 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                <thead className="bg-slate-950/40 text-sm font-semibold text-slate-300 uppercase tracking-wider border-b border-slate-800">
                   <tr>
                     <th className="px-6 py-4">Producto / Servicio</th>
                     <th className="px-6 py-4">Categoría</th>
@@ -76,26 +76,26 @@ export default async function ProductosAdminPage(props: { searchParams?: Promise
                             <Package className="h-4 w-4 text-brand-blue" />
                           </div>
                           <div>
-                            <p className="font-semibold text-white">{product.nombre}</p>
+                            <p className="font-bold text-base text-white">{product.nombre}</p>
                             <div className="flex gap-2 items-center mt-1">
-                              {product.codigo && <span className="text-[10px] font-mono text-slate-500">SKU: {product.codigo}</span>}
-                              <span className="text-[10px] text-slate-400 font-tech tracking-wider uppercase bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-700">{product.unidad_medida}</span>
+                              {product.codigo && <span className="text-xs font-mono text-slate-500">SKU: {product.codigo}</span>}
+                              <span className="text-[11px] text-slate-400 font-tech tracking-wider uppercase bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-700">{product.unidad_medida}</span>
                             </div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-xs text-slate-300 font-medium">
+                        <span className="text-sm text-slate-300 font-medium">
                           {product.category.nombre}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex flex-col items-end">
-                          <span className="text-brand-cyan font-tech font-bold tracking-wider">
+                          <span className="text-brand-cyan text-base font-tech font-bold tracking-wider">
                             {formatCurrency(Number(product.precio_base))}
                           </span>
                           {product.costo_estimado && (
-                            <span className="text-[10px] text-slate-500">
+                            <span className="text-xs text-slate-500 mt-1">
                               Costo: {formatCurrency(Number(product.costo_estimado))}
                             </span>
                           )}

@@ -9,11 +9,15 @@ export default async function NewClientPage() {
     where: { activo: true },
     orderBy: { nombre: 'asc' }
   });
+  const plainPartners = partners.map(p => ({
+    ...p,
+    comision_base: p.comision_base ? Number(p.comision_base) : null
+  }));
 
   return (
     <AppShell title="Nuevo Cliente" subtitle="Registra un nuevo lead o prospecto">
       <div className="py-6">
-        <ClientEditor partners={partners} />
+        <ClientEditor partners={plainPartners} />
       </div>
     </AppShell>
   );

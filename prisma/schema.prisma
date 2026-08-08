@@ -33,6 +33,7 @@ model Client {
   tickets                SupportTicket[]
   scoutingReports        ScoutingReport[]
   activities             ClientActivity[]
+  cctvProjects           CctvProject[]
 
   @@index([status])
   @@index([origen])
@@ -64,15 +65,28 @@ model Quote {
   fecha_vencimiento DateTime?
   notas_cliente    String?  @db.Text
   terminos         String?  @db.Text
+  mostrar_desglose Boolean  @default(false)
+  
+  // Finanzas Internas y Comisiones
+  comision_fija    Decimal  @default(1500) @db.Decimal(10, 2)
+  costo_real       Decimal  @default(0) @db.Decimal(10, 2)
+  utilidad_real    Decimal  @default(0) @db.Decimal(10, 2)
 
   // Facturación y Pagos
   requiere_factura Boolean  @default(false)
   monto_pagado     Decimal  @default(0) @db.Decimal(10, 2)
   status_pago      String   @default("Pendiente") @db.VarChar(50) // Pendiente, Parcial, Pagado
 
+  // Enlace web para cliente
+  token            String   @unique @default(uuid())
+
   items            QuoteItem[]
   brochures        QuoteBrochure[]
   serviceOrder     ServiceOrder?
+  inventoryMovements InventoryMovement[]
+  
+  cctvProjectId    Int?
+  cctvProject      CctvProject? @relation(fields: [cctvProjectId], references: [id])
 
   @@index([clientId])
   @@index([status])
@@ -88,6 +102,11 @@ model QuoteItem {
   cantidad         Decimal  @db.Decimal(10, 2)
   precio_unitario  Decimal  @db.Decimal(10, 2)
   total            Decimal  @db.Decimal(10, 2)
+  
+  // Inventario y Costos
+  costo_unitario   Decimal  @default(0) @db.Decimal(10, 2)
+  cantidad_planeada Decimal @default(0) @db.Decimal(10, 2)
+  cantidad_usada   Decimal? @db.Decimal(10, 2)
 
   @@index([quoteId])
   @@index([productId])
@@ -135,9 +154,12 @@ model Product {
   stock_general    Decimal  @default(0) @db.Decimal(10, 2)
   requiere_serie   Boolean  @default(false)
   activo           Boolean  @default(true)
+  grupo_impresion  String?  @db.VarChar(100) // Nombre para agrupar en PDF (ej. Instalación de Cargador EV)
+  proveedor_default String? @db.VarChar(150) // Para automatizar pedidos WhatsApp
 
   quoteItems       QuoteItem[]
   inventoryItems   InventoryItem[]
+  inventoryMovements InventoryMovement[]
 }
 
 // Para equipos físicos únicos (Cargadores)
@@ -154,6 +176,22 @@ model InventoryItem {
   
   serviceOrderId   Int?     @unique
   serviceOrder     ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
+}
+
+// Historial de Movimientos de Inventario (Entradas/Salidas/Sobrantes)
+model InventoryMovement {
+  id               Int      @id @default(autoincrement())
+  productId        Int
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quoteId          Int?
+  quote            Quote?   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  tipo             String   @db.VarChar(50) // 'Salida', 'Entrada', 'Sobrante_Devuelto'
+  cantidad         Decimal  @db.Decimal(10, 2)
+  fecha            DateTime @default(now())
+  notas            String?  @db.Text
+  
+  @@index([productId])
+  @@index([quoteId])
 }
 
 model Brochure {
@@ -226,6 +264,21 @@ model ScoutingReport {
   status           String   @default("Completado") @db.VarChar(50)
 
   photos           ScoutingPhoto[]
+
+  @@index([clientId])
+}
+
+model CctvProject {
+  id               Int      @id @default(autoincrement())
+  clientId         Int
+  client           Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  nombre           String   @db.VarChar(150)
+  mapState         Json     // Guardará cámaras, center, zoom
+  previewImage     String?  @db.Text // Base64 de la imagen generada
+  fecha_creacion   DateTime @default(now())
+  fecha_actual     DateTime @updatedAt
+  
+  quotes           Quote[]
 
   @@index([clientId])
 }

@@ -15,9 +15,16 @@ export default async function EditProductPage(props: { params: Promise<{ id: str
 
   const categories = await getCategories();
 
+  const productData = {
+    ...product,
+    precio_base: product.precio_base ? Number(product.precio_base) : 0,
+    costo_estimado: product.costo_estimado ? Number(product.costo_estimado) : 0,
+    stock_general: product.stock_general ? Number(product.stock_general) : 0,
+  };
+
   return (
     <AppShell title={`Editar Producto: ${product.nombre}`} subtitle="Modifica los detalles del producto en el catálogo.">
-      <ProductEditor categories={categories} initialData={product} />
+      <ProductEditor categories={categories} initialData={productData} />
     </AppShell>
   );
 }
