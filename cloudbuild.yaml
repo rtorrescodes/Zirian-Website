@@ -1,0 +1,40 @@
+steps:
+  # Step 1: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Build
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/zirianweb:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/zirianweb:latest'
+      - '.'
+      - '-f'
+      - 'Dockerfile'
+
+  # Step 2: Push Docker image to Container Registry / Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    id: Push
+    args:
+      - 'push'
+      - 'gcr.io/$PROJECT_ID/zirianweb:$COMMIT_SHA'
+
+  # Step 3: Deploy to Cloud Run service zirianweb in us-central1
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    id: Deploy
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'zirianweb'
+      - '--image=gcr.io/$PROJECT_ID/zirianweb:$COMMIT_SHA'
+      - '--region=us-central1'
+      - '--platform=managed'
+      - '--quiet'
+
+images:
+  - 'gcr.io/$PROJECT_ID/zirianweb:$COMMIT_SHA'
+  - 'gcr.io/$PROJECT_ID/zirianweb:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
