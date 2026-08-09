@@ -173,8 +173,16 @@ export function QuoteView({ quote, token }: { quote: any; token: string }) {
               Diseño de Cobertura CCTV
             </h3>
             <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
-              {/* Usamos img de HTML regular porque el src es base64 y Next/Image se queja */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <CardHeader className="p-4 border-b border-slate-800">
+                <div className="w-16 h-16 bg-slate-800 rounded-lg flex items-center justify-center mx-auto mb-2 overflow-hidden border border-slate-700">
+                  <img 
+                    src="/zirian-logo.png" 
+                    alt="Zirian Logo"
+                    className="w-full h-full object-contain p-2"
+                  />
+                </div>
+                <CardTitle className="text-center text-lg text-white font-tech uppercase tracking-widest font-bold">Zirian Networks</CardTitle>
+              </CardHeader>
               <img 
                 src={quote.cctvProject.previewImage} 
                 alt="Croquis CCTV" 
