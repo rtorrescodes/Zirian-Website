@@ -1,9 +1,11 @@
 steps:
-  # Step 1: Build Docker image
+  # Step 1: Build Docker image with Google Maps API key build-arg
   - name: 'gcr.io/cloud-builders/docker'
     id: Build
     args:
       - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$_GOOGLE_MAPS_API_KEY'
       - '-t'
       - 'gcr.io/$PROJECT_ID/zirianweb:$COMMIT_SHA'
       - '-t'
@@ -30,11 +32,15 @@ steps:
       - '--image=gcr.io/$PROJECT_ID/zirianweb:$COMMIT_SHA'
       - '--region=us-central1'
       - '--platform=managed'
+      - '--set-env-vars=NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$_GOOGLE_MAPS_API_KEY'
       - '--quiet'
 
 images:
   - 'gcr.io/$PROJECT_ID/zirianweb:$COMMIT_SHA'
   - 'gcr.io/$PROJECT_ID/zirianweb:latest'
+
+substitutions:
+  _GOOGLE_MAPS_API_KEY: 'AIzaSyAYP3bse-OTNNxXlzxdlhkIcEsegzxeafk'
 
 options:
   logging: CLOUD_LOGGING_ONLY
