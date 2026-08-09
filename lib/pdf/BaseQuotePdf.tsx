@@ -335,9 +335,10 @@ export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => 
   } else {
     // Group by grupo_impresion
     const groups: Record<string, any> = {};
+    const isGeneral = quote.template === 'general';
     
     quote.items.forEach((i: any) => {
-      const groupName = i.product.grupo_impresion || 'Instalación de Cargador EV';
+      const groupName = i.product.grupo_impresion || (isGeneral ? 'Equipos y Materiales' : 'Instalación de Cargador EV');
       if (!groups[groupName]) {
         groups[groupName] = {
           qty: 1,
@@ -413,7 +414,12 @@ export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => 
 
         {/* Banner */}
         <View style={styles.banner}>
-          <Text style={styles.bannerText}>Cargadores EV / Paneles Solares / Riego automatizado / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas</Text>
+          <Text style={styles.bannerText}>
+            {quote.template === 'general' 
+              ? 'Alta Ingeniería Eléctrica / Automatización / Videovigilancia / Redes / Sistemas' 
+              : 'Cargadores EV / Paneles Solares / Riego automatizado / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas'
+            }
+          </Text>
         </View>
 
         {/* Table */}
@@ -477,7 +483,12 @@ export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => 
         </View>
         <View style={styles.compromisoWrapper}>
           <View style={styles.compromisoLeft}>
-            <Text style={styles.compromisoTextItalic}>"En Zirian México nos especializamos en soluciones adaptadas al entorno de BCS, priorizando la compatibilidad técnica con marcas líderes como BYD."</Text>
+            <Text style={styles.compromisoTextItalic}>
+              {quote.template === 'general'
+                ? '"En Zirian México nos especializamos en soluciones tecnológicas adaptadas a su entorno, garantizando siempre los más altos estándares de calidad, seguridad y eficiencia."'
+                : '"En Zirian México nos especializamos en soluciones adaptadas al entorno de BCS, priorizando la compatibilidad técnica con marcas líderes como BYD."'
+              }
+            </Text>
             <Text style={styles.compromisoAuthor}>System Administrator - Equipo Zirian México</Text>
           </View>
         </View>
@@ -489,9 +500,11 @@ export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => 
         </View>
 
         {/* Footer Banner */}
-        <View style={styles.footerBanner}>
-          <Text style={styles.footerBannerText}>MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.</Text>
-        </View>
+        {quote.template !== 'general' && (
+          <View style={styles.footerBanner}>
+            <Text style={styles.footerBannerText}>MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.</Text>
+          </View>
+        )}
 
         {/* 6 Terms Blocks */}
         <View style={styles.termsWrapper}>

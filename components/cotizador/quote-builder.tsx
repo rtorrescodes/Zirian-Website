@@ -53,6 +53,7 @@ interface Product {
   unidad_medida: string
   categoryId: number
   category?: Category
+  recommendations?: { recommended: Product }[]
 }
 
 export const currencyExact = (value: number) => {
@@ -118,9 +119,22 @@ export function QuoteBuilder({
   const getInitialItems = () => {
     if (!initialQuote?.items) return []
     return initialQuote.items.map((i: any) => {
-      const details = i.descripcion.replace(i.product.nombre, '').trim()
+      // Si el ítem no tiene un producto en base de datos, creamos uno virtual temporal
+      const itemProduct = i.product || {
+        id: -Math.floor(Math.random() * 1000000), // ID negativo para identificar que es virtual
+        nombre: i.descripcion || 'Artículo sin nombre',
+        codigo: null,
+        precio_base: i.precio_unitario || 0,
+        unidad_medida: 'Pieza',
+        categoryId: 0,
+      }
+      
+      const details = i.product 
+        ? i.descripcion.replace(i.product.nombre, '').trim()
+        : ''
+
       return {
-        product: i.product,
+        product: itemProduct,
         qty: i.cantidad,
         detalles: details
       }
@@ -135,6 +149,7 @@ export function QuoteBuilder({
   const [saved, setSaved] = useState(false)
   const [savedQuoteId, setSavedQuoteId] = useState<number | null>(initialQuote?.id || null)
   const [mostrarDesglose, setMostrarDesglose] = useState(initialQuote?.mostrar_desglose ?? false)
+  const [template, setTemplate] = useState<string>(initialQuote?.template || 'ev_charger')
 
   const resetBuilder = () => {
     setSaved(false)
@@ -173,6 +188,20 @@ export function QuoteBuilder({
     setPickedProductId(null)
     setQty(1)
     setItemDetails('')
+  }
+
+  const addDirectItem = (product: Product, quantity = 1) => {
+    setItems((prev) => {
+      // Si ya existe, solo suma la cantidad
+      const exists = prev.find(i => i.product.id === product.id);
+      if (exists) {
+        return prev.map(i => i.product.id === product.id ? { ...i, qty: i.qty + quantity } : i);
+      }
+      return [...prev, { product, qty: quantity, detalles: '' }]
+    })
+  }
+  
+  const finishAddItem = () => {
     setProductQuery('')
   }
 
@@ -210,8 +239,9 @@ export function QuoteBuilder({
         impuestos: iva,
         total: total,
         mostrar_desglose: mostrarDesglose,
+        template: template,
         items: items.map(i => ({
-          productId: i.product.id,
+          productId: i.product.id < 0 ? null : i.product.id,
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
           cantidad: i.qty,
           precio_unitario: Number(i.product.precio_base),
@@ -591,6 +621,38 @@ export function QuoteBuilder({
                           <Plus className="h-3 w-3" />
                         </button>
                       </div>
+                      
+                      {i.product.recommendations && i.product.recommendations.length > 0 && (
+                        <div className="mt-3 bg-slate-900/40 rounded-lg p-2 border border-slate-800/50">
+                          <p className="text-[10px] font-tech text-brand-blue uppercase tracking-widest mb-2 font-semibold">Accesorios Sugeridos</p>
+                          <div className="space-y-1.5">
+                            {i.product.recommendations.map(rec => {
+                              const alreadyInQuote = items.some(it => it.product.id === rec.recommended.id);
+                              return (
+                                <div key={rec.recommended.id} className="flex items-center justify-between gap-2">
+                                  <span className="text-[11px] text-slate-300 truncate max-w-[120px] lg:max-w-[140px]" title={rec.recommended.nombre}>
+                                    {rec.recommended.nombre}
+                                  </span>
+                                  {!alreadyInQuote ? (
+                                    <button 
+                                      type="button" 
+                                      onClick={() => addDirectItem(rec.recommended, i.qty)}
+                                      className="text-[10px] bg-slate-800 hover:bg-brand-blue hover:text-white text-slate-300 px-1.5 py-0.5 rounded flex items-center gap-1 transition-colors whitespace-nowrap font-medium"
+                                    >
+                                      <Plus className="w-2.5 h-2.5" /> Agregar
+                                    </button>
+                                  ) : (
+                                    <span className="text-[10px] text-brand-green/80 flex items-center gap-0.5 px-1.5 py-0.5 bg-brand-green/10 rounded">
+                                      <Check className="w-2.5 h-2.5" /> Agregado
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      
                     </div>
                     <div className="text-right flex flex-col items-end justify-between h-full">
                       <p className="text-sm font-semibold text-emerald-400 font-mono">
@@ -631,6 +693,32 @@ export function QuoteBuilder({
                 </dd>
               </div>
             </dl>
+
+            <div className="mt-4 pt-4 border-t border-slate-800/50 space-y-4">
+              <div className="flex items-center justify-between gap-4">
+                <label className="text-[11px] font-tech font-bold uppercase tracking-wider text-slate-400">Plantilla de PDF</label>
+                <select
+                  value={template}
+                  onChange={(e) => setTemplate(e.target.value)}
+                  className="bg-slate-900 border border-slate-700 text-white rounded p-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-brand-blue"
+                >
+                  <option value="ev_charger">Cargadores EV</option>
+                  <option value="general">Cotización General (CCTV, etc)</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="chk-desglose"
+                  checked={mostrarDesglose}
+                  onChange={(e) => setMostrarDesglose(e.target.checked)}
+                  className="rounded border-slate-700 bg-slate-900 text-brand-blue focus:ring-brand-blue"
+                />
+                <label htmlFor="chk-desglose" className="text-[11px] font-tech text-slate-400 cursor-pointer">
+                  Mostrar desglose de impuestos en PDF
+                </label>
+              </div>
+            </div>
 
             <div className="mt-6 flex flex-col gap-3">
               <Button
@@ -743,7 +831,9 @@ export function QuoteBuilder({
 
                 {/* Green/Teal Banner */}
                 <div className="mx-12 mb-4 bg-[#25B150] text-white text-[11px] font-bold text-center py-1 uppercase tracking-wider">
-                  Cargadores EV / Paneles Solares / Riego automatizado / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas
+                  {template === 'general'
+                    ? 'Alta Ingeniería Eléctrica / Automatización / Videovigilancia / Redes / Sistemas'
+                    : 'Cargadores EV / Paneles Solares / Riego automatizado / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas'}
                 </div>
 
                 {/* Table */}
@@ -834,7 +924,9 @@ export function QuoteBuilder({
                   <div className="flex gap-4">
                     <div className="w-1/2">
                       <p className="text-xs text-slate-600 italic mb-4">
-                        "En Zirian México nos especializamos en soluciones adaptadas al entorno de BCS, priorizando la compatibilidad técnica con marcas líderes."
+                        {template === 'general'
+                          ? '"En Zirian México nos especializamos en soluciones tecnológicas adaptadas a su entorno, garantizando siempre los más altos estándares de calidad, seguridad y eficiencia."'
+                          : '"En Zirian México nos especializamos en soluciones adaptadas al entorno de BCS, priorizando la compatibilidad técnica con marcas líderes."'}
                       </p>
                       <p className="text-xs font-bold text-[#1C497B]">System Administrator - Equipo Zirian México</p>
                     </div>
@@ -855,11 +947,14 @@ export function QuoteBuilder({
 
                 {/* Green Legal Footer */}
                 <div className="absolute bottom-6 left-6 right-6">
-                  <div className="bg-[#25B150] text-white p-3">
-                    <p className="text-[10px] font-bold text-center uppercase tracking-wider mb-2">
-                      Mantenga su garantía: Contamos con certificación y cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.
-                    </p>
-                    <div className="grid grid-cols-3 gap-3 text-[8px] leading-tight opacity-90">
+                  {template !== 'general' && (
+                    <div className="bg-[#25B150] text-white p-3 mb-2">
+                      <p className="text-[10px] font-bold text-center uppercase tracking-wider mb-2">
+                        Mantenga su garantía: Contamos con certificación y cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.
+                      </p>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-3 gap-3 text-[8px] leading-tight opacity-90 text-slate-500">
                       <div>
                         <p className="font-bold mb-0.5">1. ALCANCE DE LA OFERTA</p>
                         <p>La cotización cubre únicamente los conceptos descritos. Cualquier trabajo adicional será cotizado por separado.</p>
@@ -879,7 +974,6 @@ export function QuoteBuilder({
                         <p>Diseños y diagramas son propiedad de Zirian; prohibida su réplica sin autorización.</p>
                       </div>
                     </div>
-                  </div>
                   <div className="flex justify-between items-center text-[10px] text-slate-400 mt-1 px-1 font-bold">
                     <span>Página 1</span>
                     <span>{new Date().toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</span>

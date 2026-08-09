@@ -107,7 +107,7 @@ export function ClientActivities({ clientId, initialActivities }: { clientId: nu
               <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-slate-950/60 p-4 rounded-xl border border-slate-800 shadow-md relative z-10 hover:border-slate-700 transition-colors">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-tech font-bold text-[11px] uppercase tracking-wider text-white bg-slate-800 px-2 py-0.5 rounded">{act.tipo}</span>
-                  <span className="text-[10px] font-tech text-slate-400">
+                  <span className="text-[10px] font-tech text-slate-400" suppressHydrationWarning>
                     {new Date(act.fecha_actividad).toLocaleDateString()} {new Date(act.fecha_actividad).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>

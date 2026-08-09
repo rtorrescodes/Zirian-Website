@@ -56,6 +56,7 @@ model Quote {
   clientId         Int
   client           Client   @relation(fields: [clientId], references: [id])
   status           String   @default("Borrador") @db.VarChar(50) // Borrador, Enviada, Aprobada, Rechazada
+  template         String   @default("ev_charger") @db.VarChar(50) // ev_charger, general
   total            Decimal  @db.Decimal(10, 2)
   subtotal         Decimal  @db.Decimal(10, 2)
   impuestos        Decimal  @db.Decimal(10, 2)
@@ -148,6 +149,7 @@ model Product {
   category         ProductCategory @relation(fields: [categoryId], references: [id])
   nombre           String   @db.VarChar(150)
   codigo           String?  @db.VarChar(50)
+  marca            String?  @db.VarChar(100)
   descripcion      String?  @db.Text
   precio_base      Decimal  @db.Decimal(10, 2)
   costo_estimado   Decimal? @db.Decimal(10, 2)
@@ -161,6 +163,8 @@ model Product {
   quoteItems       QuoteItem[]
   inventoryItems   InventoryItem[]
   inventoryMovements InventoryMovement[]
+  recommendations  ProductRecommendation[] @relation("ProductToRecommendations")
+  recommendedIn    ProductRecommendation[] @relation("RecommendedToProducts")
 }
 
 // Para equipos físicos únicos (Cargadores)
@@ -391,4 +395,16 @@ model SupportTicket {
 
   @@index([clientId])
   @@index([status])
+}
+
+model ProductRecommendation {
+  id              Int      @id @default(autoincrement())
+  productId       Int
+  recommendedId   Int
+  product         Product  @relation("ProductToRecommendations", fields: [productId], references: [id], onDelete: Cascade)
+  recommended     Product  @relation("RecommendedToProducts", fields: [recommendedId], references: [id], onDelete: Cascade)
+  
+  @@unique([productId, recommendedId])
+  @@index([productId])
+  @@index([recommendedId])
 }

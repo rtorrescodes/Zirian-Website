@@ -22,6 +22,11 @@ export async function getProducts(query = '', categoryId?: number) {
     where,
     include: {
       category: true,
+      recommendations: {
+        include: {
+          recommended: true
+        }
+      }
     },
     orderBy: { nombre: 'asc' }
   })
@@ -32,6 +37,11 @@ export async function getProductById(id: number) {
     where: { id },
     include: {
       category: true,
+      recommendations: {
+        include: {
+          recommended: true
+        }
+      }
     }
   })
 }
@@ -53,6 +63,8 @@ export async function createCategory(data: { nombre: string; descripcion?: strin
 export async function createProduct(data: {
   nombre: string;
   codigo?: string;
+  marca?: string;
+  proveedor_default?: string;
   descripcion?: string;
   precio_base: number;
   costo_estimado?: number;
@@ -64,6 +76,8 @@ export async function createProduct(data: {
     data: {
       nombre: data.nombre,
       codigo: data.codigo,
+      marca: data.marca,
+      proveedor_default: data.proveedor_default,
       descripcion: data.descripcion,
       precio_base: data.precio_base,
       costo_estimado: data.costo_estimado,
@@ -80,6 +94,8 @@ export async function createProduct(data: {
 export async function updateProduct(id: number, data: {
   nombre?: string;
   codigo?: string;
+  marca?: string;
+  proveedor_default?: string;
   descripcion?: string;
   precio_base?: number;
   costo_estimado?: number;
@@ -101,4 +117,27 @@ export async function deleteProduct(id: number) {
     where: { id }
   })
   revalidatePath('/admin/productos')
+}
+
+export async function addRecommendation(productId: number, recommendedId: number) {
+  const rec = await prisma.productRecommendation.create({
+    data: {
+      productId,
+      recommendedId
+    }
+  })
+  revalidatePath(`/admin/productos/editor/${productId}`)
+  return rec
+}
+
+export async function removeRecommendation(productId: number, recommendedId: number) {
+  await prisma.productRecommendation.delete({
+    where: {
+      productId_recommendedId: {
+        productId,
+        recommendedId
+      }
+    }
+  })
+  revalidatePath(`/admin/productos/editor/${productId}`)
 }

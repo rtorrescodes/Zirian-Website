@@ -145,8 +145,13 @@ export function ClientEditor({ initialData, partners, initialActivities = [] }: 
                     <SelectContent>
                       <SelectItem value="Directo">Directo</SelectItem>
                       <SelectItem value="WhatsApp">WhatsApp</SelectItem>
-                      <SelectItem value="Web">Web</SelectItem>
-                      <SelectItem value="Partner">Referido (Partner)</SelectItem>
+                      <SelectItem value="Web">Página Web</SelectItem>
+                      <SelectItem value="Recomendacion">Recomendación</SelectItem>
+                      <SelectItem value="Facebook">Facebook / Meta</SelectItem>
+                      <SelectItem value="Google">Google / Búsqueda</SelectItem>
+                      <SelectItem value="Partner">Partner / Aliado</SelectItem>
+                      <SelectItem value="BYD">BYD / Concesionaria</SelectItem>
+                      <SelectItem value="Otro">Otro</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -192,8 +197,21 @@ export function ClientEditor({ initialData, partners, initialActivities = [] }: 
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Tipo de Instalación</label>
-                <Input name="tipo_instalacion" placeholder="Ej. Residencial, Comercial..." value={formData.tipo_instalacion} onChange={handleChange} className="bg-slate-950/80 border-slate-700 text-white placeholder:text-slate-600 focus-visible:ring-emerald-500" />
+                <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Tipo de Proyecto / Instalación</label>
+                <Select name="tipo_instalacion" value={formData.tipo_instalacion} onValueChange={(v) => setFormData(p => ({ ...p, tipo_instalacion: v }))}>
+                  <SelectTrigger className="w-full bg-slate-950/80 border-slate-700 text-white focus-visible:ring-emerald-500">
+                    <SelectValue placeholder="Selecciona un tipo..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Instalación EV">Cargadores EV</SelectItem>
+                    <SelectItem value="Paneles Solares">Paneles Solares</SelectItem>
+                    <SelectItem value="CCTV">CCTV / Seguridad</SelectItem>
+                    <SelectItem value="Smart Home">Smart Home</SelectItem>
+                    <SelectItem value="Redes">Redes / WiFi</SelectItem>
+                    <SelectItem value="Híbrido">Múltiple / Híbrido</SelectItem>
+                    <SelectItem value="Otro">Otro</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

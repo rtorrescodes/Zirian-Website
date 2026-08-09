@@ -22,9 +22,12 @@ export default async function EditProductPage(props: { params: Promise<{ id: str
     stock_general: product.stock_general ? Number(product.stock_general) : 0,
   };
 
+  const { getProducts } = await import('@/app/actions/products');
+  const allProducts = await getProducts();
+
   return (
     <AppShell title={`Editar Producto: ${product.nombre}`} subtitle="Modifica los detalles del producto en el catálogo.">
-      <ProductEditor categories={categories} initialData={productData} />
+      <ProductEditor categories={categories} initialData={productData} allProducts={allProducts} />
     </AppShell>
   );
 }

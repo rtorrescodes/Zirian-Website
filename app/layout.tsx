@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -45,11 +46,13 @@ export default async function RootLayout({
         {shouldTrack && (
           <>
             {/* Google Analytics (gtag.js) */}
-            <script
-              async
+            <Script
+              strategy="afterInteractive"
               src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
             />
-            <script
+            <Script
+              id="google-analytics"
+              strategy="afterInteractive"
               dangerouslySetInnerHTML={{
                 __html: `
                   window.dataLayer = window.dataLayer || [];

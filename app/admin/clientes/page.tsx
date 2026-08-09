@@ -8,12 +8,14 @@ import { ClickableRow } from '@/components/ui/clickable-row';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ClientesAdminPage(props: { searchParams?: Promise<{ q?: string; status?: string }> }) {
+export default async function ClientesAdminPage(props: { searchParams?: Promise<{ q?: string; status?: string; origen?: string; tipo?: string }> }) {
   const searchParams = await props.searchParams;
   const query = searchParams?.q || '';
   const statusFilter = searchParams?.status || 'all';
+  const origenFilter = searchParams?.origen || 'all';
+  const tipoFilter = searchParams?.tipo || 'all';
 
-  const clients = await getClients(query, statusFilter);
+  const clients = await getClients(query, statusFilter, origenFilter, tipoFilter);
 
   return (
     <AppShell title="CRM / Clientes" subtitle="Gestiona tus prospectos y clientes, y genera cotizaciones al instante.">
@@ -53,7 +55,7 @@ export default async function ClientesAdminPage(props: { searchParams?: Promise<
                 <thead className="bg-slate-950/40 text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-800">
                   <tr>
                     <th className="px-6 py-4">Cliente / Contacto</th>
-                    <th className="px-6 py-4">Vehículo / Ubicación</th>
+                    <th className="px-6 py-4">Tipo / Ubicación</th>
                     <th className="px-6 py-4">Origen / Partner</th>
                     <th className="px-6 py-4">Estatus</th>
                     <th className="px-6 py-4 text-right">Acciones</th>
@@ -80,18 +82,17 @@ export default async function ClientesAdminPage(props: { searchParams?: Promise<
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-xs text-slate-400">
-                          {client.marca_ev ? <p className="font-medium text-white">{client.marca_ev}</p> : <p className="text-slate-500">Sin auto</p>}
-                          {client.ubicacion ? (
+                          <p className="font-medium text-white mb-1">{client.tipo_instalacion || 'Sin Tipo Especificado'}</p>
+                          {client.marca_ev && <p className="text-slate-400 mb-1">EV: {client.marca_ev}</p>}
+                          {client.ubicacion && (
                             <a 
                               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.ubicacion)}`} 
                               target="_blank" 
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1 text-brand-blue hover:text-brand-cyan hover:underline mt-1 transition"
+                              className="inline-flex items-center gap-1 text-brand-blue hover:text-brand-cyan hover:underline transition"
                             >
                               <MapPin className="h-3 w-3" /> Ver Mapa
                             </a>
-                          ) : (
-                            <p>{client.tipo_instalacion || '-'}</p>
                           )}
                         </div>
                       </td>

@@ -9,22 +9,33 @@ import { Save, Loader2, ArrowLeft, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { createProduct, updateProduct, createCategory } from '@/app/actions/products';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Trash2, Search } from 'lucide-react';
 
 interface ProductEditorProps {
   initialData?: any;
   categories: any[];
+  allProducts?: any[];
 }
 
-export function ProductEditor({ initialData, categories: initialCategories }: ProductEditorProps) {
+export function ProductEditor({ initialData, categories: initialCategories, allProducts = [] }: ProductEditorProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [categories, setCategories] = useState(initialCategories);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   
+  // Recommendations state
+  const [recommendations, setRecommendations] = useState<any[]>(
+    initialData?.recommendations?.map((r: any) => r.recommended) || []
+  );
+  const [searchRec, setSearchRec] = useState('');
+  const [showRecDropdown, setShowRecDropdown] = useState(false);
+  
   const [formData, setFormData] = useState({
     nombre: initialData?.nombre || '',
     codigo: initialData?.codigo || '',
+    marca: initialData?.marca || '',
+    proveedor_default: initialData?.proveedor_default || '',
     descripcion: initialData?.descripcion || '',
     precio_base: initialData?.precio_base || '',
     costo_estimado: initialData?.costo_estimado || '',
@@ -163,6 +174,17 @@ export function ProductEditor({ initialData, categories: initialCategories }: Pr
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Marca</label>
+                  <Input name="marca" value={formData.marca} onChange={handleChange} placeholder="Ej. Syscom, Hikvision..." className="" />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Proveedor</label>
+                  <Input name="proveedor_default" value={formData.proveedor_default} onChange={handleChange} placeholder="Ej. Zirian, Syscom..." className="" />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Descripción Breve</label>
                 <Textarea name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Detalles visibles en la cotización..." className=" min-h-[100px]" />
@@ -216,6 +238,84 @@ export function ProductEditor({ initialData, categories: initialCategories }: Pr
               {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
               {initialData ? 'Guardar Cambios' : 'Crear Producto'}
             </Button>
+
+            {initialData && (
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4 shadow-xl backdrop-blur-sm mt-6">
+                <h3 className="font-tech text-sm font-bold uppercase tracking-widest text-brand-blue border-b border-slate-800 pb-3">Accesorios Recomendados</h3>
+                <p className="text-xs text-slate-400">Selecciona productos que se sugerirán automáticamente cuando se agregue este producto a una cotización.</p>
+                
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
+                    <Input 
+                      placeholder="Buscar producto..." 
+                      value={searchRec}
+                      onChange={(e) => {
+                        setSearchRec(e.target.value);
+                        setShowRecDropdown(true);
+                      }}
+                      onFocus={() => setShowRecDropdown(true)}
+                      className="pl-9 bg-slate-950 border-slate-700 text-white focus-visible:ring-brand-blue"
+                    />
+                  </div>
+                  
+                  {showRecDropdown && searchRec && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-slate-950 border border-slate-700 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
+                      {allProducts.filter(p => 
+                        p.id !== initialData.id &&
+                        !recommendations.some(r => r.id === p.id) &&
+                        p.nombre.toLowerCase().includes(searchRec.toLowerCase())
+                      ).map(p => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const { addRecommendation } = await import('@/app/actions/products');
+                              await addRecommendation(initialData.id, p.id);
+                              setRecommendations([...recommendations, p]);
+                              setSearchRec('');
+                              setShowRecDropdown(false);
+                            } catch (e) {
+                              alert('Error al agregar recomendación');
+                            }
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-800 hover:text-white border-b border-slate-800 last:border-0"
+                        >
+                          {p.nombre}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2 mt-4">
+                  {recommendations.map(rec => (
+                    <div key={rec.id} className="flex items-center justify-between p-2 rounded bg-slate-950 border border-slate-800">
+                      <span className="text-xs text-slate-300 truncate pr-2">{rec.nombre}</span>
+                      <button 
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const { removeRecommendation } = await import('@/app/actions/products');
+                            await removeRecommendation(initialData.id, rec.id);
+                            setRecommendations(recommendations.filter(r => r.id !== rec.id));
+                          } catch (e) {
+                            alert('Error al quitar');
+                          }
+                        }}
+                        className="text-slate-600 hover:text-red-400 p-1"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                  {recommendations.length === 0 && (
+                    <div className="text-center text-slate-500 text-xs py-2 italic">Sin recomendaciones</div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
         </div>

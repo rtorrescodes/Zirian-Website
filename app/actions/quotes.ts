@@ -12,8 +12,9 @@ export async function createQuote(data: {
   notas_internas?: string;
   condiciones?: string;
   validez_dias?: number;
+  template?: string;
   items: {
-    productId: number;
+    productId: number | null;
     descripcion: string;
     cantidad: number;
     precio_unitario: number;

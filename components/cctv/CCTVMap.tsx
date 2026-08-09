@@ -30,19 +30,28 @@ interface DoriZones {
   detect: number;
 }
 
+export type DeviceType = 'camera' | 'wifi';
+
 interface CameraModel {
   id: string;
   name: string;
   friendlyName: string;
   fov: number; // grados de apertura
   dori: DoriZones; // distancias en metros
+  type?: DeviceType;
 }
 
 const GENERIC_CAMERAS: CameraModel[] = [
-  { id: 'cam-2.8mm', name: 'Hikvision DS-2CE56D0T-IRPF (2.8mm)', friendlyName: 'Domo 2MP Lente 2.8mm', fov: 105, dori: { identify: 4, recognize: 8, observe: 15, detect: 37 } },
-  { id: 'cam-4mm', name: 'Hikvision DS-2CE16D0T-IRF (4mm)', friendlyName: 'Bala 4MP Lente 4mm', fov: 85, dori: { identify: 6, recognize: 12, observe: 24, detect: 60 } },
-  { id: 'cam-ptz', name: 'Hikvision DS-2DE2204IW-DE3 (PTZ)', friendlyName: 'PTZ 25x (Zoom Máximo)', fov: 5, dori: { identify: 100, recognize: 200, observe: 500, detect: 1000 } },
-  { id: 'cam-ezviz-cscb54k', name: 'EZVIZ CS-CB5 (4K Solar)', friendlyName: '4K Solar Wi-Fi', fov: 105, dori: { identify: 10, recognize: 20, observe: 40, detect: 80 } },
+  { id: 'cam-2.8mm', name: 'Hikvision DS-2CE56D0T-IRPF (2.8mm)', friendlyName: 'Domo 2MP Lente 2.8mm', fov: 105, dori: { identify: 4, recognize: 8, observe: 15, detect: 37 }, type: 'camera' },
+  { id: 'cam-4mm', name: 'Hikvision DS-2CE16D0T-IRF (4mm)', friendlyName: 'Bala 4MP Lente 4mm', fov: 85, dori: { identify: 6, recognize: 12, observe: 24, detect: 60 }, type: 'camera' },
+  { id: 'cam-ptz', name: 'Hikvision DS-2DE2204IW-DE3 (PTZ)', friendlyName: 'PTZ 25x (Zoom Máximo)', fov: 5, dori: { identify: 100, recognize: 200, observe: 500, detect: 1000 }, type: 'camera' },
+  { id: 'cam-ezviz-cscb54k', name: 'EZVIZ CS-CB5 (4K Solar)', friendlyName: '4K Solar Wi-Fi', fov: 105, dori: { identify: 10, recognize: 20, observe: 40, detect: 80 }, type: 'camera' },
+];
+
+const GENERIC_WIFI_APS: CameraModel[] = [
+  { id: 'wifi-ubiquiti-u6', name: 'Ubiquiti U6-Mesh (Omni 360°)', friendlyName: 'Ubiquiti U6-Mesh (360°)', fov: 360, dori: { identify: 0, recognize: 0, observe: 0, detect: 50 }, type: 'wifi' },
+  { id: 'wifi-ruijie-rgrap', name: 'Ruijie RGRAP52ODSEC (Sectorial 90°)', friendlyName: 'Ruijie RGRAP (90°)', fov: 90, dori: { identify: 0, recognize: 0, observe: 0, detect: 150 }, type: 'wifi' },
+  { id: 'wifi-tplink-bridge', name: 'TP-Link EAP215-Bridge (Direccional 5°)', friendlyName: 'TP-Link Bridge 5km', fov: 5, dori: { identify: 0, recognize: 0, observe: 0, detect: 5000 }, type: 'wifi' }
 ];
 
 interface CameraInstance {
@@ -56,6 +65,7 @@ interface CameraInstance {
   dori: DoriZones;
   layer: string;
   section?: string;
+  type?: DeviceType;
 }
 
 export default function CCTVMap() {
@@ -84,7 +94,7 @@ export default function CCTVMap() {
   const [visibleLayers, setVisibleLayers] = useState<string[]>(['General', 'Fase 1', 'Fase 2']);
   const [activeLayer, setActiveLayer] = useState<string>('General');
   
-  const [sections, setSections] = useState<string[]>(['General', 'Perímetro', 'Interiores']);
+  const [sections, setSections] = useState<string[]>(['General', 'Perímetro', 'Interiores', 'Exteriores']);
   const [activeSection, setActiveSection] = useState<string>('General');
 
   // UI State
@@ -198,39 +208,44 @@ export default function CCTVMap() {
     return points;
   };
 
-  const handleAddCamera = () => {
+  const handleAddDevice = (type: DeviceType = 'camera') => {
     if (!map) return;
     
     const center = map.getCenter();
     if (!center) return;
     
-    const defaultModel = GENERIC_CAMERAS[0];
+    const defaultModel = type === 'wifi' ? GENERIC_WIFI_APS[0] : GENERIC_CAMERAS[0];
     const newCamId = Math.random().toString(36).substring(7);
+    const prefix = type === 'wifi' ? 'AP' : 'Cámara';
     
     setCameras(cams => {
       let maxNum = 0;
       cams.forEach(c => {
-        const match = c.name?.match(/Cámara (\d+)/i);
-        if (match) {
+        const regex = new RegExp(`${prefix} (\\d+)`, 'i');
+        const match = c.name?.match(regex);
+        if (match && c.type === type) {
           const num = parseInt(match[1]);
           if (num > maxNum) maxNum = num;
+        } else if (match && type === 'camera' && !c.type) {
+           const num = parseInt(match[1]);
+           if (num > maxNum) maxNum = num;
         }
       });
       const nextNum = maxNum + 1;
       
       const newCam: CameraInstance = {
         id: newCamId,
-        name: `Cámara ${nextNum}`,
+        name: `${prefix} ${nextNum}`,
         modelId: defaultModel.id,
         lat: center.lat(),
         lng: center.lng(),
-        heading: mapHeading, // Face same way map is facing
+        heading: 0,
         fov: defaultModel.fov,
         dori: defaultModel.dori,
         layer: activeLayer,
-        section: activeSection
+        section: activeSection,
+        type: type
       };
-      
       return [...cams, newCam];
     });
     
@@ -285,6 +300,47 @@ export default function CCTVMap() {
       alert("Tu navegador no soporta geolocalización.");
     }
   };
+  const autoSaveProject = async () => {
+    if (!loadedProjectInfo) return;
+    
+    const mapState = {
+      cameras,
+      layers,
+      visibleLayers,
+      activeLayer,
+      sections,
+      center: map ? { lat: map.getCenter()?.lat(), lng: map.getCenter()?.lng() } : null,
+      zoom: map?.getZoom(),
+      heading: mapHeading,
+      mapType: mapType
+    };
+
+    try {
+      await fetch('/api/cctv', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: loadedProjectInfo.id,
+          nombre: projectName,
+          mapState,
+          previewImage: '' 
+        })
+      });
+      console.log('Proyecto autoguardado con éxito');
+    } catch (e) {
+      console.error('Error auto-guardando', e);
+    }
+  };
+
+  useEffect(() => {
+    if (!loadedProjectInfo) return;
+
+    const timeoutId = setTimeout(() => {
+      autoSaveProject();
+    }, 2000);
+
+    return () => clearTimeout(timeoutId);
+  }, [cameras, layers, visibleLayers, activeLayer, sections]);
 
   const handleSave = async (isUpdate: boolean = false) => {
     if (!selectedClientId || !projectName) {
@@ -384,7 +440,7 @@ export default function CCTVMap() {
     try {
       const quoteId = await createQuoteFromCctv(
         parseInt(selectedClientId),
-        cameras.map(c => ({ modelId: c.modelId, name: c.name }))
+        cameras.map(c => ({ modelId: c.modelId, name: c.name, section: c.section }))
       );
       router.push(`/admin/cotizador?editId=${quoteId}`);
     } catch (error: any) {
@@ -474,44 +530,64 @@ export default function CCTVMap() {
             
             return (
               <React.Fragment key={cam.id}>
-                {showDori ? (
+                {cam.type === 'wifi' ? (
                   <>
-                    {/* Detect (Azul) */}
+                    {/* Inner 30% */}
+                    <Polygon
+                      paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.detect * 0.33, cam.fov)}
+                      options={{ fillColor: '#9333ea', fillOpacity: 0.3 * doriOpacity, strokeOpacity: 0, clickable: false }}
+                    />
+                    {/* Mid 66% */}
+                    <Polygon
+                      paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.detect * 0.66, cam.fov)}
+                      options={{ fillColor: '#9333ea', fillOpacity: 0.15 * doriOpacity, strokeOpacity: 0, clickable: false }}
+                    />
+                    {/* Outer 100% */}
                     <Polygon
                       paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.detect, cam.fov)}
-                      options={{
-                        fillColor: '#3b82f6', fillOpacity: 0.2 * doriOpacity, strokeColor: isActive ? '#fff' : '#3b82f6', strokeWeight: isActive ? 2 : 1, clickable: false
-                      }}
-                    />
-                    {/* Observe (Verde) */}
-                    <Polygon
-                      paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.observe, cam.fov)}
-                      options={{
-                        fillColor: '#22c55e', fillOpacity: 0.3 * doriOpacity, strokeColor: 'transparent', clickable: false
-                      }}
-                    />
-                    {/* Recognize (Amarillo) */}
-                    <Polygon
-                      paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.recognize, cam.fov)}
-                      options={{
-                        fillColor: '#eab308', fillOpacity: 0.4 * doriOpacity, strokeColor: 'transparent', clickable: false
-                      }}
-                    />
-                    {/* Identify (Rojo) */}
-                    <Polygon
-                      paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.identify, cam.fov)}
-                      options={{
-                        fillColor: '#ef4444', fillOpacity: 0.5 * doriOpacity, strokeColor: 'transparent', clickable: false
-                      }}
+                      options={{ fillColor: '#9333ea', fillOpacity: 0.05 * doriOpacity, strokeColor: isActive ? '#fff' : '#9333ea', strokeWeight: isActive ? 2 : 1, clickable: false }}
                     />
                   </>
                 ) : (
-                  <Polygon
-                    paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.detect, cam.fov)}
-                    options={{
-                      fillColor: '#3b82f6', fillOpacity: 0.4 * doriOpacity, strokeColor: isActive ? '#fff' : '#3b82f6', strokeWeight: isActive ? 2 : 1, clickable: false
-                    }}
-                  />
+                  showDori ? (
+                    <>
+                      {/* Detect (Azul) */}
+                      <Polygon
+                        paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.detect, cam.fov)}
+                        options={{
+                          fillColor: '#3b82f6', fillOpacity: 0.2 * doriOpacity, strokeColor: isActive ? '#fff' : '#3b82f6', strokeWeight: isActive ? 2 : 1, clickable: false
+                        }}
+                      />
+                      {/* Observe (Verde) */}
+                      <Polygon
+                        paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.observe, cam.fov)}
+                        options={{
+                          fillColor: '#22c55e', fillOpacity: 0.3 * doriOpacity, strokeColor: 'transparent', clickable: false
+                        }}
+                      />
+                      {/* Recognize (Amarillo) */}
+                      <Polygon
+                        paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.recognize, cam.fov)}
+                        options={{
+                          fillColor: '#eab308', fillOpacity: 0.4 * doriOpacity, strokeColor: 'transparent', clickable: false
+                        }}
+                      />
+                      {/* Identify (Rojo) */}
+                      <Polygon
+                        paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.identify, cam.fov)}
+                        options={{
+                          fillColor: '#ef4444', fillOpacity: 0.5 * doriOpacity, strokeColor: 'transparent', clickable: false
+                        }}
+                      />
+                    </>
+                  ) : (
+                    <Polygon
+                      paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.detect, cam.fov)}
+                      options={{
+                        fillColor: '#3b82f6', fillOpacity: 0.4 * doriOpacity, strokeColor: isActive ? '#fff' : '#3b82f6', strokeWeight: isActive ? 2 : 1, clickable: false
+                      }}
+                    />
+                  )
                 )}
 
                 <Marker
@@ -523,7 +599,7 @@ export default function CCTVMap() {
                   color: 'white',
                   fontWeight: 'bold',
                   fontSize: '12px',
-                  className: 'bg-black/50 px-1 py-0.5 rounded -mt-8 absolute'
+                  className: `bg-black/50 px-1 py-0.5 rounded -mt-8 absolute ${cam.type === 'wifi' ? 'border-b-2 border-purple-500' : ''}`
                 }}
                 onDragEnd={(e) => {
                   if (e.latLng) {
@@ -531,7 +607,9 @@ export default function CCTVMap() {
                   }
                 }}
                 icon={{
-                  url: 'https://maps.google.com/mapfiles/kml/shapes/camera.png',
+                  url: cam.type === 'wifi' 
+                    ? 'https://maps.google.com/mapfiles/kml/shapes/target.png' 
+                    : 'https://maps.google.com/mapfiles/kml/shapes/camera.png',
                   scaledSize: typeof window !== 'undefined' && window.google ? new window.google.maps.Size(24, 24) : undefined
                 }}
               />
@@ -660,7 +738,9 @@ export default function CCTVMap() {
                       </div>
                       <div className="space-y-2">
                         {groupCams.map(cam => {
-                          const model = GENERIC_CAMERAS.find(m => m.id === cam.modelId);
+                          const isWifi = cam.type === 'wifi';
+                          const modelList = isWifi ? GENERIC_WIFI_APS : GENERIC_CAMERAS;
+                          const model = modelList.find(m => m.id === cam.modelId);
                           const modelDisplay = model ? (demoMode ? model.friendlyName : model.name) : 'Desconocido';
                           
                           return (
@@ -700,8 +780,15 @@ export default function CCTVMap() {
                 <h3 className="text-xs font-bold text-white uppercase mb-2">Capas / Fases</h3>
                 <div className="space-y-2">
                   {layers.map(layer => (
-                    <div key={layer} className="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800 group">
+                    <div key={layer} className={`flex items-center justify-between p-2 rounded bg-slate-900 border group transition-colors ${activeLayer === layer ? 'border-brand-blue ring-1 ring-brand-blue/50' : 'border-slate-800'}`}>
                       <div className="flex items-center gap-2 flex-1">
+                        <div 
+                          className={`w-3 h-3 rounded-full cursor-pointer flex-shrink-0 border flex items-center justify-center transition-colors ${activeLayer === layer ? 'border-brand-blue bg-brand-blue/20' : 'border-slate-500 bg-slate-800 hover:border-brand-blue/50'}`}
+                          onClick={() => setActiveLayer(layer)}
+                          title="Establecer como capa activa"
+                        >
+                          {activeLayer === layer && <div className="w-1.5 h-1.5 rounded-full bg-brand-blue" />}
+                        </div>
                         <input 
                           type="checkbox" 
                           checked={visibleLayers.includes(layer)}
@@ -728,20 +815,39 @@ export default function CCTVMap() {
                           className="bg-transparent border-none outline-none text-sm text-slate-300 focus:text-white w-full"
                         />
                       </div>
-                      <button 
-                        onClick={() => {
-                          if (layers.length > 1) {
-                            setLayers(layers.filter(l => l !== layer));
-                            setVisibleLayers(visibleLayers.filter(l => l !== layer));
-                            if (activeLayer === layer) setActiveLayer(layers.find(l => l !== layer) || 'General');
-                            setCameras(cameras.map(c => c.layer === layer ? { ...c, layer: 'General' } : c));
-                          }
-                        }}
-                        className="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Eliminar Capa"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <select 
+                          className="bg-transparent text-slate-500 hover:text-brand-blue text-[10px] outline-none cursor-pointer w-4 appearance-none text-center"
+                          title="Mover elementos a otra capa"
+                          onChange={(e) => {
+                            const target = e.target.value;
+                            if(target) {
+                              setCameras(cameras.map(c => c.layer === layer ? { ...c, layer: target } : c));
+                              e.target.value = '';
+                            }
+                          }}
+                          value=""
+                        >
+                          <option value="" disabled>➜</option>
+                          {layers.filter(l => l !== layer).map(l => (
+                            <option key={l} value={l}>Mover a {l}</option>
+                          ))}
+                        </select>
+                        <button 
+                          onClick={() => {
+                            if (layers.length > 1) {
+                              setLayers(layers.filter(l => l !== layer));
+                              setVisibleLayers(visibleLayers.filter(l => l !== layer));
+                              if (activeLayer === layer) setActiveLayer(layers.find(l => l !== layer) || 'General');
+                              setCameras(cameras.map(c => c.layer === layer ? { ...c, layer: 'General' } : c));
+                            }
+                          }}
+                          className="text-slate-600 hover:text-red-400"
+                          title="Eliminar Capa"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -757,6 +863,7 @@ export default function CCTVMap() {
                         if (val && !layers.includes(val)) {
                           setLayers([...layers, val]);
                           setVisibleLayers([...visibleLayers, val]);
+                          setActiveLayer(val);
                           e.currentTarget.value = '';
                         }
                       }
@@ -772,6 +879,7 @@ export default function CCTVMap() {
                       if (val && !layers.includes(val)) {
                         setLayers([...layers, val]);
                         setVisibleLayers([...visibleLayers, val]);
+                        setActiveLayer(val);
                         input.value = '';
                       }
                     }}
@@ -786,9 +894,17 @@ export default function CCTVMap() {
                 <h3 className="text-xs font-bold text-white uppercase mb-2">Secciones</h3>
                 <div className="space-y-2">
                   {sections.map(sec => (
-                    <div key={sec} className="flex items-center justify-between p-2 rounded bg-slate-900 border border-slate-800 group">
-                      <input
-                        type="text"
+                    <div key={sec} className={`flex items-center justify-between p-2 rounded bg-slate-900 border group transition-colors ${activeSection === sec ? 'border-emerald-500 ring-1 ring-emerald-500/50' : 'border-slate-800'}`}>
+                      <div className="flex items-center gap-2 flex-1">
+                        <div 
+                          className={`w-3 h-3 rounded-full cursor-pointer flex-shrink-0 border flex items-center justify-center transition-colors ${activeSection === sec ? 'border-emerald-500 bg-emerald-500/20' : 'border-slate-500 bg-slate-800 hover:border-emerald-500/50'}`}
+                          onClick={() => setActiveSection(sec)}
+                          title="Establecer como sección activa"
+                        >
+                          {activeSection === sec && <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+                        </div>
+                        <input
+                          type="text"
                         defaultValue={sec}
                         onBlur={(e) => {
                           const newName = e.target.value.trim();
@@ -802,19 +918,39 @@ export default function CCTVMap() {
                         }}
                         className="bg-transparent border-none outline-none text-sm text-slate-300 focus:text-white w-full"
                       />
-                      <button 
-                        onClick={() => {
-                          if (sections.length > 1) {
-                            setSections(sections.filter(s => s !== sec));
-                            if (activeSection === sec) setActiveSection(sections.find(s => s !== sec) || 'General');
-                            setCameras(cameras.map(c => c.section === sec ? { ...c, section: 'General' } : c));
-                          }
-                        }}
-                        className="text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Eliminar Sección"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <select 
+                          className="bg-transparent text-slate-500 hover:text-emerald-500 text-[10px] outline-none cursor-pointer w-4 appearance-none text-center"
+                          title="Mover elementos a otra sección"
+                          onChange={(e) => {
+                            const target = e.target.value;
+                            if(target) {
+                              setCameras(cameras.map(c => c.section === sec ? { ...c, section: target } : c));
+                              e.target.value = '';
+                            }
+                          }}
+                          value=""
+                        >
+                          <option value="" disabled>➜</option>
+                          {sections.filter(s => s !== sec).map(s => (
+                            <option key={s} value={s}>Mover a {s}</option>
+                          ))}
+                        </select>
+                        <button 
+                          onClick={() => {
+                            if (sections.length > 1) {
+                              setSections(sections.filter(s => s !== sec));
+                              if (activeSection === sec) setActiveSection(sections.find(s => s !== sec) || 'General');
+                              setCameras(cameras.map(c => c.section === sec ? { ...c, section: 'General' } : c));
+                            }
+                          }}
+                          className="text-slate-600 hover:text-red-400"
+                          title="Eliminar Sección"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -829,6 +965,7 @@ export default function CCTVMap() {
                         const val = e.currentTarget.value.trim();
                         if (val && !sections.includes(val)) {
                           setSections([...sections, val]);
+                          setActiveSection(val);
                           e.currentTarget.value = '';
                         }
                       }
@@ -862,16 +999,36 @@ export default function CCTVMap() {
       <div className="absolute top-20 right-4 w-80 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl p-6 pointer-events-auto z-10 max-h-[80vh] overflow-y-auto">
         <h2 className="text-white font-tech font-bold uppercase tracking-widest text-sm mb-4">Diseña tu sistema</h2>
         <p className="text-slate-400 text-xs mb-6 leading-relaxed">
-          Coloca cámaras reales sobre tu sitio y ve exactamente qué alcanza a ver cada una.
+          Coloca cámaras reales y equipos inalámbricos sobre tu sitio para visualizar su alcance y cobertura.
         </p>
         
-        <Button onClick={handleAddCamera} className="w-full bg-brand-blue hover:bg-brand-blue/80 text-slate-950 font-tech uppercase tracking-widest font-bold shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all mb-8">
-          <Plus className="w-4 h-4 mr-2" /> Agregar Cámara
-        </Button>
+        <div className="space-y-3 mb-8">
+          <Button onClick={() => handleAddDevice('camera')} className="w-full bg-brand-blue hover:bg-brand-blue/80 text-slate-950 font-tech uppercase tracking-widest font-bold shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all">
+            <Plus className="w-4 h-4 mr-2" /> Agregar Cámara
+          </Button>
+          
+          <div className="border border-slate-800 rounded-lg overflow-hidden bg-slate-900/50">
+            <details className="group">
+              <summary className="flex items-center justify-between p-3 cursor-pointer select-none text-xs font-tech font-bold text-slate-300 uppercase tracking-widest hover:bg-slate-800/50 transition-colors">
+                Redes y Enlaces Inalámbricos
+                <span className="transition group-open:rotate-180">
+                  <svg fill="none" height="12" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="12"><path d="M6 9l6 6 6-6"></path></svg>
+                </span>
+              </summary>
+              <div className="p-3 pt-0 border-t border-slate-800/50">
+                <Button onClick={() => handleAddDevice('wifi')} className="w-full bg-purple-600 hover:bg-purple-500 text-white font-tech uppercase tracking-widest font-bold shadow-[0_0_15px_rgba(147,51,234,0.3)] transition-all text-[10px] h-9">
+                  <Plus className="w-3 h-3 mr-2" /> Agregar Access Point
+                </Button>
+              </div>
+            </details>
+          </div>
+        </div>
 
         {activeCamId ? (
           <div className="space-y-4">
-            <h3 className="text-sm font-bold text-white mb-2">Configurar Cámara</h3>
+            <h3 className="text-sm font-bold text-white mb-2">
+              {cameras.find(c => c.id === activeCamId)?.type === 'wifi' ? 'Configurar Equipo Wi-Fi' : 'Configurar Cámara'}
+            </h3>
             
             <div className="space-y-2">
               <label className="text-xs text-slate-400">Identificador / Nombre</label>
@@ -890,13 +1047,15 @@ export default function CCTVMap() {
                 className="w-full bg-slate-900 border border-slate-700 text-white rounded p-2 text-xs outline-none"
                 value={cameras.find(c => c.id === activeCamId)?.modelId}
                 onChange={(e) => {
-                  const model = GENERIC_CAMERAS.find(m => m.id === e.target.value);
+                  const isWifi = cameras.find(c => c.id === activeCamId)?.type === 'wifi';
+                  const modelList = isWifi ? GENERIC_WIFI_APS : GENERIC_CAMERAS;
+                  const model = modelList.find(m => m.id === e.target.value);
                   if (model) {
                     updateCamera(activeCamId, { modelId: model.id, fov: model.fov, dori: model.dori });
                   }
                 }}
               >
-                {GENERIC_CAMERAS.map(m => (
+                {(cameras.find(c => c.id === activeCamId)?.type === 'wifi' ? GENERIC_WIFI_APS : GENERIC_CAMERAS).map(m => (
                   <option key={m.id} value={m.id}>{demoMode ? m.friendlyName : m.name}</option>
                 ))}
               </select>
@@ -933,7 +1092,24 @@ export default function CCTVMap() {
             </div>
             
             <div className="space-y-2">
-              <label className="text-xs text-slate-400 flex justify-between">
+                <label className="text-xs text-slate-400">Ubicación GPS</label>
+                <div className="bg-slate-950/50 rounded p-2 text-[10px] text-slate-400 font-mono border border-slate-800 flex justify-between items-center">
+                  <span>{cameras.find(c => c.id === activeCamId)?.lat.toFixed(6)}, {cameras.find(c => c.id === activeCamId)?.lng.toFixed(6)}</span>
+                  <button 
+                    onClick={() => {
+                      const cam = cameras.find(c => c.id === activeCamId);
+                      if (cam) navigator.clipboard.writeText(`${cam.lat.toFixed(6)}, ${cam.lng.toFixed(6)}`);
+                    }}
+                    className="text-brand-blue hover:text-white"
+                    title="Copiar Coordenadas"
+                  >
+                    Copiar
+                  </button>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-xs text-slate-400 flex justify-between">
                 <span>Rotación (Heading)</span>
                 <span>{cameras.find(c => c.id === activeCamId)?.heading}°</span>
               </label>

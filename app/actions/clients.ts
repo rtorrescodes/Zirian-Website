@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function getClients(query?: string, statusFilter?: string) {
+export async function getClients(query?: string, statusFilter?: string, origenFilter?: string, tipoFilter?: string) {
   const whereClause: any = {};
   
   if (query) {
@@ -17,6 +17,14 @@ export async function getClients(query?: string, statusFilter?: string) {
 
   if (statusFilter && statusFilter !== 'all') {
     whereClause.status = statusFilter;
+  }
+  
+  if (origenFilter && origenFilter !== 'all') {
+    whereClause.origen = origenFilter;
+  }
+  
+  if (tipoFilter && tipoFilter !== 'all') {
+    whereClause.tipo_instalacion = tipoFilter;
   }
 
   const clients = await prisma.client.findMany({
