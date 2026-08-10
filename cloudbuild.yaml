@@ -31,7 +31,7 @@ steps:
           --image=gcr.io/$PROJECT_ID/zirianweb:$COMMIT_SHA \
           --region=us-central1 \
           --platform=managed \
-          --set-env-vars=NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$$MAPS_KEY \
+          --update-env-vars=NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=$$MAPS_KEY \
           --quiet
     secretEnv: ['MAPS_KEY']
 
