@@ -72,10 +72,22 @@ export async function GET(
       return new NextResponse('Quote not found', { status: 404 });
     }
 
+    // Read images as base64 for foolproof PDF generation
+    let logoData: string | undefined = undefined;
+    let stripData: string | undefined = undefined;
+    try {
+      const logoBuffer = fs.readFileSync(path.join(process.cwd(), 'public', 'logo-zirian-cotizador.png'));
+      logoData = `data:image/png;base64,${logoBuffer.toString('base64')}`;
+      const stripBuffer = fs.readFileSync(path.join(process.cwd(), 'public', 'instalaciones-strip.png'));
+      stripData = `data:image/png;base64,${stripBuffer.toString('base64')}`;
+    } catch (e) {
+      console.error('Failed to read images for PDF', e);
+    }
+
     // Generate base PDF stream
     const plainQuote = serializeQuote(quote);
     const stream = await renderToStream(
-      React.createElement(BaseQuotePdf, { quote: plainQuote, client: plainQuote.client }) as any
+      React.createElement(BaseQuotePdf, { quote: plainQuote, client: plainQuote.client, logoData, stripData }) as any
     );
 
     // Convert NodeJS Readable stream to buffer

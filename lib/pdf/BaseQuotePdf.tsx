@@ -312,9 +312,12 @@ const styles = StyleSheet.create({
   }
 });
 
-export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => {
-  const logoPath = typeof window !== 'undefined' ? '/logo-zirian-cotizador.png' : require('path').join(process.cwd(), 'public', 'logo-zirian-cotizador.png');
-  const stripPath = typeof window !== 'undefined' ? '/instalaciones-strip.png' : require('path').join(process.cwd(), 'public', 'instalaciones-strip.png');
+export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: any, client: any, logoData?: string, stripData?: string }) => {
+  const defaultLogoPath = typeof window !== 'undefined' ? '/logo-zirian-cotizador.png' : require('path').join(process.cwd(), 'public', 'logo-zirian-cotizador.png');
+  const defaultStripPath = typeof window !== 'undefined' ? '/instalaciones-strip.png' : require('path').join(process.cwd(), 'public', 'instalaciones-strip.png');
+  
+  const logoPath = logoData || defaultLogoPath;
+  const stripPath = stripData || defaultStripPath;
 
   const createdAt = new Date(quote.fecha_creacion);
   const validUntil = new Date(createdAt.getTime() + (quote.validez_dias || 15) * 86400000);
