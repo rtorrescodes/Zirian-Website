@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   },
   stripContainer: {
     marginHorizontal: 40,
-    marginBottom: 0,
+    marginBottom: 15,
   },
   footerBanner: {
     backgroundColor: '#25B150',
@@ -445,6 +445,9 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
             </View>
           </View>
         </View>
+
+        {/* Spacer to push everything below to the bottom of the page */}
+        <View style={{ flexGrow: 1, minHeight: 20 }} />
 
         {/* Compromiso Zirian Section */}
         <View style={{ marginHorizontal: 40, marginBottom: 5 }}>

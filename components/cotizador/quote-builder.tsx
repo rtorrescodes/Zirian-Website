@@ -916,7 +916,7 @@ export function QuoteBuilder({
                     <div className="p-3 text-sm flex flex-col gap-1">
                       <p><span className="font-bold">Fecha:</span> {new Date().toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
                       <p><span className="font-bold">Validez:</span> {new Date(Date.now() + 15 * 86400000).toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
-                      <p><span className="font-bold">Agente:</span> Zirian Team</p>
+                      <p className="mb-0.5"><span className="font-bold">Agente:</span> Ing. Rodrigo Torres</p>
                     </div>
                   </div>
                 </div>
@@ -995,19 +995,18 @@ export function QuoteBuilder({
                   </div>
                 </div>
 
-
-
                 {/* Compromiso Zirian */}
-                <div className="px-12 border-t-2 border-slate-300 pt-3">
+                <div className="px-12 pt-3 flex-grow">
                   <h3 className="text-[#1C497B] font-bold text-sm uppercase tracking-wider mb-2">Compromiso Zirian</h3>
                   <div className="flex gap-4">
-                    <div className="w-1/2">
-                      <p className="text-xs text-slate-600 italic mb-4">
+                    <div className="w-1/2 pr-4 border-t border-black pt-2">
+                      <p className="text-[10px] italic text-slate-600 mb-2">
                         {template === 'general'
-                          ? '"En Zirian México nos especializamos en soluciones tecnológicas adaptadas a su entorno, garantizando siempre los más altos estándares de calidad, seguridad y eficiencia."'
-                          : '"En Zirian México nos especializamos en soluciones adaptadas al entorno de BCS, priorizando la compatibilidad técnica con marcas líderes."'}
+                          ? '"Diseñamos e integramos soluciones tecnológicas de alta ingeniería, garantizando eficiencia, seguridad y calidad superior en BCS."'
+                          : '"Garantizamos infraestructura líder y compatible con BYD, operando bajo los más estrictos estándares normativos de seguridad en BCS."'
+                        }
                       </p>
-                      <p className="text-xs font-bold text-[#1C497B]">System Administrator - Equipo Zirian México</p>
+                      <p className="text-xs font-bold text-[#1C497B]">Equipo Zirian México</p>
                     </div>
                     <div className="w-1/2 flex flex-col items-center">
                       <p className="text-xs font-bold text-[#1C497B] mb-2">Gracias por su confianza</p>
@@ -1015,11 +1014,12 @@ export function QuoteBuilder({
                         <img src="/instalaciones-strip.jpg" alt="Instalaciones Zirian" className="w-full h-full object-cover" />
                       </div>
                     </div>
-                  </div>
-                </div>
+                {/* Spacer to push everything below to the bottom */}
+                <div className="flex-grow min-h-[20px]"></div>
 
-                {/* Green Legal Footer */}
-                <div className="absolute bottom-6 left-6 right-6">
+                {/* Footer Section */}
+                <div className="px-12 mb-6">
+                  <div className="flex justify-between items-start mb-4">
                   {template !== 'general' && (
                     <div className="mx-12 bg-[#25B150] text-white text-[9px] font-bold text-center py-1 px-4 mt-1">
                       MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y<br/>cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.
