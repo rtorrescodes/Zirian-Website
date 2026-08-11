@@ -31,6 +31,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { createQuote, updateQuote } from '@/app/actions/quotes'
+import { searchSyscomForQuote } from '@/app/actions/syscom'
 
 interface Category {
   id: number
@@ -114,7 +115,10 @@ export function QuoteBuilder({
     initialCategories.length > 0 ? initialCategories[0].id : null
   )
   const [productQuery, setProductQuery] = useState('')
-  const [pickedProductId, setPickedProductId] = useState<number | null>(null)
+  const [searchMode, setSearchMode] = useState<'local' | 'syscom'>('local')
+  const [syscomResults, setSyscomResults] = useState<any[]>([])
+  const [isSearchingSyscom, setIsSearchingSyscom] = useState(false)
+  const [pickedProductId, setPickedProductId] = useState<number | string | null>(null)
   const [qty, setQty] = useState(1)
   const [itemDetails, setItemDetails] = useState('')
 
@@ -184,7 +188,22 @@ export function QuoteBuilder({
     [activeCategory, productQuery, initialProducts],
   )
 
-  const pickedProduct = initialProducts.find((p) => p.id === pickedProductId) ?? null
+  const pickedProduct = useMemo(() => {
+    if (typeof pickedProductId === 'string' && pickedProductId.startsWith('syscom-')) {
+      const sp = syscomResults.find(r => r.id === pickedProductId)
+      if (!sp) return null
+      return {
+        id: -Math.floor(Math.random() * 100000),
+        nombre: `[SYSCOM] ${sp.nombre}`,
+        descripcion: `Modelo: ${sp.modelo} | Marca: ${sp.marca}`,
+        codigo: sp.modelo,
+        precio_base: sp.precioListaMXN,
+        unidad_medida: 'Pieza',
+        categoryId: 0,
+      } as Product
+    }
+    return initialProducts.find((p) => p.id === pickedProductId) ?? null
+  }, [pickedProductId, initialProducts, syscomResults])
 
   const addItem = () => {
     if (!pickedProduct) return
@@ -412,86 +431,181 @@ export function QuoteBuilder({
         <Card className="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5 shadow-xl backdrop-blur-sm">
           <SectionTitle icon={ShoppingCart} step="2" label="Agregar productos" />
 
-          <Label className="mt-4 block text-xs font-tech font-bold uppercase tracking-wider text-slate-400">
-            Categoría
-          </Label>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {initialCategories.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => {
-                  setActiveCategory(cat.id)
-                  setPickedProductId(null)
-                }}
-                className={cn(
-                  'rounded-full border px-3 py-1.5 text-[11px] font-tech font-bold uppercase tracking-wider transition-colors',
-                  activeCategory === cat.id
-                    ? 'border-brand-blue/50 bg-brand-blue/20 text-brand-blue shadow-[0_0_10px_rgba(0,163,255,0.3)]'
-                    : 'border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600 hover:text-white',
-                )}
-              >
-                {cat.nombre}
-              </button>
-            ))}
-          </div>
-
-          <Label className="mt-4 block text-xs font-tech font-bold uppercase tracking-wider text-slate-400">
-            Producto
-          </Label>
-          <div className="relative mt-2">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-            <Input
-              value={productQuery}
-              onChange={(e) => {
-                setProductQuery(e.target.value)
-                setPickedProductId(null)
-              }}
-              placeholder={`Buscar en ${activeCategory}…`}
-              className="pl-9"
-            />
-          </div>
-
-          <ul className="mt-2 max-h-56 space-y-1 overflow-y-auto pr-1">
-            {filteredProducts.map((p) => (
-              <li key={p.id}>
-                <button
+          <div className="flex flex-col sm:flex-row gap-4 mb-6 mt-4">
+            <div className="flex-1">
+              <Label className="text-xs uppercase font-tech tracking-widest text-slate-400">
+                Origen de Datos
+              </Label>
+              <div className="flex gap-2 mt-2">
+                <Button 
                   type="button"
-                  onMouseDown={(e) => {
-                    e.preventDefault()
-                    setPickedProductId(p.id)
-                  }}
-                  className={cn(
-                    'flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors',
-                    pickedProductId === p.id
-                      ? 'border-brand-blue/50 bg-brand-blue/10 shadow-[inset_0_0_15px_rgba(0,163,255,0.15)]'
-                      : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900',
-                  )}
+                  variant={searchMode === 'local' ? 'default' : 'outline'} 
+                  onClick={() => { setSearchMode('local'); setProductQuery(''); setPickedProductId(null) }}
+                  className={cn("flex-1 text-xs font-bold uppercase tracking-wider", searchMode === 'local' ? 'bg-brand-blue text-slate-950' : 'border-slate-700 text-slate-400 hover:text-white')}
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-900 text-slate-500 border border-slate-800">
-                    <Zap className="h-4 w-4" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-white">
-                      {p.nombre}
-                    </span>
-                    <span className="block truncate text-[10px] font-tech font-bold uppercase tracking-wider text-slate-400 mt-0.5">
-                      {p.codigo ?? p.category?.nombre}
-                    </span>
-                  </span>
-                  <span className="shrink-0 text-right">
-                    <span className="block text-sm font-semibold text-emerald-400">
-                      {currencyExact(Number(p.precio_base))}
-                    </span>
-                    <span className="block text-[10px] font-tech font-bold uppercase tracking-wider text-slate-500">/{p.unidad_medida}</span>
-                  </span>
-                </button>
-              </li>
-            ))}
-            {filteredProducts.length === 0 && (
-              <li className="px-3 py-6 text-center text-sm text-muted-foreground">
-                Sin productos en esta búsqueda
-              </li>
+                  Local
+                </Button>
+                <Button 
+                  type="button"
+                  variant={searchMode === 'syscom' ? 'default' : 'outline'} 
+                  onClick={() => { setSearchMode('syscom'); setProductQuery(''); setPickedProductId(null) }}
+                  className={cn("flex-1 text-xs font-bold uppercase tracking-wider", searchMode === 'syscom' ? 'bg-brand-cyan text-slate-950' : 'border-slate-700 text-slate-400 hover:text-white')}
+                >
+                  Syscom
+                </Button>
+              </div>
+            </div>
+
+            {searchMode === 'local' && (
+              <div className="flex-1">
+                <Label className="text-xs uppercase font-tech tracking-widest text-slate-400">
+                  Categoría
+                </Label>
+                <select
+                  value={activeCategory ?? ''}
+                  onChange={(e) => {
+                    setActiveCategory(Number(e.target.value))
+                    setProductQuery('')
+                    setPickedProductId(null)
+                  }}
+                  className="w-full mt-2 h-10 rounded-md border border-slate-700 bg-slate-900 px-3 text-sm text-white focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none"
+                >
+                  {initialCategories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Input
+                placeholder={searchMode === 'local' ? "Filtrar por nombre o código..." : "Buscar en Syscom (mínimo 3 letras) y presiona Enter..."}
+                value={productQuery}
+                onChange={(e) => setProductQuery(e.target.value)}
+                onKeyDown={async (e) => {
+                  if (searchMode === 'syscom' && e.key === 'Enter') {
+                    e.preventDefault()
+                    if (productQuery.length >= 3) {
+                      setIsSearchingSyscom(true)
+                      setSyscomResults([])
+                      setPickedProductId(null)
+                      try {
+                        const res = await searchSyscomForQuote(productQuery)
+                        setSyscomResults(res)
+                      } catch (err) {
+                        console.error(err)
+                      } finally {
+                        setIsSearchingSyscom(false)
+                      }
+                    }
+                  }
+                }}
+                className={cn("pl-10 bg-slate-900/50 border-slate-700", searchMode === 'syscom' ? "focus-visible:ring-brand-cyan" : "focus-visible:ring-brand-blue")}
+              />
+              {searchMode === 'syscom' && isSearchingSyscom && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <span className="w-4 h-4 rounded-full border-2 border-brand-cyan border-t-transparent animate-spin inline-block"></span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <ul className="mt-2 max-h-56 space-y-1 overflow-y-auto pr-1 custom-scrollbar">
+            {searchMode === 'local' ? (
+              filteredProducts.length === 0 ? (
+                <li className="px-3 py-6 text-center text-sm text-muted-foreground font-tech">
+                  Sin productos locales
+                </li>
+              ) : (
+                filteredProducts.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        setPickedProductId(p.id)
+                      }}
+                      className={cn(
+                        'flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors',
+                        pickedProductId === p.id
+                          ? 'border-brand-blue/50 bg-brand-blue/10 shadow-[inset_0_0_15px_rgba(0,163,255,0.15)]'
+                          : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900',
+                      )}
+                    >
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-900 text-slate-500 border border-slate-800">
+                        <Zap className="h-4 w-4" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium text-white">
+                          {p.nombre}
+                        </span>
+                        <span className="block truncate text-[10px] font-tech font-bold uppercase tracking-wider text-slate-400 mt-0.5">
+                          {p.codigo ?? p.category?.nombre}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-right">
+                        <span className="block text-sm font-semibold text-emerald-400">
+                          {currencyExact(Number(p.precio_base))}
+                        </span>
+                        <span className="block text-[10px] font-tech font-bold uppercase tracking-wider text-slate-500">/{p.unidad_medida}</span>
+                      </span>
+                    </button>
+                  </li>
+                ))
+              )
+            ) : (
+              syscomResults.length === 0 && !isSearchingSyscom ? (
+                <li className="px-3 py-6 text-center text-sm text-muted-foreground font-tech">
+                  {productQuery.length >= 3 ? 'Sin resultados en Syscom. Presiona Enter.' : 'Escribe y presiona Enter.'}
+                </li>
+              ) : (
+                syscomResults.map((p) => (
+                  <li key={p.id}>
+                    <button
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        setPickedProductId(p.id)
+                      }}
+                      className={cn(
+                        'flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors',
+                        pickedProductId === p.id
+                          ? 'border-brand-cyan/50 bg-brand-cyan/10 shadow-[inset_0_0_15px_rgba(0,163,255,0.15)]'
+                          : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900',
+                      )}
+                    >
+                      {p.imagen ? (
+                         <img src={p.imagen} alt={p.modelo} className="w-9 h-9 object-contain rounded bg-white/5 p-1 shrink-0" />
+                      ) : (
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-900 text-slate-500 border border-slate-800">
+                          <Zap className="h-4 w-4" />
+                        </span>
+                      )}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium text-white">
+                          {p.nombre}
+                        </span>
+                        <span className="block truncate text-[10px] font-tech font-bold uppercase tracking-wider text-slate-400 mt-0.5">
+                          {p.modelo} | {p.marca}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-right">
+                        <span className="block text-sm font-semibold text-emerald-400">
+                          {currencyExact(p.precioListaMXN)}
+                        </span>
+                        <span className="block text-[10px] font-tech font-bold uppercase tracking-wider text-slate-500">
+                          Stock: {p.stock}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                ))
+              )
             )}
           </ul>
 
