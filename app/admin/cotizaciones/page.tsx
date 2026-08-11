@@ -8,8 +8,9 @@ import { QuoteActions } from "@/components/cotizador/quote-actions"
 
 export const dynamic = 'force-dynamic'
 
-export default async function CotizacionesPage({ searchParams }: { searchParams: { showLost?: string } }) {
-  const showLost = searchParams.showLost === 'true';
+export default async function CotizacionesPage({ searchParams }: { searchParams: Promise<{ showLost?: string }> }) {
+  const resolvedParams = await searchParams;
+  const showLost = resolvedParams.showLost === 'true';
   const allQuotes = await getQuotes();
   const quotes = showLost ? allQuotes : allQuotes.filter(q => q.status !== 'Rechazada' && q.status !== 'Cancelada');
 
