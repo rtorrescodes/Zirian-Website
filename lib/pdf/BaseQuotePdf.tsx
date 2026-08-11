@@ -337,6 +337,9 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
   const calculatedIva = (quote.requiere_factura || quote.impuestos > 0) ? calculatedSubtotal * 0.16 : 0;
   const calculatedTotal = calculatedSubtotal + calculatedIva;
 
+  const isEn = quote.template === 'ev_charger_en';
+  const isGeneral = quote.template === 'general';
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -367,27 +370,33 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
             </View>
           </View>
           <View style={styles.infoBlockRight}>
-            <Text style={styles.infoBlockTitle}>Detalles de Emisión</Text>
+            <Text style={styles.infoBlockTitle}>{isEn ? 'Emission Details' : 'Detalles de Emisión'}</Text>
             <View style={styles.infoBlockContent}>
-              <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>Fecha: </Text>{createdAt.toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
-              <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>Validez: </Text>{validUntil.toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
-              <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>Agente: </Text>Ing. Rodrigo Torres</Text>
+              <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Date: ' : 'Fecha: '}</Text>{createdAt.toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
+              <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Valid until: ' : 'Validez: '}</Text>{validUntil.toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
+              <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Agent: ' : 'Agente: '}</Text>Ing. Rodrigo Torres</Text>
             </View>
           </View>
         </View>
 
         {/* Intro */}
         <View style={styles.introSection}>
-          <Text style={styles.introText}>Estimado/a cliente:</Text>
-          <Text style={styles.introText}>Es un gusto presentarle nuestra propuesta técnica para la integración de su ecosistema. En Zirian México, priorizamos la seguridad normativa y la eficiencia energética.</Text>
+          <Text style={styles.introText}>{isEn ? 'Dear Client:' : 'Estimado/a cliente:'}</Text>
+          <Text style={styles.introText}>
+            {isEn 
+              ? 'It is a pleasure to present our technical proposal for the integration of your ecosystem. At Zirian México, we prioritize regulatory safety and energy efficiency.'
+              : 'Es un gusto presentarle nuestra propuesta técnica para la integración de su ecosistema. En Zirian México, priorizamos la seguridad normativa y la eficiencia energética.'}
+          </Text>
         </View>
 
         {/* Banner */}
         <View style={styles.banner}>
           <Text style={styles.bannerText}>
-            {quote.template === 'general' 
+            {isGeneral 
               ? 'Alta Ingeniería Eléctrica / Automatización / Videovigilancia / Redes / Sistemas' 
-              : 'Cargadores EV / Paneles Solares / Riego automático / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas'
+              : isEn 
+                ? 'EV Chargers / Solar Panels / Automatic Sprinklers / Air Conditioners / Electric Gates / Internet Networks / Systems'
+                : 'Cargadores EV / Paneles Solares / Riego automático / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas'
             }
           </Text>
         </View>
@@ -395,11 +404,11 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
         {/* Table */}
         <View style={styles.tableWrapper}>
           <View style={styles.tableHeader}>
-            <Text style={styles.thQty}>Cant</Text>
-            <Text style={styles.thProduct}>Producto</Text>
-            <Text style={styles.thDesc}>Descripción</Text>
-            <Text style={styles.thPrice}>Precio</Text>
-            <Text style={styles.thIVA}>IVA</Text>
+            <Text style={styles.thQty}>{isEn ? 'Qty' : 'Cant'}</Text>
+            <Text style={styles.thProduct}>{isEn ? 'Product' : 'Producto'}</Text>
+            <Text style={styles.thDesc}>{isEn ? 'Description' : 'Descripción'}</Text>
+            <Text style={styles.thPrice}>{isEn ? 'Price' : 'Precio'}</Text>
+            <Text style={styles.thIVA}>{isEn ? 'Tax' : 'IVA'}</Text>
             <Text style={styles.thTotal}>Total</Text>
           </View>
           
@@ -428,7 +437,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
         {/* Totals */}
         <View style={styles.totalsWrapper}>
           <View style={styles.totalsLeft}>
-            <Text style={styles.totalsNoteText}>Nota Técnica:</Text>
+            <Text style={styles.totalsNoteText}>{isEn ? 'Technical Note:' : 'Nota Técnica:'}</Text>
             {quote.notas_cliente ? <Text style={{ fontSize: 8, color: '#475569', marginTop: 3 }}>{quote.notas_cliente}</Text> : null}
           </View>
           <View style={styles.totalsRight}>
@@ -437,12 +446,12 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
               <Text style={styles.totalsValue}>{formatCurrency(calculatedSubtotal)}</Text>
             </View>
             <View style={styles.totalsRow}>
-              <Text style={styles.totalsLabel}>I.V.A. (16%)</Text>
+              <Text style={styles.totalsLabel}>{isEn ? 'Tax (16%)' : 'I.V.A. (16%)'}</Text>
               <Text style={styles.totalsValue}>{formatCurrency(calculatedIva)}</Text>
             </View>
             <View style={styles.grandTotalRow}>
               <Text style={styles.grandTotalLabel}>Total</Text>
-              <Text style={styles.grandTotalValue}>{formatCurrency(calculatedTotal)} MXN</Text>
+              <Text style={styles.grandTotalValue}>{formatCurrency(calculatedTotal)} {quote.moneda || 'MXN'}</Text>
             </View>
           </View>
         </View>
@@ -452,65 +461,71 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
 
         {/* Compromiso Zirian Section */}
         <View style={{ marginHorizontal: 40, marginBottom: 5 }}>
-          <Text style={styles.compromisoTitle}>COMPROMISO ZIRIAN</Text>
+          <Text style={styles.compromisoTitle}>{isEn ? 'ZIRIAN COMMITMENT' : 'COMPROMISO ZIRIAN'}</Text>
         </View>
         <View style={styles.compromisoWrapper}>
           <View style={styles.compromisoLeft}>
             <Text style={styles.compromisoTextItalic}>
-              {quote.template === 'general'
+              {isGeneral
                 ? '"Diseñamos e integramos soluciones tecnológicas de alta ingeniería, garantizando eficiencia, seguridad y calidad superior en BCS."'
-                : '"Garantizamos infraestructura líder y compatible con BYD, operando bajo los más estrictos estándares normativos de seguridad en BCS."'
+                : isEn
+                  ? '"We guarantee leading infrastructure compatible with BYD, operating under the strictest safety and regulatory standards in BCS."'
+                  : '"Garantizamos infraestructura líder y compatible con BYD, operando bajo los más estrictos estándares normativos de seguridad en BCS."'
               }
             </Text>
-            <Text style={styles.compromisoAuthor}>Equipo Zirian México</Text>
+            <Text style={styles.compromisoAuthor}>{isEn ? 'Zirian México Team' : 'Equipo Zirian México'}</Text>
           </View>
         </View>
 
         {/* Image Strip Section Full Width */}
         <View style={styles.stripContainer}>
-          <Text style={styles.graciasText}>Gracias por su confianza</Text>
+          <Text style={styles.graciasText}>{isEn ? 'Thank you for your trust' : 'Gracias por su confianza'}</Text>
           <Image src={stripPath} style={styles.instalacionesStrip} />
         </View>
 
         {/* Footer Banner */}
-        {quote.template !== 'general' ? (
+        {!isGeneral ? (
           <View style={styles.footerBanner}>
-            <Text style={styles.footerBannerText}>MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y{"\n"}cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.</Text>
+            <Text style={styles.footerBannerText}>
+              {isEn 
+                ? 'MAINTAIN YOUR BYD WARRANTY: We hold the EC1641 EV Charger Installation certification backed by CFE and\nstrictly comply with the NOM-001-SEDE-2012 Electrical Installations standard.'
+                : 'MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y\ncumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.'}
+            </Text>
           </View>
         ) : null}
 
         {/* 6 Terms Blocks */}
         <View style={styles.termsWrapper}>
           <View style={styles.termItem}>
-            <Text style={styles.termsTitle}>1. ALCANCE DE LA OFERTA</Text>
-            <Text style={styles.termsText}>Esta propuesta incluye exclusivamente los conceptos descritos. Cualquier requerimiento, material o trabajo adicional no contemplado será cotizado por separado.</Text>
+            <Text style={styles.termsTitle}>{isEn ? '1. SCOPE OF OFFER' : '1. ALCANCE DE LA OFERTA'}</Text>
+            <Text style={styles.termsText}>{isEn ? 'This proposal includes exclusively the described items. Any additional requirement, material, or work not included will be quoted separately.' : 'Esta propuesta incluye exclusivamente los conceptos descritos. Cualquier requerimiento, material o trabajo adicional no contemplado será cotizado por separado.'}</Text>
           </View>
           <View style={styles.termItem}>
-            <Text style={styles.termsTitle}>3. RESPONSABILIDAD DEL CLIENTE</Text>
-            <Text style={styles.termsText}>El cliente deberá garantizar el libre acceso al sitio y será responsable de tramitar los permisos necesarios (CFE/municipio) salvo acuerdo previo.</Text>
+            <Text style={styles.termsTitle}>{isEn ? '3. CLIENT RESPONSIBILITY' : '3. RESPONSABILIDAD DEL CLIENTE'}</Text>
+            <Text style={styles.termsText}>{isEn ? 'The client must guarantee free access to the site and is responsible for processing any necessary permits (CFE/municipality) unless otherwise agreed.' : 'El cliente deberá garantizar el libre acceso al sitio y será responsable de tramitar los permisos necesarios (CFE/municipio) salvo acuerdo previo.'}</Text>
           </View>
           <View style={styles.termItem}>
-            <Text style={styles.termsTitle}>5. VALIDEZ Y CONDICIONES DE PAGO</Text>
-            <Text style={styles.termsText}>Cotización válida por 30 días. Requiere anticipo para inicio y saldo contra entrega. Retrasos en los pagos pausarán los tiempos de instalación.</Text>
+            <Text style={styles.termsTitle}>{isEn ? '5. VALIDITY & PAYMENT TERMS' : '5. VALIDEZ Y CONDICIONES DE PAGO'}</Text>
+            <Text style={styles.termsText}>{isEn ? 'Quote valid for 30 days. Requires an advance payment to start and balance against delivery. Payment delays will pause installation times.' : 'Cotización válida por 30 días. Requiere anticipo para inicio y saldo contra entrega. Retrasos en los pagos pausarán los tiempos de instalación.'}</Text>
           </View>
           <View style={styles.termItem}>
-            <Text style={styles.termsTitle}>2. GARANTÍA Y COBERTURA</Text>
-            <Text style={styles.termsText}>Garantía sobre equipos instalados por Zirian. Quedan excluidos daños por uso indebido, variaciones de voltaje, terceros o fenómenos naturales.</Text>
+            <Text style={styles.termsTitle}>{isEn ? '2. WARRANTY & COVERAGE' : '2. GARANTÍA Y COBERTURA'}</Text>
+            <Text style={styles.termsText}>{isEn ? 'Warranty applies to equipment installed by Zirian. Excludes damage caused by misuse, voltage fluctuations, third parties, or natural phenomena.' : 'Garantía sobre equipos instalados por Zirian. Quedan excluidos daños por uso indebido, variaciones de voltaje, terceros o fenómenos naturales.'}</Text>
           </View>
           <View style={styles.termItem}>
-            <Text style={styles.termsTitle}>4. SOPORTE TÉCNICO</Text>
-            <Text style={styles.termsText}>Asistencia remota para diagnóstico de fallas. Las visitas presenciales están sujetas a disponibilidad (viáticos aplicables fuera de BCS).</Text>
+            <Text style={styles.termsTitle}>{isEn ? '4. TECHNICAL SUPPORT' : '4. SOPORTE TÉCNICO'}</Text>
+            <Text style={styles.termsText}>{isEn ? 'Remote assistance for troubleshooting. On-site visits are subject to availability (travel expenses apply outside BCS).' : 'Asistencia remota para diagnóstico de fallas. Las visitas presenciales están sujetas a disponibilidad (viáticos aplicables fuera de BCS).'}</Text>
           </View>
           <View style={styles.termItem}>
-            <Text style={styles.termsTitle}>6. PROPIEDAD INTELECTUAL</Text>
-            <Text style={styles.termsText}>La ingeniería y diseños proporcionados son propiedad intelectual de Zirian. Queda prohibida su reproducción o distribución sin autorización.</Text>
+            <Text style={styles.termsTitle}>{isEn ? '6. INTELLECTUAL PROPERTY' : '6. PROPIEDAD INTELECTUAL'}</Text>
+            <Text style={styles.termsText}>{isEn ? 'Engineering and designs provided are the intellectual property of Zirian. Reproduction or distribution without authorization is prohibited.' : 'La ingeniería y diseños proporcionados son propiedad intelectual de Zirian. Queda prohibida su reproducción o distribución sin autorización.'}</Text>
           </View>
         </View>
 
         {/* Page Footer (Not absolute, just flows after content) */}
         <View style={styles.pageFooter}>
-          <Text style={styles.pageFooterText}>Página 1</Text>
-          <Text style={styles.pageFooterText}>{createdAt.toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
+          <Text style={styles.pageFooterText}>{isEn ? 'Page 1' : 'Página 1'}</Text>
+          <Text style={styles.pageFooterText}>{createdAt.toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
         </View>
 
       </Page>

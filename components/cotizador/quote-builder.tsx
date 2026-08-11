@@ -151,6 +151,7 @@ export function QuoteBuilder({
   const [savedQuoteId, setSavedQuoteId] = useState<number | null>(initialQuote?.id || null)
   const [mostrarDesglose, setMostrarDesglose] = useState(initialQuote?.mostrar_desglose ?? false)
   const [template, setTemplate] = useState<string>(initialQuote?.template || 'ev_charger')
+  const [notasCliente, setNotasCliente] = useState(initialQuote?.notas_cliente || '')
   const [requiereFactura, setRequiereFactura] = useState<boolean>(initialQuote ? (initialQuote.requiere_factura || initialQuote.impuestos > 0) : true)
   const [status, setStatus] = useState<string>(initialQuote?.status || 'Borrador')
   const [motivoRechazo, setMotivoRechazo] = useState<string>(initialQuote?.motivo_rechazo || '')
@@ -807,6 +808,7 @@ export function QuoteBuilder({
                   className="bg-slate-900 border border-slate-700 text-white rounded p-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-brand-blue"
                 >
                   <option value="ev_charger">Cargadores EV</option>
+                  <option value="ev_charger_en">Cargadores EV (Inglés)</option>
                   <option value="general">Cotización General (CCTV, etc)</option>
                 </select>
               </div>
@@ -821,6 +823,15 @@ export function QuoteBuilder({
                 <label htmlFor="chk-desglose" className="text-[11px] font-tech text-slate-400 cursor-pointer">
                   Mostrar desglose de impuestos en PDF
                 </label>
+              </div>
+              <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-slate-800">
+                <label className="text-[11px] font-tech font-bold uppercase tracking-wider text-slate-400">Nota Técnica (Opcional)</label>
+                <textarea
+                  value={notasCliente}
+                  onChange={(e) => setNotasCliente(e.target.value)}
+                  placeholder="Añade notas adicionales para el cliente..."
+                  className="w-full bg-slate-900 border border-slate-700 text-white rounded p-2 text-xs outline-none focus-visible:ring-1 focus-visible:ring-brand-blue min-h-[60px]"
+                />
               </div>
             </div>
 
@@ -880,8 +891,12 @@ export function QuoteBuilder({
         </div>
         <div className="bg-slate-50 md:bg-slate-900 py-4 px-0 md:p-8 rounded-xl flex justify-center shadow-inner overflow-hidden w-full">
           <div className="flex flex-col gap-8 w-full md:w-auto overflow-hidden md:overflow-visible">
-            <div className="w-[340px] h-[500px] sm:w-[510px] sm:h-[730px] md:w-auto md:h-auto mx-auto overflow-hidden">
-              <div className="w-[850px] min-h-[1202px] bg-white md:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)] font-sans relative shrink-0 scale-[0.4] sm:scale-[0.6] md:scale-100 origin-top-left transition-all text-[#1F2937]">
+            {(() => {
+              const isEn = template === 'ev_charger_en';
+              const isGeneral = template === 'general';
+              return (
+              <div className="w-[340px] h-[500px] sm:w-[510px] sm:h-[730px] md:w-auto md:h-auto mx-auto overflow-hidden">
+                <div className="w-[850px] min-h-[1202px] bg-white md:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)] font-sans relative shrink-0 scale-[0.4] sm:scale-[0.6] md:scale-100 origin-top-left transition-all text-[#1F2937] pb-6">
                 
                 {/* Header (Top) */}
                 <div className="flex justify-between items-start px-12 pt-12 pb-6">
@@ -895,7 +910,7 @@ export function QuoteBuilder({
                   </div>
 
                   <div className="text-right">
-                    <h1 className="text-3xl font-black text-[#1C497B] tracking-wider mb-2 uppercase">Cotización</h1>
+                    <h1 className="text-3xl font-black text-[#1C497B] tracking-wider mb-2 uppercase">{isEn ? 'Quote' : 'Cotización'}</h1>
                     <p className="text-slate-400 font-mono text-sm"># DRAFT</p>
                   </div>
                 </div>
@@ -903,7 +918,7 @@ export function QuoteBuilder({
                 {/* Info Blocks */}
                 <div className="flex px-12 mb-6 gap-0 border-t border-slate-300">
                   <div className="flex-1 border-r border-slate-300">
-                    <div className="bg-[#1C497B] text-white font-bold text-xs px-2 py-1 uppercase tracking-wider">Cliente</div>
+                    <div className="bg-[#1C497B] text-white font-bold text-xs px-2 py-1 uppercase tracking-wider">{isEn ? 'Client' : 'Cliente'}</div>
                     <div className="p-3 text-sm">
                       <p className="font-bold text-base mb-1">{selectedClient?.nombre || "[Nombre del Cliente]"}</p>
                       {selectedClient?.empresa && <p className="text-slate-700">{selectedClient.empresa}</p>}
@@ -912,10 +927,10 @@ export function QuoteBuilder({
                     </div>
                   </div>
                   <div className="flex-1">
-                    <div className="bg-[#1C497B] text-white font-bold text-xs px-2 py-1 uppercase tracking-wider">Detalles de Emisión</div>
+                    <div className="bg-[#1C497B] text-white font-bold text-xs px-2 py-1 uppercase tracking-wider">{isEn ? 'Emission Details' : 'Detalles de Emisión'}</div>
                     <div className="p-3 text-sm flex flex-col gap-1">
-                      <p><span className="font-bold">Fecha:</span> {new Date().toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
-                      <p><span className="font-bold">Validez:</span> {new Date(Date.now() + 15 * 86400000).toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
+                      <p><span className="font-bold">{isEn ? 'Date:' : 'Fecha:'}</span> {new Date().toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
+                      <p><span className="font-bold">{isEn ? 'Valid until:' : 'Validez:'}</span> {new Date(Date.now() + 15 * 86400000).toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
                       <p className="mb-0.5"><span className="font-bold">Agente:</span> Ing. Rodrigo Torres</p>
                     </div>
                   </div>
@@ -923,17 +938,21 @@ export function QuoteBuilder({
 
                 {/* Intro Text */}
                 <div className="px-12 mb-4">
-                  <p className="text-sm text-slate-700 mb-2">Estimado/a cliente:</p>
+                  <p className="text-sm text-slate-700 mb-2">{isEn ? 'Dear Client:' : 'Estimado/a cliente:'}</p>
                   <p className="text-sm text-slate-700 leading-relaxed">
-                    Es un gusto presentarle nuestra propuesta técnica para la integración de su ecosistema. En <strong>Zirian México</strong>, priorizamos la seguridad normativa y la eficiencia energética.
+                    {isEn 
+                      ? 'It is a pleasure to present our technical proposal for the integration of your ecosystem. At Zirian México, we prioritize regulatory safety and energy efficiency.'
+                      : <>Es un gusto presentarle nuestra propuesta técnica para la integración de su ecosistema. En <strong>Zirian México</strong>, priorizamos la seguridad normativa y la eficiencia energética.</>}
                   </p>
                 </div>
 
                 {/* Green/Teal Banner */}
                 <div className="mx-12 mb-1 bg-[#25B150] text-white text-[10px] font-bold text-center py-1 uppercase tracking-wider">
-                  {template === 'general'
+                  {isGeneral
                     ? 'Alta Ingeniería Eléctrica / Automatización / Videovigilancia / Redes / Sistemas'
-                    : 'Cargadores EV / Paneles Solares / Riego automático / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas'}
+                    : isEn
+                      ? 'EV Chargers / Solar Panels / Automatic Sprinklers / Air Conditioners / Electric Gates / Internet Networks / Systems'
+                      : 'Cargadores EV / Paneles Solares / Riego automático / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas'}
                 </div>
 
                 {/* Table */}
@@ -941,11 +960,11 @@ export function QuoteBuilder({
                   <table className="w-full text-xs text-left border-collapse">
                     <thead className="bg-[#1C497B] text-white">
                       <tr>
-                        <th className="py-2 px-2 border border-slate-300 w-12 text-center">Cant</th>
-                        <th className="py-2 px-2 border border-slate-300 w-48">Producto</th>
-                        <th className="py-2 px-2 border border-slate-300">Descripción</th>
-                        <th className="py-2 px-2 border border-slate-300 w-24 text-right">Precio</th>
-                        <th className="py-2 px-2 border border-slate-300 w-12 text-center">IVA</th>
+                        <th className="py-2 px-2 border border-slate-300 w-12 text-center">{isEn ? 'Qty' : 'Cant'}</th>
+                        <th className="py-2 px-2 border border-slate-300 w-48">{isEn ? 'Product' : 'Producto'}</th>
+                        <th className="py-2 px-2 border border-slate-300">{isEn ? 'Description' : 'Descripción'}</th>
+                        <th className="py-2 px-2 border border-slate-300 w-24 text-right">{isEn ? 'Price' : 'Precio'}</th>
+                        <th className="py-2 px-2 border border-slate-300 w-12 text-center">{isEn ? 'Tax' : 'IVA'}</th>
                         <th className="py-2 px-2 border border-slate-300 w-24 text-right">Total</th>
                       </tr>
                     </thead>
@@ -972,7 +991,8 @@ export function QuoteBuilder({
                   {/* Totals Box */}
                   <div className="flex mt-1">
                     <div className="w-1/2 p-2">
-                      <p className="text-xs font-bold text-slate-800">Nota Técnica:</p>
+                      <p className="text-xs font-bold text-slate-800">{isEn ? 'Technical Note:' : 'Nota Técnica:'}</p>
+                      {notasCliente && <p className="text-[10px] text-slate-600 mt-1">{notasCliente}</p>}
                     </div>
                     <div className="w-1/2">
                       <table className="w-full text-xs text-right">
@@ -982,12 +1002,12 @@ export function QuoteBuilder({
                             <td className="py-1 px-2">${subtotal.toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
                           </tr>
                           <tr>
-                            <td className="py-1 px-2 font-bold">I.V.A. (16%)</td>
+                            <td className="py-1 px-2 font-bold">{isEn ? 'Tax (16%)' : 'I.V.A. (16%)'}</td>
                             <td className="py-1 px-2">${iva.toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
                           </tr>
                           <tr className="text-lg text-[#1C497B]">
                             <td className="py-2 px-2 font-black uppercase tracking-wider">Total</td>
-                            <td className="py-2 px-2 font-black">${total.toLocaleString('es-MX', {minimumFractionDigits: 2})} MXN</td>
+                            <td className="py-2 px-2 font-black">${total.toLocaleString('es-MX', {minimumFractionDigits: 2})} {initialQuote?.moneda || 'MXN'}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -1000,19 +1020,21 @@ export function QuoteBuilder({
 
                 {/* Compromiso Zirian */}
                 <div className="px-12 pt-3">
-                  <h3 className="text-[#1C497B] font-bold text-sm uppercase tracking-wider mb-2">Compromiso Zirian</h3>
+                  <h3 className="text-[#1C497B] font-bold text-sm uppercase tracking-wider mb-2">{isEn ? 'Zirian Commitment' : 'Compromiso Zirian'}</h3>
                   <div className="flex gap-4">
                     <div className="w-1/2 pr-4 border-t border-black pt-2">
                       <p className="text-[10px] italic text-slate-600 mb-2">
-                        {template === 'general'
+                        {isGeneral
                           ? '"Diseñamos e integramos soluciones tecnológicas de alta ingeniería, garantizando eficiencia, seguridad y calidad superior en BCS."'
-                          : '"Garantizamos infraestructura líder y compatible con BYD, operando bajo los más estrictos estándares normativos de seguridad en BCS."'
+                          : isEn
+                            ? '"We guarantee leading infrastructure compatible with BYD, operating under the strictest safety and regulatory standards in BCS."'
+                            : '"Garantizamos infraestructura líder y compatible con BYD, operando bajo los más estrictos estándares normativos de seguridad en BCS."'
                         }
                       </p>
-                      <p className="text-xs font-bold text-[#1C497B]">Equipo Zirian México</p>
+                      <p className="text-xs font-bold text-[#1C497B]">{isEn ? 'Zirian México Team' : 'Equipo Zirian México'}</p>
                     </div>
                     <div className="w-1/2 flex flex-col items-center">
-                      <p className="text-xs font-bold text-[#1C497B] mb-2">Gracias por su confianza</p>
+                      <p className="text-xs font-bold text-[#1C497B] mb-2">{isEn ? 'Thank you for your trust' : 'Gracias por su confianza'}</p>
                       <div className="flex h-16 w-full mt-2">
                         <img src="/instalaciones-strip.jpg" alt="Instalaciones Zirian" className="w-full h-full object-cover" />
                       </div>
@@ -1022,44 +1044,48 @@ export function QuoteBuilder({
 
                 {/* Footer Section */}
                 <div className="px-12 mb-6 mt-2">
-                  {template !== 'general' && (
+                  {!isGeneral && (
                     <div className="mx-12 bg-[#25B150] text-white text-[9px] font-bold text-center py-1 px-4 mt-1">
-                      MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y<br/>cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.
+                      {isEn
+                        ? <>MAINTAIN YOUR BYD WARRANTY: We hold the EC1641 EV Charger Installation certification backed by CFE and<br/>strictly comply with the NOM-001-SEDE-2012 Electrical Installations standard.</>
+                        : <>MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y<br/>cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.</>}
                     </div>
                   )}
                   <div className="grid grid-cols-3 gap-3 text-[8px] leading-tight opacity-90 text-slate-500 mt-4">
                       <div>
-                        <p className="font-bold mb-0.5">1. ALCANCE DE LA OFERTA</p>
-                        <p>Esta propuesta incluye exclusivamente los conceptos descritos. Cualquier requerimiento, material o trabajo adicional no contemplado será cotizado por separado.</p>
+                        <p className="font-bold mb-0.5">{isEn ? '1. SCOPE OF OFFER' : '1. ALCANCE DE LA OFERTA'}</p>
+                        <p>{isEn ? 'This proposal includes exclusively the described items. Any additional requirement, material, or work not included will be quoted separately.' : 'Esta propuesta incluye exclusivamente los conceptos descritos. Cualquier requerimiento, material o trabajo adicional no contemplado será cotizado por separado.'}</p>
                       </div>
                       <div>
-                        <p className="font-bold mb-0.5">2. GARANTÍA Y COBERTURA</p>
-                        <p>Garantía sobre equipos instalados por Zirian. Quedan excluidos daños por uso indebido, variaciones de voltaje, terceros o fenómenos naturales.</p>
+                        <p className="font-bold mb-0.5">{isEn ? '2. WARRANTY & COVERAGE' : '2. GARANTÍA Y COBERTURA'}</p>
+                        <p>{isEn ? 'Warranty applies to equipment installed by Zirian. Excludes damage caused by misuse, voltage fluctuations, third parties, or natural phenomena.' : 'Garantía sobre equipos instalados por Zirian. Quedan excluidos daños por uso indebido, variaciones de voltaje, terceros o fenómenos naturales.'}</p>
                       </div>
                       <div>
-                        <p className="font-bold mb-0.5">3. RESPONSABILIDAD DEL CLIENTE</p>
-                        <p>El cliente deberá garantizar el libre acceso al sitio y será responsable de tramitar los permisos necesarios (CFE/municipio) salvo acuerdo previo.</p>
+                        <p className="font-bold mb-0.5">{isEn ? '3. CLIENT RESPONSIBILITY' : '3. RESPONSABILIDAD DEL CLIENTE'}</p>
+                        <p>{isEn ? 'The client must guarantee free access to the site and is responsible for processing any necessary permits (CFE/municipality) unless otherwise agreed.' : 'El cliente deberá garantizar el libre acceso al sitio y será responsable de tramitar los permisos necesarios (CFE/municipio) salvo acuerdo previo.'}</p>
                       </div>
                       <div>
-                        <p className="font-bold mb-0.5">4. SOPORTE TÉCNICO</p>
-                        <p>Asistencia remota para diagnóstico de fallas. Las visitas presenciales están sujetas a disponibilidad (viáticos aplicables fuera de BCS).</p>
+                        <p className="font-bold mb-0.5">{isEn ? '4. TECHNICAL SUPPORT' : '4. SOPORTE TÉCNICO'}</p>
+                        <p>{isEn ? 'Remote assistance for troubleshooting. On-site visits are subject to availability (travel expenses apply outside BCS).' : 'Asistencia remota para diagnóstico de fallas. Las visitas presenciales están sujetas a disponibilidad (viáticos aplicables fuera de BCS).'}</p>
                       </div>
                       <div>
-                        <p className="font-bold mb-0.5">5. VALIDEZ Y CONDICIONES DE PAGO</p>
-                        <p>Cotización válida por 30 días. Requiere anticipo para inicio y saldo contra entrega. Retrasos en los pagos pausarán los tiempos de instalación.</p>
+                        <p className="font-bold mb-0.5">{isEn ? '5. VALIDITY & PAYMENT TERMS' : '5. VALIDEZ Y CONDICIONES DE PAGO'}</p>
+                        <p>{isEn ? 'Quote valid for 30 days. Requires an advance payment to start and balance against delivery. Payment delays will pause installation times.' : 'Cotización válida por 30 días. Requiere anticipo para inicio y saldo contra entrega. Retrasos en los pagos pausarán los tiempos de instalación.'}</p>
                       </div>
                       <div>
-                        <p className="font-bold mb-0.5">6. PROPIEDAD INTELECTUAL</p>
-                        <p>La ingeniería y diseños proporcionados son propiedad intelectual de Zirian. Queda prohibida su reproducción o distribución sin autorización.</p>
+                        <p className="font-bold mb-0.5">{isEn ? '6. INTELLECTUAL PROPERTY' : '6. PROPIEDAD INTELECTUAL'}</p>
+                        <p>{isEn ? 'Engineering and designs provided are the intellectual property of Zirian. Reproduction or distribution without authorization is prohibited.' : 'La ingeniería y diseños proporcionados son propiedad intelectual de Zirian. Queda prohibida su reproducción o distribución sin autorización.'}</p>
                       </div>
                     </div>
                   <div className="flex justify-between items-center text-[10px] text-slate-400 mt-1 px-1 font-bold">
-                    <span>Página 1</span>
-                    <span>{new Date().toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</span>
+                    <span>{isEn ? 'Page 1' : 'Página 1'}</span>
+                    <span>{new Date().toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</span>
                   </div>
                 </div>
 
               </div>
+              );
+            })()}
             </div>
           </div>
         </div>
