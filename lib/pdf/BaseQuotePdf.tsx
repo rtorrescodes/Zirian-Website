@@ -16,6 +16,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     fontFamily: 'Helvetica',
     padding: 0,
+    paddingBottom: 20,
   },
   headerWrapper: {
     paddingTop: 20,
@@ -281,7 +282,7 @@ const styles = StyleSheet.create({
   },
   stripContainer: {
     marginHorizontal: 40,
-    marginBottom: 15,
+    marginBottom: 2,
   },
   footerBanner: {
     backgroundColor: '#25B150',

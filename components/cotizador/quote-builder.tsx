@@ -995,8 +995,11 @@ export function QuoteBuilder({
                   </div>
                 </div>
 
+                {/* Spacer to push everything below to the bottom */}
+                <div className="flex-grow min-h-[20px]"></div>
+
                 {/* Compromiso Zirian */}
-                <div className="px-12 pt-3 flex-grow">
+                <div className="px-12 pt-3">
                   <h3 className="text-[#1C497B] font-bold text-sm uppercase tracking-wider mb-2">Compromiso Zirian</h3>
                   <div className="flex gap-4">
                     <div className="w-1/2 pr-4 border-t border-black pt-2">
@@ -1014,12 +1017,11 @@ export function QuoteBuilder({
                         <img src="/instalaciones-strip.jpg" alt="Instalaciones Zirian" className="w-full h-full object-cover" />
                       </div>
                     </div>
-                {/* Spacer to push everything below to the bottom */}
-                <div className="flex-grow min-h-[20px]"></div>
+                  </div>
+                </div>
 
                 {/* Footer Section */}
-                <div className="px-12 mb-6">
-                  <div className="flex justify-between items-start mb-4">
+                <div className="px-12 mb-6 mt-2">
                   {template !== 'general' && (
                     <div className="mx-12 bg-[#25B150] text-white text-[9px] font-bold text-center py-1 px-4 mt-1">
                       MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y<br/>cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.
