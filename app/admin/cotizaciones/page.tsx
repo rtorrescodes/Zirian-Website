@@ -8,8 +8,10 @@ import { QuoteActions } from "@/components/cotizador/quote-actions"
 
 export const dynamic = 'force-dynamic'
 
-export default async function CotizacionesPage() {
-  const quotes = await getQuotes()
+export default async function CotizacionesPage({ searchParams }: { searchParams: { showLost?: string } }) {
+  const showLost = searchParams.showLost === 'true';
+  const allQuotes = await getQuotes();
+  const quotes = showLost ? allQuotes : allQuotes.filter(q => q.status !== 'Rechazada' && q.status !== 'Cancelada');
 
   return (
     <AppShell title="Historial de Cotizaciones" subtitle="Gestiona las cotizaciones creadas, inventario y órdenes de compra.">
@@ -23,12 +25,20 @@ export default async function CotizacionesPage() {
             Gestiona las cotizaciones creadas, inventario y órdenes de compra.
           </p>
         </div>
-        <Link 
-          href="/admin/cotizador"
-          className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-brand-blue text-slate-950 shadow hover:bg-brand-blue/90 h-9 px-4 py-2 font-tech uppercase tracking-widest font-bold"
-        >
-          Nueva Cotización
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link 
+            href={showLost ? "/admin/cotizaciones" : "?showLost=true"}
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-slate-700 bg-slate-800 text-white hover:bg-slate-700 h-9 px-4 py-2 font-tech uppercase tracking-widest"
+          >
+            {showLost ? "Ocultar Perdidas" : "Ver Perdidas"}
+          </Link>
+          <Link 
+            href="/admin/cotizador"
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-brand-blue text-slate-950 shadow hover:bg-brand-blue/90 h-9 px-4 py-2 font-tech uppercase tracking-widest font-bold"
+          >
+            Nueva Cotización
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -44,13 +54,15 @@ export default async function CotizacionesPage() {
                 </p>
               </div>
               <Badge variant="outline" className={`font-tech uppercase ${
-                quote.status === 'Aprobado' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' :
+                quote.status === 'Aprobada' || quote.status === 'Aprobado' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' :
                 quote.status === 'Enviada' ? 'border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan' :
                 quote.status === 'Borrador' ? 'border-slate-500/30 bg-slate-500/10 text-slate-400' :
-                quote.status === 'Cancelada' || quote.status === 'Ignorada' ? 'border-red-500/30 bg-red-500/10 text-red-400' :
+                quote.status === 'Cancelada' || quote.status === 'Rechazada' ? 'border-red-500/30 bg-red-500/10 text-red-400' :
+                quote.status === 'Requiere Atención' ? 'border-orange-500/30 bg-orange-500/10 text-orange-400' :
                 'border-brand-blue/30 bg-brand-blue/10 text-brand-blue'
               }`}>
                 {quote.status}
+                {quote.motivo_rechazo && <span className="block text-[8px] opacity-70 mt-1 capitalize">{quote.motivo_rechazo}</span>}
               </Badge>
             </div>
             

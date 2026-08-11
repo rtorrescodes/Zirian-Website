@@ -152,6 +152,8 @@ export function QuoteBuilder({
   const [mostrarDesglose, setMostrarDesglose] = useState(initialQuote?.mostrar_desglose ?? false)
   const [template, setTemplate] = useState<string>(initialQuote?.template || 'ev_charger')
   const [requiereFactura, setRequiereFactura] = useState<boolean>(initialQuote ? (initialQuote.requiere_factura || initialQuote.impuestos > 0) : true)
+  const [status, setStatus] = useState<string>(initialQuote?.status || 'Borrador')
+  const [motivoRechazo, setMotivoRechazo] = useState<string>(initialQuote?.motivo_rechazo || '')
 
   const resetBuilder = () => {
     setSaved(false)
@@ -243,6 +245,8 @@ export function QuoteBuilder({
         mostrar_desglose: mostrarDesglose,
         template: template,
         requiere_factura: requiereFactura,
+        status: status,
+        motivo_rechazo: (status === 'Rechazada' || status === 'Cancelada') ? motivoRechazo : null,
         items: items.map(i => ({
           productId: i.product.id < 0 ? null : i.product.id,
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
@@ -761,7 +765,41 @@ export function QuoteBuilder({
             </dl>
 
             <div className="mt-4 pt-4 border-t border-slate-800/50 space-y-4">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-tech font-bold uppercase tracking-wider text-slate-400">Estatus de Cotización</label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="bg-slate-900 border border-slate-700 text-white rounded p-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-brand-blue"
+                >
+                  <option value="Borrador">Borrador</option>
+                  <option value="Enviada">Enviada</option>
+                  <option value="Aprobada">Aprobada</option>
+                  <option value="Rechazada">Rechazada</option>
+                  <option value="Cancelada">Cancelada</option>
+                  <option value="Requiere Atención">Requiere Atención</option>
+                </select>
+              </div>
+
+              {(status === 'Rechazada' || status === 'Cancelada') && (
+                <div className="flex flex-col gap-2 p-3 bg-red-950/20 border border-red-900/30 rounded-md">
+                  <label className="text-[11px] font-tech font-bold uppercase tracking-wider text-red-400">Motivo de pérdida</label>
+                  <select
+                    value={motivoRechazo}
+                    onChange={(e) => setMotivoRechazo(e.target.value)}
+                    className="bg-slate-900 border border-red-900/50 text-white rounded p-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-red-500"
+                  >
+                    <option value="">Selecciona un motivo...</option>
+                    <option value="Precio alto">Precio alto</option>
+                    <option value="Ya contrató a alguien">Ya contrató a alguien</option>
+                    <option value="Demora al cotizar">Demora al cotizar</option>
+                    <option value="No contestó de vuelta">No contestó de vuelta</option>
+                    <option value="Otro motivo">Otro motivo</option>
+                  </select>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between gap-4 mt-2">
                 <label className="text-[11px] font-tech font-bold uppercase tracking-wider text-slate-400">Plantilla de PDF</label>
                 <select
                   value={template}
@@ -990,21 +1028,27 @@ export function QuoteBuilder({
                   <div className="grid grid-cols-3 gap-3 text-[8px] leading-tight opacity-90 text-slate-500 mt-4">
                       <div>
                         <p className="font-bold mb-0.5">1. ALCANCE DE LA OFERTA</p>
-                        <p>La cotización cubre únicamente los conceptos descritos. Cualquier trabajo adicional será cotizado por separado.</p>
-                        <p className="font-bold mt-1.5 mb-0.5">2. CONDICIONES DE GARANTÍA</p>
-                        <p>Aplica sobre equipos instalados por Zirian. No cubre mal uso, variaciones de voltaje o fenómenos naturales.</p>
+                        <p>Esta propuesta incluye exclusivamente los conceptos descritos. Cualquier requerimiento, material o trabajo adicional no contemplado será cotizado por separado.</p>
+                      </div>
+                      <div>
+                        <p className="font-bold mb-0.5">2. GARANTÍA Y COBERTURA</p>
+                        <p>Garantía sobre equipos instalados por Zirian. Quedan excluidos daños por uso indebido, variaciones de voltaje, terceros o fenómenos naturales.</p>
                       </div>
                       <div>
                         <p className="font-bold mb-0.5">3. RESPONSABILIDAD DEL CLIENTE</p>
-                        <p>El cliente proveerá acceso seguro y es responsable de permisos (CFE/municipio) salvo pacto en contrario.</p>
-                        <p className="font-bold mt-1.5 mb-0.5">4. SOPORTE Y ATENCIÓN</p>
-                        <p>Atención remota para diagnósticos; visitas presenciales según disponibilidad fuera de BCS.</p>
+                        <p>El cliente deberá garantizar el libre acceso al sitio y será responsable de tramitar los permisos necesarios (CFE/municipio) salvo acuerdo previo.</p>
                       </div>
                       <div>
-                        <p className="font-bold mb-0.5">5. VALIDEZ Y PAGOS</p>
-                        <p>Vigencia de 30 días. Requiere anticipo para inicio y saldo contra entrega. Retrasos suspenden la instalación.</p>
-                        <p className="font-bold mt-1.5 mb-0.5">6. PROPIEDAD INTELECTUAL</p>
-                        <p>Diseños y diagramas son propiedad de Zirian; prohibida su réplica sin autorización.</p>
+                        <p className="font-bold mb-0.5">4. SOPORTE TÉCNICO</p>
+                        <p>Asistencia remota para diagnóstico de fallas. Las visitas presenciales están sujetas a disponibilidad (viáticos aplicables fuera de BCS).</p>
+                      </div>
+                      <div>
+                        <p className="font-bold mb-0.5">5. VALIDEZ Y CONDICIONES DE PAGO</p>
+                        <p>Cotización válida por 30 días. Requiere anticipo para inicio y saldo contra entrega. Retrasos en los pagos pausarán los tiempos de instalación.</p>
+                      </div>
+                      <div>
+                        <p className="font-bold mb-0.5">6. PROPIEDAD INTELECTUAL</p>
+                        <p>La ingeniería y diseños proporcionados son propiedad intelectual de Zirian. Queda prohibida su reproducción o distribución sin autorización.</p>
                       </div>
                     </div>
                   <div className="flex justify-between items-center text-[10px] text-slate-400 mt-1 px-1 font-bold">

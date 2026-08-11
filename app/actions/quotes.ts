@@ -78,6 +78,39 @@ export async function createQuote(data: {
 }
 
 export async function getQuotes() {
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const fifteenDaysAgo = new Date();
+  fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+
+  try {
+    // Auto-reject after 30 days
+    await prisma.quote.updateMany({
+      where: {
+        status: { in: ['Enviada', 'Borrador', 'Requiere Atención'] },
+        fecha_creacion: { lt: thirtyDaysAgo }
+      },
+      data: {
+        status: 'Rechazada',
+        motivo_rechazo: 'No contestó de vuelta'
+      }
+    });
+
+    // Auto-flag as Requiere Atención after 15 days
+    await prisma.quote.updateMany({
+      where: {
+        status: { in: ['Enviada', 'Borrador'] },
+        fecha_creacion: { lt: fifteenDaysAgo, gte: thirtyDaysAgo }
+      },
+      data: {
+        status: 'Requiere Atención'
+      }
+    });
+  } catch (e) {
+    console.error("Error auto-expiring quotes", e);
+  }
+
   const quotes = await prisma.quote.findMany({
     include: {
       client: true,

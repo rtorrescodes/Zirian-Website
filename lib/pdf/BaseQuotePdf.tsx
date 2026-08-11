@@ -221,12 +221,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginHorizontal: 40,
-    marginBottom: 5,
+    marginBottom: 0,
   },
   termItem: {
     width: '33%',
     paddingRight: 10,
-    marginBottom: 10,
+    marginBottom: 5,
   },
   termsTitle: {
     color: '#334155',
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   },
   compromisoWrapper: {
     marginHorizontal: 40,
-    marginBottom: 5,
+    marginBottom: 0,
   },
   compromisoLeft: {
     borderTopWidth: 1,
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   },
   stripContainer: {
     marginHorizontal: 40,
-    marginBottom: 5,
+    marginBottom: 0,
   },
   footerBanner: {
     backgroundColor: '#25B150',
@@ -479,27 +479,27 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
         <View style={styles.termsWrapper}>
           <View style={styles.termItem}>
             <Text style={styles.termsTitle}>1. ALCANCE DE LA OFERTA</Text>
-            <Text style={styles.termsText}>La cotización cubre únicamente los conceptos descritos. Cualquier trabajo adicional será cotizado por separado.</Text>
+            <Text style={styles.termsText}>Esta propuesta incluye exclusivamente los conceptos descritos. Cualquier requerimiento, material o trabajo adicional no contemplado será cotizado por separado.</Text>
           </View>
           <View style={styles.termItem}>
             <Text style={styles.termsTitle}>3. RESPONSABILIDAD DEL CLIENTE</Text>
-            <Text style={styles.termsText}>El cliente proveerá acceso seguro y es responsable de permisos (CFE/municipio) salvo pacto en contrario.</Text>
+            <Text style={styles.termsText}>El cliente deberá garantizar el libre acceso al sitio y será responsable de tramitar los permisos necesarios (CFE/municipio) salvo acuerdo previo.</Text>
           </View>
           <View style={styles.termItem}>
-            <Text style={styles.termsTitle}>5. VALIDEZ Y PAGOS</Text>
-            <Text style={styles.termsText}>Vigencia de 30 días. Requiere anticipo para inicio y saldo contra entrega. Retrasos suspenden la instalación.</Text>
+            <Text style={styles.termsTitle}>5. VALIDEZ Y CONDICIONES DE PAGO</Text>
+            <Text style={styles.termsText}>Cotización válida por 30 días. Requiere anticipo para inicio y saldo contra entrega. Retrasos en los pagos pausarán los tiempos de instalación.</Text>
           </View>
           <View style={styles.termItem}>
-            <Text style={styles.termsTitle}>2. CONDICIONES DE GARANTÍA</Text>
-            <Text style={styles.termsText}>Aplica sobre equipos instalados por Zirian. No cubre mal uso, variaciones de voltaje o fenómenos naturales.</Text>
+            <Text style={styles.termsTitle}>2. GARANTÍA Y COBERTURA</Text>
+            <Text style={styles.termsText}>Garantía sobre equipos instalados por Zirian. Quedan excluidos daños por uso indebido, variaciones de voltaje, terceros o fenómenos naturales.</Text>
           </View>
           <View style={styles.termItem}>
-            <Text style={styles.termsTitle}>4. SOPORTE Y ATENCIÓN</Text>
-            <Text style={styles.termsText}>Atención remota para diagnósticos; visitas presenciales según disponibilidad fuera de BCS.</Text>
+            <Text style={styles.termsTitle}>4. SOPORTE TÉCNICO</Text>
+            <Text style={styles.termsText}>Asistencia remota para diagnóstico de fallas. Las visitas presenciales están sujetas a disponibilidad (viáticos aplicables fuera de BCS).</Text>
           </View>
           <View style={styles.termItem}>
             <Text style={styles.termsTitle}>6. PROPIEDAD INTELECTUAL</Text>
-            <Text style={styles.termsText}>Diseños y diagramas son propiedad de Zirian; prohibida su réplica sin autorización.</Text>
+            <Text style={styles.termsText}>La ingeniería y diseños proporcionados son propiedad intelectual de Zirian. Queda prohibida su reproducción o distribución sin autorización.</Text>
           </View>
         </View>
 

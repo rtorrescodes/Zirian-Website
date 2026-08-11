@@ -84,6 +84,7 @@ model Quote {
   notas_cliente     String?   @db.Text
   terminos          String?   @db.Text
   mostrar_desglose  Boolean   @default(false)
+  motivo_rechazo    String?   @db.VarChar(255)
 
   // Finanzas Internas y Comisiones
   comision_fija Decimal @default(1500) @db.Decimal(10, 2)
