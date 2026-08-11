@@ -441,7 +441,7 @@ export function QuoteBuilder({
                   type="button"
                   variant={searchMode === 'local' ? 'default' : 'outline'} 
                   onClick={() => { setSearchMode('local'); setProductQuery(''); setPickedProductId(null) }}
-                  className={cn("flex-1 text-xs font-bold uppercase tracking-wider", searchMode === 'local' ? 'bg-brand-blue text-slate-950' : 'border-slate-700 text-slate-400 hover:text-white')}
+                  className={cn("flex-1 text-xs font-bold uppercase tracking-wider transition-all", searchMode === 'local' ? 'bg-brand-blue text-slate-950 hover:bg-brand-blue/90' : 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800')}
                 >
                   Local
                 </Button>
@@ -449,7 +449,7 @@ export function QuoteBuilder({
                   type="button"
                   variant={searchMode === 'syscom' ? 'default' : 'outline'} 
                   onClick={() => { setSearchMode('syscom'); setProductQuery(''); setPickedProductId(null) }}
-                  className={cn("flex-1 text-xs font-bold uppercase tracking-wider", searchMode === 'syscom' ? 'bg-brand-cyan text-slate-950' : 'border-slate-700 text-slate-400 hover:text-white')}
+                  className={cn("flex-1 text-xs font-bold uppercase tracking-wider transition-all", searchMode === 'syscom' ? 'bg-brand-cyan text-slate-950 hover:bg-brand-cyan/90' : 'border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800')}
                 >
                   Syscom
                 </Button>
@@ -515,7 +515,7 @@ export function QuoteBuilder({
             </div>
           </div>
 
-          <ul className="mt-2 max-h-56 space-y-1 overflow-y-auto pr-1 custom-scrollbar">
+          <ul className="mt-2 max-h-[300px] space-y-1 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar">
             {searchMode === 'local' ? (
               filteredProducts.length === 0 ? (
                 <li className="px-3 py-6 text-center text-sm text-muted-foreground font-tech">
@@ -533,18 +533,18 @@ export function QuoteBuilder({
                       className={cn(
                         'flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors',
                         pickedProductId === p.id
-                          ? 'border-brand-blue/50 bg-brand-blue/10 shadow-[inset_0_0_15px_rgba(0,163,255,0.15)]'
+                          ? 'border-brand-blue bg-brand-blue/10 shadow-[inset_0_0_15px_rgba(0,163,255,0.15)] text-brand-blue'
                           : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900',
                       )}
                     >
                       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-slate-900 text-slate-500 border border-slate-800">
                         <Zap className="h-4 w-4" />
                       </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium text-white">
+                      <span className="min-w-0 flex-1 overflow-hidden">
+                        <span className={cn("block truncate text-sm font-medium", pickedProductId === p.id ? "text-brand-blue" : "text-white")}>
                           {p.nombre}
                         </span>
-                        <span className="block truncate text-[10px] font-tech font-bold uppercase tracking-wider text-slate-400 mt-0.5">
+                        <span className={cn("block truncate text-[10px] font-tech font-bold uppercase tracking-wider mt-0.5", pickedProductId === p.id ? "text-brand-blue/70" : "text-slate-400")}>
                           {p.codigo ?? p.category?.nombre}
                         </span>
                       </span>
@@ -565,7 +565,7 @@ export function QuoteBuilder({
                 </li>
               ) : (
                 syscomResults.map((p) => (
-                  <li key={p.id}>
+                  <li key={p.id} className="w-full max-w-full">
                     <button
                       type="button"
                       onMouseDown={(e) => {
@@ -573,9 +573,9 @@ export function QuoteBuilder({
                         setPickedProductId(p.id)
                       }}
                       className={cn(
-                        'flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors',
+                        'flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors overflow-hidden',
                         pickedProductId === p.id
-                          ? 'border-brand-cyan/50 bg-brand-cyan/10 shadow-[inset_0_0_15px_rgba(0,163,255,0.15)]'
+                          ? 'border-brand-cyan bg-brand-cyan/10 shadow-[inset_0_0_15px_rgba(0,163,255,0.15)] text-brand-cyan'
                           : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900',
                       )}
                     >
@@ -586,15 +586,15 @@ export function QuoteBuilder({
                           <Zap className="h-4 w-4" />
                         </span>
                       )}
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium text-white">
+                      <span className="min-w-0 flex-1 overflow-hidden">
+                        <span className={cn("block truncate text-sm font-medium", pickedProductId === p.id ? "text-brand-cyan" : "text-white")}>
                           {p.nombre}
                         </span>
-                        <span className="block truncate text-[10px] font-tech font-bold uppercase tracking-wider text-slate-400 mt-0.5">
+                        <span className={cn("block truncate text-[10px] font-tech font-bold uppercase tracking-wider mt-0.5", pickedProductId === p.id ? "text-brand-cyan/70" : "text-slate-400")}>
                           {p.modelo} | {p.marca}
                         </span>
                       </span>
-                      <span className="shrink-0 text-right">
+                      <span className="shrink-0 text-right ml-2">
                         <span className="block text-sm font-semibold text-emerald-400">
                           {currencyExact(p.precioListaMXN)}
                         </span>
