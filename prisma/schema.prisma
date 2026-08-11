@@ -461,7 +461,8 @@ model WebUser {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  cart Cart?
+  cart        Cart?
+  storeOrders StoreOrder[]
 }
 
 model Notification {
@@ -484,6 +485,21 @@ model Cart {
   items     CartItem[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+}
+
+model StoreOrder {
+  id              String   @id @default(uuid())
+  userId          String?
+  user            WebUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  stripeSessionId String   @unique
+  syscomOrderId   String?
+  syscomStatus    String?  @db.VarChar(50) // e.g. "cotizacion_creada", "error"
+  amount          Decimal  @db.Decimal(10, 2)
+  status          String   @default("pending") @db.VarChar(50) // pending, paid, syscom_created, syscom_failed
+  shippingAddress Json?
+  items           Json     // Snapshot of cart items at purchase time
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model CartItem {

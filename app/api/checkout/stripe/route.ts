@@ -40,6 +40,10 @@ export async function POST(req: Request) {
       shipping_address_collection: {
         allowed_countries: ['MX'], // Only allow shipping within Mexico
       },
+      metadata: {
+        cartId: cart.id,
+        userId: session.user.id
+      },
       line_items: cart.items.map(item => ({
         price_data: {
           currency: 'mxn',
