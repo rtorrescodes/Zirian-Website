@@ -77,6 +77,8 @@ export async function createQuote(data: {
   return serializeQuote(quote);
 }
 
+import { createNotification } from "./notifications";
+
 export async function getQuotes() {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -85,28 +87,51 @@ export async function getQuotes() {
   fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
 
   try {
-    // Auto-reject after 30 days
-    await prisma.quote.updateMany({
+    // 1. Find quotes to auto-reject
+    const toReject = await prisma.quote.findMany({
       where: {
         status: { in: ['Enviada', 'Borrador', 'Requiere Atención'] },
         fecha_creacion: { lt: thirtyDaysAgo }
-      },
-      data: {
-        status: 'Rechazada',
-        motivo_rechazo: 'No contestó de vuelta'
       }
     });
 
-    // Auto-flag as Requiere Atención after 15 days
-    await prisma.quote.updateMany({
+    if (toReject.length > 0) {
+      await prisma.quote.updateMany({
+        where: { id: { in: toReject.map(q => q.id) } },
+        data: { status: 'Rechazada', motivo_rechazo: 'No contestó de vuelta' }
+      });
+      for (const q of toReject) {
+        await createNotification({
+          title: "Cotización Expirada",
+          message: `La cotización #${q.id} fue rechazada automáticamente tras 30 días sin respuesta.`,
+          categoria: "CRM",
+          url: `/admin/cotizaciones/${q.id}`
+        });
+      }
+    }
+
+    // 2. Find quotes requiring attention
+    const toFlag = await prisma.quote.findMany({
       where: {
         status: { in: ['Enviada', 'Borrador'] },
         fecha_creacion: { lt: fifteenDaysAgo, gte: thirtyDaysAgo }
-      },
-      data: {
-        status: 'Requiere Atención'
       }
     });
+
+    if (toFlag.length > 0) {
+      await prisma.quote.updateMany({
+        where: { id: { in: toFlag.map(q => q.id) } },
+        data: { status: 'Requiere Atención' }
+      });
+      for (const q of toFlag) {
+        await createNotification({
+          title: "Cotización en Riesgo",
+          message: `La cotización #${q.id} lleva 15 días sin avanzar. ¡Contáctalos!`,
+          categoria: "CRM",
+          url: `/admin/cotizaciones/${q.id}`
+        });
+      }
+    }
   } catch (e) {
     console.error("Error auto-expiring quotes", e);
   }
@@ -208,7 +233,8 @@ export async function getQuoteByToken(token: string) {
 export async function acceptQuote(token: string) {
   const quote = await prisma.quote.update({
     where: { token },
-    data: { status: 'Aprobado' }
+    data: { status: 'Aprobado' },
+    include: { items: { include: { product: true } } }
   });
   
   // Create blank ServiceOrder
@@ -217,6 +243,26 @@ export async function acceptQuote(token: string) {
     create: { quoteId: quote.id, status: 'Pendiente' },
     update: {}
   });
+
+  // Notifications
+  await createNotification({
+    title: "¡Cotización Aprobada!",
+    message: `El cliente ha aprobado la cotización #${quote.id} por $${quote.total}.`,
+    categoria: "CRM",
+    url: `/admin/cotizaciones/${quote.id}`
+  });
+
+  // Check Inventory
+  for (const item of quote.items) {
+    if (item.product && Number(item.cantidad) > Number(item.product.stock_general)) {
+      await createNotification({
+        title: "Alerta de Inventario",
+        message: `La cotización #${quote.id} recién aprobada requiere ${item.cantidad}x ${item.product.nombre}, pero solo hay ${item.product.stock_general} en stock.`,
+        categoria: "Inventario",
+        url: `/admin/cotizaciones/${quote.id}`
+      });
+    }
+  }
 
   revalidatePath("/admin/cotizaciones");
   revalidatePath(`/presupuesto/${token}`);
@@ -226,7 +272,8 @@ export async function acceptQuote(token: string) {
 export async function adminAcceptQuote(id: number) {
   const quote = await prisma.quote.update({
     where: { id },
-    data: { status: 'Aprobado' }
+    data: { status: 'Aprobado' },
+    include: { items: { include: { product: true } } }
   });
   
   // Create blank ServiceOrder
@@ -235,6 +282,26 @@ export async function adminAcceptQuote(id: number) {
     create: { quoteId: quote.id, status: 'Pendiente' },
     update: {}
   });
+
+  // Notifications
+  await createNotification({
+    title: "¡Venta Cerrada Manualmente!",
+    message: `Has marcado la cotización #${quote.id} como Aprobada.`,
+    categoria: "CRM",
+    url: `/admin/cotizaciones/${quote.id}`
+  });
+
+  // Check Inventory
+  for (const item of quote.items) {
+    if (item.product && Number(item.cantidad) > Number(item.product.stock_general)) {
+      await createNotification({
+        title: "Alerta de Inventario",
+        message: `La cotización #${quote.id} recién aprobada requiere ${item.cantidad}x ${item.product.nombre}, pero solo hay ${item.product.stock_general} en stock.`,
+        categoria: "Inventario",
+        url: `/admin/cotizaciones/${quote.id}`
+      });
+    }
+  }
 
   revalidatePath("/admin/cotizaciones");
   if (quote.token) revalidatePath(`/presupuesto/${quote.token}`);

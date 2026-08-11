@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { enviarCorreo } from "@/lib/mail";
+import { createNotification } from "@/app/actions/notifications";
 
 // Helper to verify admin session
 async function isAuthenticated() {
@@ -90,6 +91,14 @@ export async function POST(req: NextRequest) {
     `;
 
     await enviarCorreo(asunto, cuerpoHtml);
+
+    // Create CRM Notification
+    await createNotification({
+      title: "Nuevo Prospecto Web",
+      message: `${nombre} ha dejado sus datos de contacto (${tipo_lead}).`,
+      categoria: "CRM",
+      url: `/admin/clientes`
+    });
 
     return NextResponse.json({
       success: true,

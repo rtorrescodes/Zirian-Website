@@ -386,6 +386,7 @@ model User {
   clients         Client[]
   serviceOrders   ServiceOrder[]
   toolAssignments ToolAssignment[]
+  notifications   Notification[]
 }
 
 model Tool {
@@ -461,6 +462,19 @@ model WebUser {
   updatedAt DateTime @updatedAt
 
   cart Cart?
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  title     String   @db.VarChar(150)
+  message   String   @db.Text
+  categoria String   @default("Sistema") @db.VarChar(50) // CRM, Inventario, Errores, Sistema
+  url       String?  @db.VarChar(255)
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Cart {

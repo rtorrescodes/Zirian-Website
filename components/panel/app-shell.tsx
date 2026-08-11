@@ -15,7 +15,6 @@ import {
   Menu,
   X,
   Search,
-  Bell,
   Plus,
   Map,
   LogOut,
@@ -29,6 +28,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { ZirianLogo } from './zirian-logo'
 import AIChatWidget from '@/components/ai/AIChatWidget'
+import { NotificationsDropdown } from './notifications-dropdown'
 
 interface NavItem {
   label: string
@@ -236,10 +236,7 @@ export function AppShell({
               />
             </div>
 
-            <Button variant="ghost" size="icon" className="relative" aria-label="Notificaciones">
-              <Bell className="h-5 w-5" />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-brand-green" />
-            </Button>
+            <NotificationsDropdown />
 
             <Link
               href="/cotizador"
