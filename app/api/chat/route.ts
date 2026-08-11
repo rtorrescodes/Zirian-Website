@@ -300,6 +300,7 @@ export async function POST(req: Request) {
                         'Accept-Language': 'es-MX,es;q=0.9',
                         'Accept': 'text/html'
                       },
+                      // @ts-expect-error: Next.js fetch typings don't include dispatcher but undici supports it
                       dispatcher: new (require('undici').Agent)({ connect: { rejectUnauthorized: false } })
                     });
                     const html = await fetchRes.text();

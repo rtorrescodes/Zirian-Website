@@ -320,7 +320,7 @@ export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => 
   const validUntil = new Date(createdAt.getTime() + (quote.validez_dias || 15) * 86400000);
 
   // LOGIC: Grouping
-  let displayItems = [];
+  let displayItems: any[] = [];
   
   if (quote.mostrar_desglose) {
     // Show all items as they are

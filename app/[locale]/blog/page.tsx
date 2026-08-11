@@ -146,7 +146,7 @@ export default async function BlogIndexPage({ params }: { params: Promise<{ loca
                         {category}
                       </span>
                       <span className="bg-slate-800 text-slate-300 text-xs px-2 py-1 rounded font-tech">
-                        {count}
+                        {String(count)}
                       </span>
                     </a>
                   </li>

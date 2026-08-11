@@ -12,7 +12,7 @@ export function QuoteView({ quote, token }: { quote: any; token: string }) {
   const [isAccepting, setIsAccepting] = useState(false);
   const isApproved = quote.status === "Aprobado" || quote.status === "Ganada";
 
-  let displayItems = [];
+  let displayItems: any[] = [];
   if (quote.mostrar_desglose) {
     displayItems = quote.items.map((i: any) => ({
       qty: Number(i.cantidad),
