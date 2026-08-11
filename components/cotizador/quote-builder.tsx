@@ -897,7 +897,7 @@ export function QuoteBuilder({
               const isGeneral = template === 'general';
               return (
               <div className="w-[340px] h-[500px] sm:w-[510px] sm:h-[730px] md:w-auto md:h-auto mx-auto overflow-hidden">
-                <div className="w-[850px] min-h-[1202px] bg-white md:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)] font-sans relative shrink-0 scale-[0.4] sm:scale-[0.6] md:scale-100 origin-top-left transition-all text-[#1F2937] pb-6">
+                <div className="w-[850px] min-h-[1202px] bg-white md:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)] font-sans relative shrink-0 scale-[0.4] sm:scale-[0.6] md:scale-100 origin-top-left transition-all text-[#1F2937] flex flex-col">
                 
                 {/* Header (Top) */}
                 <div className="flex justify-between items-start px-12 pt-12 pb-6">
@@ -1019,66 +1019,80 @@ export function QuoteBuilder({
                 {/* Spacer to push everything below to the bottom */}
                 <div className="flex-grow min-h-[20px]"></div>
 
-                {/* Compromiso Zirian */}
-                <div className="px-12 pt-3">
-                  <h3 className="text-[#1C497B] font-bold text-sm uppercase tracking-wider mb-2">{isEn ? 'Zirian Commitment' : 'Compromiso Zirian'}</h3>
-                  <div className="flex gap-4">
-                    <div className="w-1/2 pr-4 border-t border-black pt-2">
-                      <p className="text-[10px] italic text-slate-600 mb-2">
-                        {isGeneral
-                          ? '"Diseñamos e integramos soluciones tecnológicas de alta ingeniería, garantizando eficiencia, seguridad y calidad superior en BCS."'
-                          : isEn
-                            ? '"We guarantee leading infrastructure compatible with BYD, operating under the strictest safety and regulatory standards in BCS."'
-                            : '"Garantizamos infraestructura líder y compatible con BYD, operando bajo los más estrictos estándares normativos de seguridad en BCS."'
-                        }
-                      </p>
-                      <p className="text-xs font-bold text-[#1C497B]">{isEn ? 'Zirian México Team' : 'Equipo Zirian México'}</p>
-                    </div>
-                    <div className="w-1/2 flex flex-col items-center">
-                      <p className="text-xs font-bold text-[#1C497B] mb-2">{isEn ? 'Thank you for your trust' : 'Gracias por su confianza'}</p>
-                      <div className="flex h-16 w-full mt-2">
-                        <img src="/instalaciones-strip.jpg" alt="Instalaciones Zirian" className="w-full h-full object-cover" />
-                      </div>
-                    </div>
+                {/* Compromiso Zirian Section */}
+                <div className="px-12 pt-3 mb-1">
+                  <h3 className="text-[#1C497B] font-bold text-sm uppercase tracking-wider">{isEn ? 'Zirian Commitment' : 'Compromiso Zirian'}</h3>
+                </div>
+                <div className="px-12 mb-1">
+                  <div className="w-full border-t border-black pt-1">
+                    <p className="text-[10px] italic text-slate-600 mb-2">
+                      {isGeneral
+                        ? '"Diseñamos e integramos soluciones tecnológicas de alta ingeniería, garantizando eficiencia, seguridad y calidad superior en BCS."'
+                        : isEn
+                          ? '"We guarantee leading infrastructure compatible with BYD, operating under the strictest safety and regulatory standards in BCS."'
+                          : '"Garantizamos infraestructura líder y compatible con BYD, operando bajo los más estrictos estándares normativos de seguridad en BCS."'
+                      }
+                    </p>
+                    <p className="text-xs font-bold text-[#1C497B]">{isEn ? 'Zirian México Team' : 'Equipo Zirian México'}</p>
                   </div>
                 </div>
 
-                {/* Footer Section */}
-                <div className="px-12 mb-6 mt-2">
-                  {!isGeneral && (
-                    <div className="mx-12 bg-[#25B150] text-white text-[9px] font-bold text-center py-1 px-4 mt-1">
+                {/* Image Strip Section */}
+                <div className="px-12 mt-2 mb-1">
+                  <p className="text-[10px] font-bold text-[#1C497B] mb-1 text-center">{isEn ? 'Thank you for your trust' : 'Gracias por su confianza'}</p>
+                  <div className="w-full h-[70px]">
+                    <img src="/instalaciones-strip.jpg" alt="Instalaciones Zirian" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+
+                {/* Green Banner */}
+                {!isGeneral && (
+                  <div className="px-12 mb-2">
+                    <div className="bg-[#25B150] text-white text-[9px] font-bold text-center py-1 w-full px-2">
                       {isEn
                         ? <>MAINTAIN YOUR BYD WARRANTY: We hold the EC1641 EV Charger Installation certification backed by CFE and<br/>strictly comply with the NOM-001-SEDE-2012 Electrical Installations standard.</>
                         : <>MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y<br/>cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.</>}
                     </div>
-                  )}
-                  <div className="grid grid-cols-3 gap-3 text-[8px] leading-tight opacity-90 text-slate-500 mt-4">
-                      <div>
-                        <p className="font-bold mb-0.5">{isEn ? '1. SCOPE OF OFFER' : '1. ALCANCE DE LA OFERTA'}</p>
-                        <p>{isEn ? 'This proposal includes exclusively the described items. Any additional requirement, material, or work not included will be quoted separately.' : 'Esta propuesta incluye exclusivamente los conceptos descritos. Cualquier requerimiento, material o trabajo adicional no contemplado será cotizado por separado.'}</p>
-                      </div>
-                      <div>
-                        <p className="font-bold mb-0.5">{isEn ? '2. WARRANTY & COVERAGE' : '2. GARANTÍA Y COBERTURA'}</p>
-                        <p>{isEn ? 'Warranty applies to equipment installed by Zirian. Excludes damage caused by misuse, voltage fluctuations, third parties, or natural phenomena.' : 'Garantía sobre equipos instalados por Zirian. Quedan excluidos daños por uso indebido, variaciones de voltaje, terceros o fenómenos naturales.'}</p>
-                      </div>
-                      <div>
-                        <p className="font-bold mb-0.5">{isEn ? '3. CLIENT RESPONSIBILITY' : '3. RESPONSABILIDAD DEL CLIENTE'}</p>
-                        <p>{isEn ? 'The client must guarantee free access to the site and is responsible for processing any necessary permits (CFE/municipality) unless otherwise agreed.' : 'El cliente deberá garantizar el libre acceso al sitio y será responsable de tramitar los permisos necesarios (CFE/municipio) salvo acuerdo previo.'}</p>
-                      </div>
-                      <div>
-                        <p className="font-bold mb-0.5">{isEn ? '4. TECHNICAL SUPPORT' : '4. SOPORTE TÉCNICO'}</p>
-                        <p>{isEn ? 'Remote assistance for troubleshooting. On-site visits are subject to availability (travel expenses apply outside BCS).' : 'Asistencia remota para diagnóstico de fallas. Las visitas presenciales están sujetas a disponibilidad (viáticos aplicables fuera de BCS).'}</p>
-                      </div>
-                      <div>
-                        <p className="font-bold mb-0.5">{isEn ? '5. VALIDITY & PAYMENT TERMS' : '5. VALIDEZ Y CONDICIONES DE PAGO'}</p>
-                        <p>{isEn ? 'Quote valid for 30 days. Requires an advance payment to start and balance against delivery. Payment delays will pause installation times.' : 'Cotización válida por 30 días. Requiere anticipo para inicio y saldo contra entrega. Retrasos en los pagos pausarán los tiempos de instalación.'}</p>
-                      </div>
-                      <div>
-                        <p className="font-bold mb-0.5">{isEn ? '6. INTELLECTUAL PROPERTY' : '6. PROPIEDAD INTELECTUAL'}</p>
-                        <p>{isEn ? 'Engineering and designs provided are the intellectual property of Zirian. Reproduction or distribution without authorization is prohibited.' : 'La ingeniería y diseños proporcionados son propiedad intelectual de Zirian. Queda prohibida su reproducción o distribución sin autorización.'}</p>
-                      </div>
+                  </div>
+                )}
+
+                {/* Terms and conditions */}
+                <div className="px-12 flex gap-4 text-[8px] leading-tight opacity-90 text-slate-500 mb-2">
+                  <div className="flex-1 flex flex-col gap-3">
+                    <div>
+                      <p className="font-bold mb-0.5">{isEn ? '1. SCOPE OF OFFER' : '1. ALCANCE DE LA OFERTA'}</p>
+                      <p>{isEn ? 'This proposal includes exclusively the described items. Any additional requirement, material, or work not included will be quoted separately.' : 'Esta propuesta incluye exclusivamente los conceptos descritos. Cualquier requerimiento, material o trabajo adicional no contemplado será cotizado por separado.'}</p>
                     </div>
-                  <div className="flex justify-between items-center text-[10px] text-slate-400 mt-1 px-1 font-bold">
+                    <div>
+                      <p className="font-bold mb-0.5">{isEn ? '2. WARRANTY & COVERAGE' : '2. GARANTÍA Y COBERTURA'}</p>
+                      <p>{isEn ? 'Warranty applies to equipment installed by Zirian. Excludes damage caused by misuse, voltage fluctuations, third parties, or natural phenomena.' : 'Garantía sobre equipos instalados por Zirian. Quedan excluidos daños por uso indebido, variaciones de voltaje, terceros o fenómenos naturales.'}</p>
+                    </div>
+                  </div>
+                  <div className="flex-1 flex flex-col gap-3">
+                    <div>
+                      <p className="font-bold mb-0.5">{isEn ? '3. CLIENT RESPONSIBILITY' : '3. RESPONSABILIDAD DEL CLIENTE'}</p>
+                      <p>{isEn ? 'The client must guarantee free access to the site and is responsible for processing any necessary permits (CFE/municipality) unless otherwise agreed.' : 'El cliente deberá garantizar el libre acceso al sitio y será responsable de tramitar los permisos necesarios (CFE/municipio) salvo acuerdo previo.'}</p>
+                    </div>
+                    <div>
+                      <p className="font-bold mb-0.5">{isEn ? '4. TECHNICAL SUPPORT' : '4. SOPORTE TÉCNICO'}</p>
+                      <p>{isEn ? 'Remote assistance for troubleshooting. On-site visits are subject to availability (travel expenses apply outside BCS).' : 'Asistencia remota para diagnóstico de fallas. Las visitas presenciales están sujetas a disponibilidad (viáticos aplicables fuera de BCS).'}</p>
+                    </div>
+                  </div>
+                  <div className="flex-1 flex flex-col gap-3">
+                    <div>
+                      <p className="font-bold mb-0.5">{isEn ? '5. VALIDITY & PAYMENT TERMS' : '5. VALIDEZ Y CONDICIONES DE PAGO'}</p>
+                      <p>{isEn ? 'Quote valid for 30 days. Requires an advance payment to start and balance against delivery. Payment delays will pause installation times.' : 'Cotización válida por 30 días. Requiere anticipo para inicio y saldo contra entrega. Retrasos en los pagos pausarán los tiempos de instalación.'}</p>
+                    </div>
+                    <div>
+                      <p className="font-bold mb-0.5">{isEn ? '6. INTELLECTUAL PROPERTY' : '6. PROPIEDAD INTELECTUAL'}</p>
+                      <p>{isEn ? 'Engineering and designs provided are the intellectual property of Zirian. Reproduction or distribution without authorization is prohibited.' : 'La ingeniería y diseños proporcionados son propiedad intelectual de Zirian. Queda prohibida su reproducción o distribución sin autorización.'}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Absolute bottom footer */}
+                <div className="px-12 pb-4 pt-1">
+                  <div className="bg-[#25B150] text-white text-[8px] font-bold flex justify-between items-center py-1 px-3 w-full">
                     <span>{isEn ? 'Page 1' : 'Página 1'}</span>
                     <span>{new Date().toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</span>
                   </div>
