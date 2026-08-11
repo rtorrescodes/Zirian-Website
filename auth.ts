@@ -98,7 +98,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (session.user && token.id) {
         session.user.id = token.id as string;
-        // @ts-ignore
+        // @ts-expect-error: Next-auth types mismatch
         session.user.role = token.role as string;
       }
       return session;

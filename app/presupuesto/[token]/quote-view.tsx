@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 // @ts-nocheck
 "use client";
 
 import { useState } from "react";
 import { acceptQuote } from "@/app/actions/quotes";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { CheckCircle2, Download, ShieldCheck, Camera } from "lucide-react";
 import Image from "next/image";
 
