@@ -917,19 +917,18 @@ export function QuoteBuilder({
                 </div>
 
                 {/* Info Blocks */}
-                <div className="flex px-12 mb-6 gap-0 border-t border-slate-300">
-                  <div className="flex-1 border-r border-slate-300">
-                    <div className="bg-[#1C497B] text-white font-bold text-xs px-2 py-1 uppercase tracking-wider">{isEn ? 'Client' : 'Cliente'}</div>
-                    <div className="p-3 text-sm">
-                      <p className="font-bold text-base mb-1">{selectedClient?.nombre || "[Nombre del Cliente]"}</p>
+                <div className="flex px-12 mb-4 gap-0 border-t border-slate-300">
+                  <div className="flex-1">
+                    <div className="bg-[#1C497B] text-white font-bold text-[10px] px-2 py-1 uppercase tracking-wider">{isEn ? 'Client' : 'Cliente'}</div>
+                    <div className="p-2 text-xs">
+                      <p className="font-bold text-[13px] mb-0.5">{selectedClient?.nombre || "[Nombre del Cliente]"}</p>
                       {selectedClient?.empresa && <p className="text-slate-700">{selectedClient.empresa}</p>}
                       <p className="text-slate-700">{selectedClient?.ubicacion || "[Dirección / Ubicación]"}</p>
-                      {selectedClient?.telefono && <p className="text-slate-700 mt-1">{selectedClient.telefono}</p>}
                     </div>
                   </div>
                   <div className="flex-1">
-                    <div className="bg-[#1C497B] text-white font-bold text-xs px-2 py-1 uppercase tracking-wider">{isEn ? 'Emission Details' : 'Detalles de Emisión'}</div>
-                    <div className="p-3 text-sm flex flex-col gap-1">
+                    <div className="bg-[#1C497B] text-white font-bold text-[10px] px-2 py-1 uppercase tracking-wider">{isEn ? 'Emission Details' : 'Detalles de Emisión'}</div>
+                    <div className="p-2 text-xs flex flex-col gap-1 border-l border-slate-300 h-[calc(100%-24px)]">
                       <p><span className="font-bold">{isEn ? 'Date:' : 'Fecha:'}</span> {new Date().toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
                       <p><span className="font-bold">{isEn ? 'Valid until:' : 'Validez:'}</span> {new Date(Date.now() + 15 * 86400000).toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
                       <p className="mb-0.5"><span className="font-bold">Agente:</span> Ing. Rodrigo Torres</p>
@@ -938,9 +937,9 @@ export function QuoteBuilder({
                 </div>
 
                 {/* Intro Text */}
-                <div className="px-12 mb-4">
-                  <p className="text-sm text-slate-700 mb-2">{isEn ? 'Dear Client:' : 'Estimado/a cliente:'}</p>
-                  <p className="text-sm text-slate-700 leading-relaxed">
+                <div className="px-12 mb-3">
+                  <p className="text-xs text-slate-700 mb-1">{isEn ? 'Dear Client:' : 'Estimado/a cliente:'}</p>
+                  <p className="text-xs text-slate-700 leading-relaxed">
                     {isEn 
                       ? 'It is a pleasure to present our technical proposal for the integration of your ecosystem. At Zirian México, we prioritize regulatory safety and energy efficiency.'
                       : <>Es un gusto presentarle nuestra propuesta técnica para la integración de su ecosistema. En <strong>Zirian México</strong>, priorizamos la seguridad normativa y la eficiencia energética.</>}

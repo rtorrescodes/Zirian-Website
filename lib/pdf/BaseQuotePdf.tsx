@@ -67,15 +67,13 @@ const styles = StyleSheet.create({
     marginHorizontal: 40,
     borderTopWidth: 1,
     borderTopColor: '#cbd5e1',
-    marginBottom: 10,
+    marginBottom: 6,
   },
   infoBlock: {
     flex: 1,
   },
   infoBlockRight: {
     flex: 1,
-    borderLeftWidth: 1,
-    borderLeftColor: '#cbd5e1',
   },
   infoBlockTitle: {
     backgroundColor: '#1C497B',
@@ -87,32 +85,37 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   infoBlockContent: {
-    padding: 10,
+    padding: 8,
+  },
+  infoBlockContentRight: {
+    padding: 8,
+    borderLeftWidth: 1,
+    borderLeftColor: '#cbd5e1',
   },
   clientName: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
-    marginBottom: 3,
-  },
-  clientDetail: {
-    fontSize: 9,
-    color: '#334155',
     marginBottom: 2,
   },
-  emissionDetail: {
-    fontSize: 9,
+  clientDetail: {
+    fontSize: 8,
     color: '#334155',
-    marginBottom: 3,
+    marginBottom: 1,
+  },
+  emissionDetail: {
+    fontSize: 8,
+    color: '#334155',
+    marginBottom: 2,
   },
   emissionBold: {
     fontWeight: 'bold',
   },
   introSection: {
     paddingHorizontal: 40,
-    marginBottom: 10,
+    marginBottom: 8,
   },
   introText: {
-    fontSize: 9,
+    fontSize: 8,
     color: '#334155',
     marginBottom: 4,
     lineHeight: 1.4,
@@ -366,12 +369,11 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
               <Text style={styles.clientName}>{client.nombre}</Text>
               {client.empresa ? <Text style={styles.clientDetail}>{client.empresa}</Text> : null}
               <Text style={styles.clientDetail}>{client.ubicacion || 'Sin dirección registrada'}</Text>
-              {client.telefono ? <Text style={styles.clientDetail}>{client.telefono}</Text> : null}
             </View>
           </View>
           <View style={styles.infoBlockRight}>
             <Text style={styles.infoBlockTitle}>{isEn ? 'Emission Details' : 'Detalles de Emisión'}</Text>
-            <View style={styles.infoBlockContent}>
+            <View style={styles.infoBlockContentRight}>
               <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Date: ' : 'Fecha: '}</Text>{createdAt.toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
               <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Valid until: ' : 'Validez: '}</Text>{validUntil.toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
               <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Agent: ' : 'Agente: '}</Text>Ing. Rodrigo Torres</Text>
