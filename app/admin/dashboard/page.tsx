@@ -20,6 +20,7 @@ import {
   FileText,
   HelpCircle,
 } from "lucide-react";
+import { getDashboardMetrics } from "@/app/actions/dashboard";
 import { AppShell } from "@/components/panel/app-shell";
 
 interface Lead {
@@ -51,6 +52,7 @@ export default function AdminDashboardPage() {
   const [authorized, setAuthorized] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [metrics, setMetrics] = useState({ totalLeadsCount: 0, qualifiedQuotesCount: 0, openTicketsCount: 0 });
   const [loading, setLoading] = useState(true);
 
   // Filters and Selection States
@@ -86,9 +88,10 @@ export default function AdminDashboardPage() {
         setAuthorized(true);
 
         // Fetch CRM records
-        const [leadsRes, ticketsRes] = await Promise.all([
+        const [leadsRes, ticketsRes, dashMetrics] = await Promise.all([
           fetch("/api/leads"),
           fetch("/api/tickets"),
+          getDashboardMetrics()
         ]);
 
         if (leadsRes.ok && ticketsRes.ok) {
@@ -96,6 +99,7 @@ export default function AdminDashboardPage() {
           const ticketsData = await ticketsRes.json();
           setLeads(leadsData);
           setTickets(ticketsData);
+          setMetrics(dashMetrics);
         }
       } catch (err) {
         console.error("Authentication or loading failed", err);
@@ -240,9 +244,7 @@ export default function AdminDashboardPage() {
   };
 
   // Metrics calculators
-  const totalLeadsCount = leads.length;
-  const qualifiedLeadsCount = leads.filter((l) => l.tipo_lead === "Cotización Cualificada").length;
-  const openTicketsCount = tickets.filter((t) => t.status === "Abierto").length;
+  const { totalLeadsCount, qualifiedQuotesCount, openTicketsCount } = metrics;
 
   if (loading) {
     return (
@@ -329,7 +331,7 @@ export default function AdminDashboardPage() {
           >
             <span className="text-xs text-slate-500 font-tech uppercase tracking-widest font-semibold">Cotizaciones Cualificadas</span>
             <span className="text-4xl font-extrabold text-white font-tech mt-2 group-hover:text-brand-green transition">
-              {qualifiedLeadsCount}
+              {qualifiedQuotesCount}
             </span>
             <span className="text-[10px] text-emerald-400 mt-2 font-tech font-bold">Cargadores EV</span>
           </div>

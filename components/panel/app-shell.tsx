@@ -188,14 +188,14 @@ export function AppShell({
         <div className="fixed inset-0 z-50 lg:hidden">
           <button
             aria-label="Cerrar menú"
-            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 top-0 h-full w-72 border-r border-sidebar-border bg-sidebar shadow-xl">
+          <div className="absolute left-0 top-0 h-full w-72 border-r border-slate-800 bg-slate-950 shadow-xl overflow-y-auto">
             <button
               aria-label="Cerrar menú"
               onClick={() => setMobileOpen(false)}
-              className="absolute right-3 top-4 rounded-md p-1.5 text-muted-foreground hover:bg-sidebar-accent hover:text-foreground"
+              className="absolute right-3 top-4 rounded-md p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white"
             >
               <X className="h-5 w-5" />
             </button>

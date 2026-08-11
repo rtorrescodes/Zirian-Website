@@ -108,6 +108,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
   const [demoMode, setDemoMode] = useState(true);
   const [leftPanelTab, setLeftPanelTab] = useState<'cameras' | 'org'>('cameras');
   const [groupBy, setGroupBy] = useState<'layer' | 'section'>('layer');
+  const [mobilePanel, setMobilePanel] = useState<'none' | 'left' | 'right' | 'dori'>('none');
   
   // Map View State
   const [mapHeading, setMapHeading] = useState(0);
@@ -743,8 +744,9 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       </div>
 
       {/* Left Sidebar (Cameras & Organization) */}
+      {/* Left Floating Panel (Layers/Organization) */}
       {!clientMode && (
-        <div className="absolute top-20 left-4 w-72 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl p-4 pointer-events-auto z-10 flex flex-col max-h-[calc(100vh-160px)]">
+      <div className={`absolute top-20 left-4 w-72 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl overflow-hidden pointer-events-auto z-10 flex flex-col max-h-[80vh] transition-transform ${mobilePanel === 'left' ? 'translate-x-0' : '-translate-x-[150%] md:translate-x-0'}`}>
         <div className="flex gap-1 bg-slate-900 p-1 rounded-lg mb-4 shrink-0">
           <button 
             onClick={() => setLeftPanelTab('cameras')} 
@@ -1048,8 +1050,8 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       )}
 
 
-      {/* Right Floating Panel */}
-      <div className="absolute top-20 right-4 w-80 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl p-6 pointer-events-auto z-10 max-h-[80vh] overflow-y-auto">
+      {/* Right Floating Panel (Devices) */}
+      <div className={`absolute top-20 right-4 w-80 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl p-6 pointer-events-auto z-10 max-h-[75vh] overflow-y-auto transition-transform ${mobilePanel === 'right' ? 'translate-x-0' : 'translate-x-[150%] md:translate-x-0'}`}>
         <h2 className="text-white font-tech font-bold uppercase tracking-widest text-sm mb-4">Diseña tu sistema</h2>
         <p className="text-slate-400 text-xs mb-6 leading-relaxed">
           Coloca cámaras reales y equipos inalámbricos sobre tu sitio para visualizar su alcance y cobertura.
@@ -1249,7 +1251,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       </div>
 
       {/* DORI Legend */}
-      <div className="absolute bottom-6 left-4 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl p-4 pointer-events-auto z-10 w-64">
+      <div className={`absolute bottom-24 md:bottom-6 left-4 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl p-4 pointer-events-auto z-10 w-64 transition-transform ${mobilePanel === 'dori' ? 'translate-y-0' : 'translate-y-[200%] md:translate-y-0'}`}>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-bold text-white font-tech uppercase tracking-widest">Zonas DORI (IEC)</h3>
           <button 
@@ -1399,6 +1401,27 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
           </div>
         </div>
       )}
+      {/* Bottom Mobile Action Bar */}
+      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-4 z-20 md:hidden pointer-events-none">
+        <Button 
+          onClick={() => setMobilePanel(p => p === 'left' ? 'none' : 'left')} 
+          className={`pointer-events-auto rounded-full w-12 h-12 shadow-lg transition-colors ${mobilePanel === 'left' ? 'bg-brand-blue text-slate-950' : 'bg-slate-900 text-white border border-slate-700'}`}
+        >
+          <Layers className="w-5 h-5" />
+        </Button>
+        <Button 
+          onClick={() => setMobilePanel(p => p === 'dori' ? 'none' : 'dori')} 
+          className={`pointer-events-auto rounded-full w-12 h-12 shadow-lg transition-colors ${mobilePanel === 'dori' ? 'bg-emerald-400 text-slate-950' : 'bg-slate-900 text-white border border-slate-700'}`}
+        >
+          <Crosshair className="w-5 h-5" />
+        </Button>
+        <Button 
+          onClick={() => setMobilePanel(p => p === 'right' ? 'none' : 'right')} 
+          className={`pointer-events-auto rounded-full w-14 h-14 shadow-lg transition-colors ${mobilePanel === 'right' ? 'bg-brand-blue text-slate-950' : 'bg-brand-blue text-slate-950'}`}
+        >
+          {mobilePanel === 'right' ? <X className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+        </Button>
+      </div>
     </div>
   );
 }
