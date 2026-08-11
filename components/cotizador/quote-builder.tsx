@@ -875,7 +875,9 @@ export function QuoteBuilder({
                           <td className="py-2 px-2 border border-slate-300 text-center font-bold">{item.qty}</td>
                           <td className="py-2 px-2 border border-slate-300">
                              <div className="font-bold text-slate-900">{item.product.nombre}</div>
-                             {item.detalles && <div className="text-slate-500 mt-1 whitespace-pre-wrap">{item.detalles}</div>}
+                          </td>
+                          <td className="py-2 px-2 border border-slate-300 text-slate-600 text-[10px] whitespace-pre-wrap leading-tight">
+                             {item.detalles || ''}
                           </td>
                           <td className="py-2 px-2 border border-slate-300 text-right">${Number(item.product.precio_base).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
                           <td className="py-2 px-2 border border-slate-300 text-center">{(requiereFactura || initialQuote?.impuestos > 0) ? '16%' : '0%'}</td>
