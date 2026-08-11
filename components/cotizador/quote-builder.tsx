@@ -22,6 +22,7 @@ import { ClientSelector } from './client-selector';
 import { ProductSearch } from './product-search';
 import { QuoteCart } from './quote-cart';
 import { QuoteSummary } from './quote-summary';
+import { QuotePreview } from './quote-preview';
 
 import { cn } from '@/lib/utils'
 import dynamic from 'next/dynamic'
@@ -449,6 +450,8 @@ export function QuoteBuilder({
           setRequiereFactura={setRequiereFactura}
           mostrarDesglose={mostrarDesglose}
           setMostrarDesglose={setMostrarDesglose}
+          template={template}
+          setTemplate={setTemplate}
           motivoRechazo={motivoRechazo}
           setMotivoRechazo={setMotivoRechazo}
           subtotal={subtotal}
@@ -465,6 +468,19 @@ export function QuoteBuilder({
         />
       </div>
       </div>
+      
+      <QuotePreview 
+        template={template}
+        selectedClient={selectedClient}
+        items={items}
+        requiereFactura={requiereFactura}
+        notasCliente={notasCliente}
+        subtotal={subtotal}
+        iva={iva}
+        total={total}
+        moneda={initialQuote?.moneda}
+        impuestosIniciales={initialQuote?.impuestos}
+      />
     </>
   )
 }

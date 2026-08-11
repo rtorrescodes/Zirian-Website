@@ -14,6 +14,8 @@ interface QuoteSummaryProps {
   setRequiereFactura: (val: boolean) => void;
   mostrarDesglose: boolean;
   setMostrarDesglose: (val: boolean) => void;
+  template: string;
+  setTemplate: (val: string) => void;
   motivoRechazo: string;
   setMotivoRechazo: (val: string) => void;
   subtotal: number;
@@ -37,6 +39,8 @@ export function QuoteSummary({
   setRequiereFactura,
   mostrarDesglose,
   setMostrarDesglose,
+  template,
+  setTemplate,
   motivoRechazo,
   setMotivoRechazo,
   subtotal,
@@ -106,6 +110,19 @@ export function QuoteSummary({
           </dl>
 
           <div className="mt-4 pt-4 border-t border-slate-800/50 space-y-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-[11px] font-tech font-bold uppercase tracking-wider text-slate-400">Plantilla PDF</label>
+              <select
+                value={template}
+                onChange={(e) => setTemplate(e.target.value)}
+                className="bg-slate-900 border border-slate-700 text-white rounded p-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-brand-blue"
+              >
+                <option value="ev_charger">Cargadores EV</option>
+                <option value="ev_charger_en">Cargadores EV (Inglés)</option>
+                <option value="general">Cotización General (CCTV, etc)</option>
+              </select>
+            </div>
+            
             <div className="flex flex-col gap-2">
               <label className="text-[11px] font-tech font-bold uppercase tracking-wider text-slate-400">Estatus de Cotización</label>
               <select
