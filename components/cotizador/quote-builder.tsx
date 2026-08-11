@@ -892,10 +892,10 @@ export function QuoteBuilder({
                 </div>
 
                 {/* Green/Teal Banner */}
-                <div className="mx-12 mb-4 bg-[#25B150] text-white text-[11px] font-bold text-center py-1 uppercase tracking-wider">
+                <div className="mx-12 mb-4 bg-[#25B150] text-white text-[10px] font-bold text-center py-1 uppercase tracking-wider">
                   {template === 'general'
                     ? 'Alta Ingeniería Eléctrica / Automatización / Videovigilancia / Redes / Sistemas'
-                    : 'Cargadores EV / Paneles Solares / Riego automatizado / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas'}
+                    : 'Cargadores EV / Paneles Solares / Riego automático / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas'}
                 </div>
 
                 {/* Table */}

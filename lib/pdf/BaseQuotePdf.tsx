@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   },
   bannerText: {
     color: '#ffffff',
-    fontSize: 8,
+    fontSize: 7,
     fontWeight: 'bold',
     textAlign: 'center',
     textTransform: 'uppercase',
@@ -297,10 +297,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   pageFooter: {
-    position: 'absolute',
-    bottom: 10,
-    left: 40,
-    right: 40,
+    marginTop: 10,
+    marginHorizontal: 40,
     backgroundColor: '#25B150',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -388,7 +386,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
           <Text style={styles.bannerText}>
             {quote.template === 'general' 
               ? 'Alta Ingeniería Eléctrica / Automatización / Videovigilancia / Redes / Sistemas' 
-              : 'Cargadores EV / Paneles Solares / Riego automatizado / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas'
+              : 'Cargadores EV / Paneles Solares / Riego automático / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas'
             }
           </Text>
         </View>
@@ -505,8 +503,8 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
           </View>
         </View>
 
-        {/* Absolute Page Footer */}
-        <View style={styles.pageFooter} fixed>
+        {/* Page Footer (Not absolute, just flows after content) */}
+        <View style={styles.pageFooter}>
           <Text style={styles.pageFooterText}>Página 1</Text>
           <Text style={styles.pageFooterText}>{createdAt.toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
         </View>
