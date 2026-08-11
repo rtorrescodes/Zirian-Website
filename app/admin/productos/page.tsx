@@ -22,7 +22,7 @@ export default async function ProductosAdminPage(props: { searchParams?: Promise
             <p className="font-tech text-sm text-slate-400">{products.length} productos registrados</p>
           </div>
           <Link href="/admin/productos/editor">
-            <Button className="bg-brand-blue hover:bg-brand-blue/80 text-white font-tech uppercase tracking-wider font-bold shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all">
+            <Button className="bg-brand-blue hover:bg-brand-blue/80 text-slate-950 hover:bg-brand-cyan font-tech uppercase tracking-wider font-bold shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all">
               <Plus className="mr-2 h-4 w-4" />
               Nuevo Producto
             </Button>

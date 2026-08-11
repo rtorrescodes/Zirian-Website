@@ -1,13 +1,14 @@
 'use client'
 
-import { deleteQuote } from "@/app/actions/quotes"
+import { deleteQuote, adminAcceptQuote } from "@/app/actions/quotes"
 import { Button } from "@/components/ui/button"
-import { Trash2, Edit, Link as LinkIcon, Check } from "lucide-react"
+import { Trash2, Edit, Link as LinkIcon, Check, ThumbsUp } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 
-export function QuoteActions({ quoteId, token }: { quoteId: number, token?: string }) {
+export function QuoteActions({ quoteId, token, status }: { quoteId: number, token?: string, status?: string }) {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isApproving, setIsApproving] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const handleDelete = async () => {
@@ -20,6 +21,21 @@ export function QuoteActions({ quoteId, token }: { quoteId: number, token?: stri
         console.error(e)
         alert('Hubo un error al eliminar la cotización.')
         setIsDeleting(false)
+      }
+    }
+  }
+
+  const handleApprove = async () => {
+    if (confirm('¿Deseas marcar esta cotización como Aprobada manualmente?')) {
+      setIsApproving(true)
+      try {
+        await adminAcceptQuote(quoteId)
+        // revalidatePath in the server action handles the refresh
+      } catch (e) {
+        console.error(e)
+        alert('Hubo un error al aprobar la cotización.')
+      } finally {
+        setIsApproving(false)
       }
     }
   }
@@ -58,6 +74,18 @@ export function QuoteActions({ quoteId, token }: { quoteId: number, token?: stri
           title="Copiar Link Web"
         >
           {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <LinkIcon className="w-4 h-4" />}
+        </Button>
+      )}
+      {status !== 'Aprobado' && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleApprove}
+          disabled={isApproving}
+          className="w-8 h-8 p-0 text-slate-400 border-slate-700 bg-slate-900 hover:text-emerald-400 hover:bg-emerald-950/30 hover:border-emerald-900/50 transition-colors shrink-0"
+          title="Aprobar Manualmente"
+        >
+          <ThumbsUp className="w-4 h-4" />
         </Button>
       )}
     </div>

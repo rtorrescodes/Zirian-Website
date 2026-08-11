@@ -1,6 +1,6 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -19,6 +19,7 @@ model Client {
   tipo_instalacion       String?  @db.VarChar(50)
   distancia_centro_carga String?  @db.VarChar(50)
   ubicacion              String   @db.VarChar(255)
+  ciudad                 String?  @db.VarChar(100) // San José del Cabo, Cabo San Lucas, etc.
   status                 String   @default("Lead") @db.VarChar(50) // Lead, Prospect, Cliente
   origen                 String   @default("Directo") @db.VarChar(50) // WhatsApp, Web, BYD, etc.
   notas                  String?  @db.Text
@@ -29,86 +30,101 @@ model Client {
   fecha_creacion         DateTime @default(now())
   fecha_actualizacion    DateTime @updatedAt
 
-  quotes                 Quote[]
-  tickets                SupportTicket[]
-  scoutingReports        ScoutingReport[]
-  activities             ClientActivity[]
-  cctvProjects           CctvProject[]
+  quotes          Quote[]
+  tickets         SupportTicket[]
+  scoutingReports ScoutingReport[]
+  activities      ClientActivity[]
+  cctvProjects    CctvProject[]
+  contacts        ClientContact[]
+  serviceOrders   ServiceOrder[]
+  webUser         WebUser?
 
   @@index([status])
   @@index([origen])
 }
 
+model ClientContact {
+  id       Int     @id @default(autoincrement())
+  clientId Int
+  client   Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  nombre   String  @db.VarChar(150)
+  puesto   String? @db.VarChar(100)
+  telefono String? @db.VarChar(50)
+  email    String? @db.VarChar(100)
+
+  @@index([clientId])
+}
+
 model ClientActivity {
-  id               Int      @id @default(autoincrement())
-  clientId         Int
-  client           Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  tipo             String   @db.VarChar(50) // Llamada, Visita, Correo, Nota General, Diseño CCTV, Presupuesto
-  descripcion      String   @db.Text
-  url              String?  @db.VarChar(255) // Para vincular directamente a cotizaciones o planos
-  fecha_actividad  DateTime @default(now())
-  
+  id              Int      @id @default(autoincrement())
+  clientId        Int
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  tipo            String   @db.VarChar(50) // Llamada, Visita, Correo, Nota General, Diseño CCTV, Presupuesto
+  descripcion     String   @db.Text
+  url             String?  @db.VarChar(255) // Para vincular directamente a cotizaciones o planos
+  fecha_actividad DateTime @default(now())
+
   @@index([clientId])
 }
 
 model Quote {
-  id               Int      @id @default(autoincrement())
-  clientId         Int
-  client           Client   @relation(fields: [clientId], references: [id])
-  status           String   @default("Borrador") @db.VarChar(50) // Borrador, Enviada, Aprobada, Rechazada
-  template         String   @default("ev_charger") @db.VarChar(50) // ev_charger, general
-  total            Decimal  @db.Decimal(10, 2)
-  subtotal         Decimal  @db.Decimal(10, 2)
-  impuestos        Decimal  @db.Decimal(10, 2)
-  moneda           String   @default("MXN") @db.VarChar(10) // MXN, USD
-  condiciones      String?  @db.Text
-  validez_dias     Int      @default(15)
-  fecha_creacion   DateTime @default(now())
+  id                Int       @id @default(autoincrement())
+  clientId          Int
+  client            Client    @relation(fields: [clientId], references: [id])
+  status            String    @default("Borrador") @db.VarChar(50) // Borrador, Enviada, Aprobada, Rechazada
+  template          String    @default("ev_charger") @db.VarChar(50) // ev_charger, general
+  total             Decimal   @db.Decimal(10, 2)
+  subtotal          Decimal   @db.Decimal(10, 2)
+  impuestos         Decimal   @db.Decimal(10, 2)
+  moneda            String    @default("MXN") @db.VarChar(10) // MXN, USD
+  condiciones       String?   @db.Text
+  validez_dias      Int       @default(15)
+  fecha_creacion    DateTime  @default(now())
   fecha_vencimiento DateTime?
-  notas_cliente    String?  @db.Text
-  terminos         String?  @db.Text
-  mostrar_desglose Boolean  @default(false)
-  
+  notas_cliente     String?   @db.Text
+  terminos          String?   @db.Text
+  mostrar_desglose  Boolean   @default(false)
+
   // Finanzas Internas y Comisiones
-  comision_fija    Decimal  @default(1500) @db.Decimal(10, 2)
-  costo_real       Decimal  @default(0) @db.Decimal(10, 2)
-  utilidad_real    Decimal  @default(0) @db.Decimal(10, 2)
+  comision_fija Decimal @default(1500) @db.Decimal(10, 2)
+  costo_real    Decimal @default(0) @db.Decimal(10, 2)
+  utilidad_real Decimal @default(0) @db.Decimal(10, 2)
 
   // Facturación y Pagos
-  requiere_factura Boolean  @default(false)
-  monto_pagado     Decimal  @default(0) @db.Decimal(10, 2)
-  status_pago      String   @default("Pendiente") @db.VarChar(50) // Pendiente, Parcial, Pagado
+  requiere_factura Boolean @default(false)
+  monto_pagado     Decimal @default(0) @db.Decimal(10, 2)
+  status_pago      String  @default("Pendiente") @db.VarChar(50) // Pendiente, Parcial, Pagado
 
   // Enlace web para cliente
-  token            String   @unique @default(uuid())
+  token String @unique @default(uuid())
 
-  items            QuoteItem[]
-  brochures        QuoteBrochure[]
-  serviceOrder     ServiceOrder?
+  items              QuoteItem[]
+  brochures          QuoteBrochure[]
+  serviceOrder       ServiceOrder?
   inventoryMovements InventoryMovement[]
-  
-  cctvProjectId    Int?
-  cctvProject      CctvProject? @relation(fields: [cctvProjectId], references: [id])
+
+  cctvProjectId Int?
+  cctvProject   CctvProject? @relation(fields: [cctvProjectId], references: [id])
 
   @@index([clientId])
   @@index([status])
 }
 
 model QuoteItem {
-  id               Int      @id @default(autoincrement())
-  quoteId          Int
-  quote            Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
-  productId        Int?
-  product          Product? @relation(fields: [productId], references: [id])
-  descripcion      String   @db.VarChar(255)
-  cantidad         Decimal  @db.Decimal(10, 2)
-  precio_unitario  Decimal  @db.Decimal(10, 2)
-  total            Decimal  @db.Decimal(10, 2)
-  
+  id              Int      @id @default(autoincrement())
+  quoteId         Int
+  quote           Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  productId       Int?
+  product         Product? @relation(fields: [productId], references: [id])
+  descripcion     String   @db.VarChar(255)
+  cantidad        Decimal  @db.Decimal(10, 2)
+  precio_unitario Decimal  @db.Decimal(10, 2)
+  total           Decimal  @db.Decimal(10, 2)
+
   // Inventario y Costos
-  costo_unitario   Decimal  @default(0) @db.Decimal(10, 2)
-  cantidad_planeada Decimal @default(0) @db.Decimal(10, 2)
-  cantidad_usada   Decimal? @db.Decimal(10, 2)
+  costo_unitario    Decimal  @default(0) @db.Decimal(10, 2)
+  cantidad_planeada Decimal  @default(0) @db.Decimal(10, 2)
+  cantidad_usada    Decimal? @db.Decimal(10, 2)
 
   @@index([quoteId])
   @@index([productId])
@@ -116,159 +132,164 @@ model QuoteItem {
 
 // Catálogo de Productos/Insumos
 model ProductCategory {
-  id               Int      @id @default(autoincrement())
-  nombre           String   @db.VarChar(100)
-  descripcion      String?  @db.Text
-  productos        Product[]
+  id          Int       @id @default(autoincrement())
+  nombre      String    @db.VarChar(100)
+  descripcion String?   @db.Text
+  productos   Product[]
 }
 
 model Supplier {
-  id               Int      @id @default(autoincrement())
-  nombre           String   @db.VarChar(150)
-  contacto         String?  @db.VarChar(100)
-  telefono         String?  @db.VarChar(50)
-  email            String?  @db.VarChar(100)
-  inventoryItems   InventoryItem[]
+  id             Int             @id @default(autoincrement())
+  nombre         String          @db.VarChar(150)
+  contacto       String?         @db.VarChar(100)
+  telefono       String?         @db.VarChar(50)
+  email          String?         @db.VarChar(100)
+  inventoryItems InventoryItem[]
 }
 
 model Partner {
-  id               Int      @id @default(autoincrement())
-  nombre           String   @db.VarChar(150)
-  marca            String?  @db.VarChar(100) // BYD, Tesla, etc.
-  comision_base    Decimal? @db.Decimal(5, 2)
-  telefono         String?  @db.VarChar(50)
-  email            String?  @db.VarChar(100)
-  activo           Boolean  @default(true)
-  
-  referrals        Client[]
+  id            Int      @id @default(autoincrement())
+  nombre        String   @db.VarChar(150)
+  marca         String?  @db.VarChar(100) // BYD, Tesla, etc.
+  comision_base Decimal? @db.Decimal(5, 2)
+  telefono      String?  @db.VarChar(50)
+  email         String?  @db.VarChar(100)
+  activo        Boolean  @default(true)
+
+  referrals Client[]
 }
 
 model Product {
-  id               Int      @id @default(autoincrement())
-  categoryId       Int
-  category         ProductCategory @relation(fields: [categoryId], references: [id])
-  nombre           String   @db.VarChar(150)
-  codigo           String?  @db.VarChar(50)
-  marca            String?  @db.VarChar(100)
-  descripcion      String?  @db.Text
-  precio_base      Decimal  @db.Decimal(10, 2)
-  costo_estimado   Decimal? @db.Decimal(10, 2)
-  unidad_medida    String   @default("Pieza") @db.VarChar(20) // Pieza, Metro, Lote
-  stock_general    Decimal  @default(0) @db.Decimal(10, 2)
-  requiere_serie   Boolean  @default(false)
-  activo           Boolean  @default(true)
-  grupo_impresion  String?  @db.VarChar(100) // Nombre para agrupar en PDF (ej. Instalación de Cargador EV)
-  proveedor_default String? @db.VarChar(150) // Para automatizar pedidos WhatsApp
+  id                Int             @id @default(autoincrement())
+  categoryId        Int
+  category          ProductCategory @relation(fields: [categoryId], references: [id])
+  nombre            String          @db.VarChar(150)
+  codigo            String?         @db.VarChar(50)
+  marca             String?         @db.VarChar(100)
+  descripcion       String?         @db.Text
+  precio_base       Decimal         @db.Decimal(10, 2)
+  costo_estimado    Decimal?        @db.Decimal(10, 2)
+  unidad_medida     String          @default("Pieza") @db.VarChar(20) // Pieza, Metro, Lote
+  stock_general     Decimal         @default(0) @db.Decimal(10, 2)
+  requiere_serie    Boolean         @default(false)
+  activo            Boolean         @default(true)
+  grupo_impresion   String?         @db.VarChar(100) // Nombre para agrupar en PDF (ej. Instalación de Cargador EV)
+  proveedor_default String?         @db.VarChar(150) // Para automatizar pedidos WhatsApp
+  notas             String?         @db.Text // Notas internas de referencia
 
-  quoteItems       QuoteItem[]
-  inventoryItems   InventoryItem[]
+  quoteItems         QuoteItem[]
+  inventoryItems     InventoryItem[]
   inventoryMovements InventoryMovement[]
-  recommendations  ProductRecommendation[] @relation("ProductToRecommendations")
-  recommendedIn    ProductRecommendation[] @relation("RecommendedToProducts")
+  recommendations    ProductRecommendation[] @relation("ProductToRecommendations")
+  recommendedIn      ProductRecommendation[] @relation("RecommendedToProducts")
 }
 
 // Para equipos físicos únicos (Cargadores)
 model InventoryItem {
-  id               Int      @id @default(autoincrement())
-  productId        Int
-  product          Product  @relation(fields: [productId], references: [id])
-  supplierId       Int?
-  supplier         Supplier? @relation(fields: [supplierId], references: [id])
-  numero_serie     String?  @unique @db.VarChar(100)
-  costo_real       Decimal? @db.Decimal(10, 2)
-  fecha_compra     DateTime?
-  status           String   @default("En Almacén") @db.VarChar(50) // En Almacén, Instalado, Defectuoso
-  
-  serviceOrderId   Int?     @unique
-  serviceOrder     ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
+  id           Int       @id @default(autoincrement())
+  productId    Int
+  product      Product   @relation(fields: [productId], references: [id])
+  supplierId   Int?
+  supplier     Supplier? @relation(fields: [supplierId], references: [id])
+  numero_serie String?   @unique @db.VarChar(100)
+  costo_real   Decimal?  @db.Decimal(10, 2)
+  fecha_compra DateTime?
+  status       String    @default("En Almacén") @db.VarChar(50) // En Almacén, Instalado, Defectuoso
+
+  serviceOrderId Int?          @unique
+  serviceOrder   ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
 }
 
 // Historial de Movimientos de Inventario (Entradas/Salidas/Sobrantes)
 model InventoryMovement {
-  id               Int      @id @default(autoincrement())
-  productId        Int
-  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  quoteId          Int?
-  quote            Quote?   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
-  tipo             String   @db.VarChar(50) // 'Salida', 'Entrada', 'Sobrante_Devuelto'
-  cantidad         Decimal  @db.Decimal(10, 2)
-  fecha            DateTime @default(now())
-  notas            String?  @db.Text
-  
+  id        Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quoteId   Int?
+  quote     Quote?   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  tipo      String   @db.VarChar(50) // 'Salida', 'Entrada', 'Sobrante_Devuelto'
+  cantidad  Decimal  @db.Decimal(10, 2)
+  fecha     DateTime @default(now())
+  notas     String?  @db.Text
+
   @@index([productId])
   @@index([quoteId])
 }
 
 model Brochure {
-  id               Int      @id @default(autoincrement())
-  nombre           String   @db.VarChar(150)
-  file_url         String   @db.VarChar(255)
-  activo           Boolean  @default(true)
-  fecha_creacion   DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  nombre         String   @db.VarChar(150)
+  file_url       String   @db.VarChar(255)
+  activo         Boolean  @default(true)
+  fecha_creacion DateTime @default(now())
 
-  quotes           QuoteBrochure[]
+  quotes QuoteBrochure[]
 }
 
 model QuoteBrochure {
-  quoteId          Int
-  quote            Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
-  brochureId       Int
-  brochure         Brochure @relation(fields: [brochureId], references: [id], onDelete: Cascade)
+  quoteId    Int
+  quote      Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  brochureId Int
+  brochure   Brochure @relation(fields: [brochureId], references: [id], onDelete: Cascade)
 
   @@id([quoteId, brochureId])
 }
 
 model ServiceOrder {
-  id               Int      @id @default(autoincrement())
-  quoteId          Int      @unique
-  quote            Quote    @relation(fields: [quoteId], references: [id])
-  status           String   @default("Pendiente") @db.VarChar(50) // Pendiente, En Progreso, Completada, Cancelada
-  fecha_programada DateTime?
-  fecha_completada DateTime?
-  tecnicoId        Int?
-  tecnico          User?    @relation(fields: [tecnicoId], references: [id])
-  notas_internas   String?  @db.Text
-  medidas_electricas Json?  // Para guardar voltaje, amperaje, etc. al entregar
-  
+  id                 Int       @id @default(autoincrement())
+  quoteId            Int?      @unique
+  quote              Quote?    @relation(fields: [quoteId], references: [id])
+  clientId           Int?
+  client             Client?   @relation(fields: [clientId], references: [id])
+  tipo               String    @default("Instalacion") @db.VarChar(50) // Instalacion, Mantenimiento, Soporte
+  status             String    @default("Pendiente") @db.VarChar(50) // Pendiente, En Progreso, Completada, Cancelada
+  fecha_programada   DateTime?
+  fecha_completada   DateTime?
+  tecnicoId          Int?
+  tecnico            User?     @relation(fields: [tecnicoId], references: [id])
+  notas_internas     String?   @db.Text
+  medidas_electricas Json? // Para guardar voltaje, amperaje, etc. al entregar
+
   // Fotos de "Después" u otras asociadas a la orden
-  photos           InstallationPhoto[]
-  inventoryItems   InventoryItem[]
+  photos             InstallationPhoto[]
+  inventoryItems     InventoryItem[]
   installedMaterials InstalledMaterial[]
 
   @@index([status])
+  @@index([clientId])
 }
 
 model InstalledMaterial {
-  id               Int      @id @default(autoincrement())
-  serviceOrderId   Int
-  serviceOrder     ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
-  nombre           String   @db.VarChar(150) // Ej. "Breaker 40A Square D"
-  cantidad         Decimal  @db.Decimal(10, 2)
-  unidad_medida    String   @default("Pieza") @db.VarChar(20)
-  notas            String?  @db.Text
+  id             Int          @id @default(autoincrement())
+  serviceOrderId Int
+  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  nombre         String       @db.VarChar(150) // Ej. "Breaker 40A Square D"
+  cantidad       Decimal      @db.Decimal(10, 2)
+  unidad_medida  String       @default("Pieza") @db.VarChar(20)
+  notas          String?      @db.Text
 }
 
 model InstallationPhoto {
-  id               Int      @id @default(autoincrement())
-  serviceOrderId   Int
-  serviceOrder     ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
-  url              String   @db.VarChar(255)
-  descripcion      String?  @db.VarChar(255)
-  fecha_subida     DateTime @default(now())
+  id             Int          @id @default(autoincrement())
+  serviceOrderId Int
+  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  url            String       @db.VarChar(255)
+  descripcion    String?      @db.VarChar(255)
+  fecha_subida   DateTime     @default(now())
 }
 
 model ScoutingReport {
-  id               Int      @id @default(autoincrement())
-  clientId         Int
-  client           Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  fecha_visita     DateTime @default(now())
-  tecnico          String?  @db.VarChar(100)
-  distancia_cable  Decimal? @db.Decimal(10, 2)
-  tipo_conexion    String?  @db.VarChar(100)
-  notas            String?  @db.Text
-  status           String   @default("Completado") @db.VarChar(50)
+  id              Int      @id @default(autoincrement())
+  clientId        Int
+  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  fecha_visita    DateTime @default(now())
+  tecnico         String?  @db.VarChar(100)
+  distancia_cable Decimal? @db.Decimal(10, 2)
+  tipo_conexion   String?  @db.VarChar(100)
+  notas           String?  @db.Text
+  status          String   @default("Completado") @db.VarChar(50)
 
-  photos           ScoutingPhoto[]
+  photos ScoutingPhoto[]
 
   @@index([clientId])
 }
@@ -278,24 +299,27 @@ model CctvProject {
   clientId         Int
   client           Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   nombre           String   @db.VarChar(150)
-  mapState         Json     // Guardará cámaras, center, zoom
+  shareToken       String?  @unique @default(uuid())
+  mapState         Json // Guardará cámaras, center, zoom
+  proposedMapState Json? // Guardará la propuesta del cliente
+  hasClientChanges Boolean  @default(false)
   previewImage     String?  @db.Text // Base64 de la imagen generada
   fecha_creacion   DateTime @default(now())
   fecha_actual     DateTime @updatedAt
-  
-  quotes           Quote[]
+
+  quotes Quote[]
 
   @@index([clientId])
 }
 
 model ScoutingPhoto {
-  id               Int      @id @default(autoincrement())
-  reportId         Int
-  report           ScoutingReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
-  url              String   @db.VarChar(255)
-  descripcion      String?  @db.VarChar(255)
-  es_problema      Boolean  @default(false)
-  fecha_subida     DateTime @default(now())
+  id           Int            @id @default(autoincrement())
+  reportId     Int
+  report       ScoutingReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  url          String         @db.VarChar(255)
+  descripcion  String?        @db.VarChar(255)
+  es_problema  Boolean        @default(false)
+  fecha_subida DateTime       @default(now())
 }
 
 // ==========================================
@@ -303,37 +327,42 @@ model ScoutingPhoto {
 // ==========================================
 
 model Post {
-  id               Int      @id @default(autoincrement())
-  title            String   @db.VarChar(255)
-  slug             String   @unique @db.VarChar(255)
-  content          String   @db.Text
-  excerpt          String?  @db.Text
-  featured_image   String?  @db.VarChar(255)
-  status           String   @default("Draft") @db.VarChar(50) // Draft, Published
-  authorId         Int?     // User ID from Supabase auth ideally
-  publishedAt      DateTime?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id             Int       @id @default(autoincrement())
+  title          String    @db.VarChar(255)
+  title_en       String?   @db.VarChar(255)
+  slug           String    @unique @db.VarChar(255)
+  content        String    @db.Text
+  content_en     String?   @db.Text
+  excerpt        String?   @db.Text
+  excerpt_en     String?   @db.Text
+  featured_image String?   @db.VarChar(255)
+  category       String?   @db.VarChar(100)
+  status         String    @default("Draft") @db.VarChar(50) // Draft, Published
+  template       String    @default("standard") @db.VarChar(50) // standard, minimalist, hero, terminal
+  authorId       Int? // User ID from Supabase auth ideally
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  tags             PostTag[]
-  
+  tags PostTag[]
+
   @@index([status])
   @@index([slug])
 }
 
 model Tag {
-  id               Int      @id @default(autoincrement())
-  name             String   @unique @db.VarChar(100)
-  slug             String   @unique @db.VarChar(100)
-  
-  posts            PostTag[]
+  id   Int    @id @default(autoincrement())
+  name String @unique @db.VarChar(100)
+  slug String @unique @db.VarChar(100)
+
+  posts PostTag[]
 }
 
 model PostTag {
-  postId           Int
-  post             Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  tagId            Int
-  tag              Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  postId Int
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tagId  Int
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([postId, tagId])
 }
@@ -343,43 +372,43 @@ model PostTag {
 // ==========================================
 
 model User {
-  id               Int      @id @default(autoincrement())
-  supabaseAuthId   String?  @unique @db.VarChar(255) // Link to Supabase Auth
-  passwordHash     String?  @db.VarChar(255) // Local authentication
-  nombre           String   @db.VarChar(100)
-  email            String   @unique @db.VarChar(100)
-  role             String   @default("Instalador") @db.VarChar(50) // Admin, Gerente, Supervisor, Instalador
-  activo           Boolean  @default(true)
-  fecha_creacion   DateTime @default(now())
-  updatedAt        DateTime @updatedAt @default(now())
+  id             Int      @id @default(autoincrement())
+  supabaseAuthId String?  @unique @db.VarChar(255) // Link to Supabase Auth
+  passwordHash   String?  @db.VarChar(255) // Local authentication
+  nombre         String   @db.VarChar(100)
+  email          String   @unique @db.VarChar(100)
+  role           String   @default("Instalador") @db.VarChar(50) // Admin, Gerente, Supervisor, Instalador
+  activo         Boolean  @default(true)
+  fecha_creacion DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
 
-  clients          Client[]
-  serviceOrders    ServiceOrder[]
-  toolAssignments  ToolAssignment[]
+  clients         Client[]
+  serviceOrders   ServiceOrder[]
+  toolAssignments ToolAssignment[]
 }
 
 model Tool {
-  id               Int      @id @default(autoincrement())
-  nombre           String   @db.VarChar(150)
-  marca            String?  @db.VarChar(100)
-  numero_serie     String?  @db.VarChar(100)
-  condicion        String   @default("Buena") @db.VarChar(50)
-  status           String   @default("Disponible") @db.VarChar(50) // Disponible, Asignada, En Reparación, Perdida
-  
-  assignments      ToolAssignment[]
+  id           Int     @id @default(autoincrement())
+  nombre       String  @db.VarChar(150)
+  marca        String? @db.VarChar(100)
+  numero_serie String? @db.VarChar(100)
+  condicion    String  @default("Buena") @db.VarChar(50)
+  status       String  @default("Disponible") @db.VarChar(50) // Disponible, Asignada, En Reparación, Perdida
+
+  assignments ToolAssignment[]
 }
 
 model ToolAssignment {
-  id               Int      @id @default(autoincrement())
+  id               Int       @id @default(autoincrement())
   toolId           Int
-  tool             Tool     @relation(fields: [toolId], references: [id])
+  tool             Tool      @relation(fields: [toolId], references: [id])
   userId           Int
-  user             User     @relation(fields: [userId], references: [id])
-  fecha_asignacion DateTime @default(now())
+  user             User      @relation(fields: [userId], references: [id])
+  fecha_asignacion DateTime  @default(now())
   fecha_devolucion DateTime?
-  foto_entrega     String?  @db.VarChar(255) // Evidencia del estado al entregar
-  foto_devolucion  String?  @db.VarChar(255) // Evidencia del estado al devolver
-  notas            String?  @db.Text
+  foto_entrega     String?   @db.VarChar(255) // Evidencia del estado al entregar
+  foto_devolucion  String?   @db.VarChar(255) // Evidencia del estado al devolver
+  notas            String?   @db.Text
 }
 
 model SupportTicket {
@@ -398,13 +427,71 @@ model SupportTicket {
 }
 
 model ProductRecommendation {
-  id              Int      @id @default(autoincrement())
-  productId       Int
-  recommendedId   Int
-  product         Product  @relation("ProductToRecommendations", fields: [productId], references: [id], onDelete: Cascade)
-  recommended     Product  @relation("RecommendedToProducts", fields: [recommendedId], references: [id], onDelete: Cascade)
-  
+  id            Int     @id @default(autoincrement())
+  productId     Int
+  recommendedId Int
+  product       Product @relation("ProductToRecommendations", fields: [productId], references: [id], onDelete: Cascade)
+  recommended   Product @relation("RecommendedToProducts", fields: [recommendedId], references: [id], onDelete: Cascade)
+
   @@unique([productId, recommendedId])
   @@index([productId])
   @@index([recommendedId])
+}
+
+// -----------------------------------------------------------------
+// E-COMMERCE (ZIRIAN STORE)
+// -----------------------------------------------------------------
+
+model WebUser {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String? // For email/password auth
+  name     String?
+  image    String?
+  role     String  @default("customer") // customer, admin
+
+  clientId Int?    @unique
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  resetToken       String?   @unique
+  resetTokenExpiry DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cart Cart?
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      WebUser    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  cartId    String
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String // Syscom product ID
+  title     String
+  brand     String?
+  model     String?
+  image     String?
+  priceMxn  Decimal  @db.Decimal(10, 2)
+  quantity  Int      @default(1)
+  addedAt   DateTime @default(now())
+
+  @@unique([cartId, productId])
+}
+
+model SystemSetting {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique @db.VarChar(100) // e.g., 'stripe_environment'
+  value       String   @db.Text
+  description String?  @db.Text
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?  @db.VarChar(100) // Email of the admin who changed it
 }

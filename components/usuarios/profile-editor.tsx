@@ -138,7 +138,7 @@ export function ProfileEditor({ initialData }: ProfileEditorProps) {
           </div>
         </div>
 
-        <Button type="submit" disabled={isSaving} className="w-full bg-brand-blue hover:bg-brand-blue/80 text-white font-tech uppercase tracking-widest font-bold h-14 text-lg shadow-[0_0_20px_rgba(0,163,255,0.4)] transition-all">
+        <Button type="submit" disabled={isSaving} className="w-full bg-brand-blue hover:bg-brand-blue/80 text-slate-950 hover:bg-brand-cyan font-tech uppercase tracking-widest font-bold h-14 text-lg shadow-[0_0_20px_rgba(0,163,255,0.4)] transition-all">
           {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Save className="h-5 w-5 mr-2" />}
           Guardar Cambios
         </Button>

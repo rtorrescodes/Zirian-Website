@@ -39,7 +39,7 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const shouldTrack = !cookieStore.get("ignore_analytics");
-
+  
   return (
     <html lang="es" className="h-full scroll-smooth">
       <head>

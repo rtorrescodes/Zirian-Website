@@ -175,7 +175,7 @@ export function ScoutingEditor({ initialData, clients }: ScoutingEditorProps) {
               </div>
             </div>
 
-            <Button type="submit" disabled={isSaving} className="w-full bg-brand-blue hover:bg-brand-blue/80 text-white h-12 font-tech font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all">
+            <Button type="submit" disabled={isSaving} className="w-full bg-brand-blue hover:bg-brand-blue/80 text-slate-950 hover:bg-brand-cyan h-12 font-tech font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all">
               {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
               {initialData ? 'Guardar Cambios' : 'Crear Levantamiento'}
             </Button>

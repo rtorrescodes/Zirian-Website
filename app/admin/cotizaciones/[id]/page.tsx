@@ -79,7 +79,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
             <a 
               href={`/api/quotes/${quote.id}/pdf`}
               target="_blank"
-              className="inline-flex items-center justify-center rounded-md border border-brand-blue bg-brand-blue/10 px-4 py-2 text-sm font-tech font-bold uppercase tracking-wider text-brand-blue transition-colors hover:bg-brand-blue hover:text-white"
+              className="inline-flex items-center justify-center rounded-md border border-brand-blue bg-brand-blue/10 px-4 py-2 text-sm font-tech font-bold uppercase tracking-wider text-brand-blue transition-colors hover:bg-brand-blue hover:text-slate-950 hover:bg-brand-cyan"
             >
               Ver PDF
             </a>

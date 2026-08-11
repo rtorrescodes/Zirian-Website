@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         clientId: parseInt(clientId),
         tipo: 'Diseño CCTV',
         descripcion: `Se guardó un nuevo diseño de CCTV: ${nombre}`,
-        url: `/admin/diseno-cctv?cctvId=${project.id}`
+        url: `/admin/design-cctv?cctvId=${project.id}`
       }
     });
 
@@ -41,19 +41,24 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const { id, nombre, mapState, previewImage } = body;
+    const { id, nombre, mapState, previewImage, hasClientChanges, proposedMapState } = body;
 
     if (!id || !nombre || !mapState) {
       return new NextResponse('Faltan datos requeridos', { status: 400 });
     }
 
+    const dataToUpdate: any = {
+      nombre,
+      mapState,
+      previewImage: previewImage || undefined
+    };
+
+    if (hasClientChanges !== undefined) dataToUpdate.hasClientChanges = hasClientChanges;
+    if (proposedMapState !== undefined) dataToUpdate.proposedMapState = proposedMapState;
+
     const project = await prisma.cctvProject.update({
       where: { id: parseInt(id) },
-      data: {
-        nombre,
-        mapState,
-        previewImage: previewImage || undefined
-      }
+      data: dataToUpdate
     });
 
     await prisma.clientActivity.create({
@@ -61,7 +66,7 @@ export async function PUT(request: Request) {
         clientId: project.clientId,
         tipo: 'Diseño CCTV',
         descripcion: `Se actualizó el diseño de CCTV: ${nombre}`,
-        url: `/admin/diseno-cctv?cctvId=${project.id}`
+        url: `/admin/design-cctv?cctvId=${project.id}`
       }
     });
 

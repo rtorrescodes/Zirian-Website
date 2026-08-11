@@ -66,9 +66,16 @@ interface CameraInstance {
   layer: string;
   section?: string;
   type?: DeviceType;
+  isNewProposal?: boolean;
+  isRemovedProposal?: boolean;
 }
 
-export default function CCTVMap() {
+interface CCTVMapProps {
+  clientMode?: boolean;
+  shareToken?: string;
+}
+
+export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps) {
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
@@ -115,7 +122,7 @@ export default function CCTVMap() {
   const [selectedClientId, setSelectedClientId] = useState('');
   const [projectName, setProjectName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [loadedProjectInfo, setLoadedProjectInfo] = useState<{id: number, nombre: string, clientName: string} | null>(null);
+  const [loadedProjectInfo, setLoadedProjectInfo] = useState<{id: number, nombre: string, clientName: string, hasClientChanges?: boolean, proposedMapState?: any} | null>(null);
 
   const fetchSavedProjects = async () => {
     setIsLoadingProjects(true);
@@ -139,7 +146,9 @@ export default function CCTVMap() {
     setLoadedProjectInfo({
       id: project.id,
       nombre: project.nombre,
-      clientName: project.client?.nombre || 'Cliente Anónimo'
+      clientName: project.client?.nombre || 'Cliente Anónimo',
+      hasClientChanges: project.hasClientChanges,
+      proposedMapState: project.proposedMapState
     });
     setSelectedClientId(project.clientId.toString());
     setProjectName(project.nombre);
@@ -244,8 +253,10 @@ export default function CCTVMap() {
         dori: defaultModel.dori,
         layer: activeLayer,
         section: activeSection,
-        type: type
+        type: type,
+        isNewProposal: clientMode ? true : undefined
       };
+
       return [...cams, newCam];
     });
     
@@ -301,7 +312,7 @@ export default function CCTVMap() {
     }
   };
   const autoSaveProject = async () => {
-    if (!loadedProjectInfo) return;
+    if (!loadedProjectInfo && !shareToken) return;
     
     const mapState = {
       cameras,
@@ -316,15 +327,15 @@ export default function CCTVMap() {
     };
 
     try {
-      await fetch('/api/cctv', {
+      const endpoint = clientMode ? '/api/cctv/proposal' : '/api/cctv';
+      const body = clientMode 
+        ? { shareToken, proposedMapState: mapState }
+        : { id: loadedProjectInfo?.id, nombre: projectName, mapState, previewImage: '' };
+
+      await fetch(endpoint, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: loadedProjectInfo.id,
-          nombre: projectName,
-          mapState,
-          previewImage: '' 
-        })
+        body: JSON.stringify(body)
       });
       console.log('Proyecto autoguardado con éxito');
     } catch (e) {
@@ -475,6 +486,32 @@ export default function CCTVMap() {
             <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></div>
             <span className="text-white text-sm font-bold">{loadedProjectInfo.nombre}</span>
             <span className="text-slate-500 text-xs px-2 border-l border-slate-700">{loadedProjectInfo.clientName}</span>
+            {!clientMode && loadedProjectInfo.hasClientChanges && (
+              <Button 
+                onClick={async () => {
+                  try {
+                    await fetch('/api/cctv', {
+                      method: 'PUT',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        id: loadedProjectInfo.id,
+                        nombre: loadedProjectInfo.nombre,
+                        mapState: loadedProjectInfo.proposedMapState,
+                        hasClientChanges: false,
+                        proposedMapState: null
+                      })
+                    });
+                    setLoadedProjectInfo({ ...loadedProjectInfo, hasClientChanges: false });
+                    handleLoadProject({ ...loadedProjectInfo, mapState: loadedProjectInfo.proposedMapState });
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }}
+                className="bg-orange-500 hover:bg-orange-400 text-white text-xs py-1 px-3 ml-2 h-7"
+              >
+                Aceptar Propuesta
+              </Button>
+            )}
             <button 
               onClick={() => {
                 setLoadedProjectInfo(null);
@@ -530,26 +567,33 @@ export default function CCTVMap() {
             
             return (
               <React.Fragment key={cam.id}>
-                {cam.type === 'wifi' ? (
+                {cam.isRemovedProposal ? (
+                  <Polygon
+                    paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.detect, cam.fov)}
+                    options={{
+                      fillColor: '#64748b', fillOpacity: 0.1 * doriOpacity, strokeColor: isActive ? '#fff' : '#64748b', strokeWeight: isActive ? 2 : 1, clickable: false
+                    }}
+                  />
+                ) : cam.type === 'wifi' ? (
                   <>
                     {/* Inner 30% */}
                     <Polygon
                       paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.detect * 0.33, cam.fov)}
-                      options={{ fillColor: '#9333ea', fillOpacity: 0.3 * doriOpacity, strokeOpacity: 0, clickable: false }}
+                      options={{ fillColor: cam.isNewProposal ? '#ef4444' : '#9333ea', fillOpacity: 0.3 * doriOpacity, strokeOpacity: 0, clickable: false }}
                     />
                     {/* Mid 66% */}
                     <Polygon
                       paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.detect * 0.66, cam.fov)}
-                      options={{ fillColor: '#9333ea', fillOpacity: 0.15 * doriOpacity, strokeOpacity: 0, clickable: false }}
+                      options={{ fillColor: cam.isNewProposal ? '#ef4444' : '#9333ea', fillOpacity: 0.15 * doriOpacity, strokeOpacity: 0, clickable: false }}
                     />
                     {/* Outer 100% */}
                     <Polygon
                       paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.detect, cam.fov)}
-                      options={{ fillColor: '#9333ea', fillOpacity: 0.05 * doriOpacity, strokeColor: isActive ? '#fff' : '#9333ea', strokeWeight: isActive ? 2 : 1, clickable: false }}
+                      options={{ fillColor: cam.isNewProposal ? '#ef4444' : '#9333ea', fillOpacity: 0.05 * doriOpacity, strokeColor: isActive ? '#fff' : (cam.isNewProposal ? '#ef4444' : '#9333ea'), strokeWeight: isActive ? 2 : 1, clickable: false }}
                     />
                   </>
                 ) : (
-                  showDori ? (
+                  showDori && !cam.isNewProposal ? (
                     <>
                       {/* Detect (Azul) */}
                       <Polygon
@@ -584,7 +628,7 @@ export default function CCTVMap() {
                     <Polygon
                       paths={calculateFOV(cam.lat, cam.lng, cam.heading, cam.dori.detect, cam.fov)}
                       options={{
-                        fillColor: '#3b82f6', fillOpacity: 0.4 * doriOpacity, strokeColor: isActive ? '#fff' : '#3b82f6', strokeWeight: isActive ? 2 : 1, clickable: false
+                        fillColor: cam.isNewProposal ? '#ef4444' : '#3b82f6', fillOpacity: 0.4 * doriOpacity, strokeColor: isActive ? '#fff' : (cam.isNewProposal ? '#ef4444' : '#3b82f6'), strokeWeight: isActive ? 2 : 1, clickable: false
                       }}
                     />
                   )
@@ -599,7 +643,7 @@ export default function CCTVMap() {
                   color: 'white',
                   fontWeight: 'bold',
                   fontSize: '12px',
-                  className: `bg-black/50 px-1 py-0.5 rounded -mt-8 absolute ${cam.type === 'wifi' ? 'border-b-2 border-purple-500' : ''}`
+                  className: `px-1 py-0.5 rounded -mt-8 absolute ${cam.isRemovedProposal ? 'bg-slate-800/80 line-through text-slate-400' : (cam.isNewProposal ? 'bg-red-600/80 text-white' : 'bg-black/50')} ${cam.type === 'wifi' && !cam.isRemovedProposal && !cam.isNewProposal ? 'border-b-2 border-purple-500' : ''}`
                 }}
                 onDragEnd={(e) => {
                   if (e.latLng) {
@@ -607,9 +651,11 @@ export default function CCTVMap() {
                   }
                 }}
                 icon={{
-                  url: cam.type === 'wifi' 
-                    ? 'https://maps.google.com/mapfiles/kml/shapes/target.png' 
-                    : 'https://maps.google.com/mapfiles/kml/shapes/camera.png',
+                  url: cam.isRemovedProposal 
+                    ? 'https://maps.google.com/mapfiles/kml/shapes/info-i_maps.png'
+                    : cam.type === 'wifi' 
+                      ? 'https://maps.google.com/mapfiles/kml/shapes/target.png' 
+                      : 'https://maps.google.com/mapfiles/kml/shapes/camera.png',
                   scaledSize: typeof window !== 'undefined' && window.google ? new window.google.maps.Size(24, 24) : undefined
                 }}
               />
@@ -675,24 +721,28 @@ export default function CCTVMap() {
           >
             <FolderOpen className="w-4 h-4 mr-2" /> Cargar Proyecto
           </Button>
+        <div className="flex gap-2 pointer-events-auto">
           <Button 
-            onClick={() => setShowSaveModal(true)}
-            variant="outline" 
-            className="bg-brand-blue border-brand-blue text-slate-950 font-bold hover:bg-brand-blue/80 transition-all shadow-lg shadow-brand-blue/30"
+            onClick={autoSaveProject}
+            className="bg-brand-blue text-slate-950 font-bold hover:bg-brand-blue/90 shadow-lg"
           >
-            <Save className="w-4 h-4 mr-2" /> Guardar
+            <Save className="w-4 h-4 mr-2" /> {clientMode ? 'Guardar Propuesta' : 'Guardar'}
           </Button>
-          <Button 
-            onClick={handleConvertToQuote}
-            className="bg-emerald-500 text-blue-950 font-bold hover:bg-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.5)] ml-4"
-          >
-            <FileText className="w-4 h-4 mr-2" /> Cotizar Cámaras
-          </Button>
+          {!clientMode && (
+            <Button 
+              onClick={handleConvertToQuote}
+              className="bg-emerald-500 text-blue-950 font-bold hover:bg-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.5)] ml-4"
+            >
+              <FileText className="w-4 h-4 mr-2" /> Cotizar Cámaras
+            </Button>
+          )}
         </div>
+      </div>
       </div>
 
       {/* Left Sidebar (Cameras & Organization) */}
-      <div className="absolute top-20 left-4 w-72 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl p-4 pointer-events-auto z-10 flex flex-col max-h-[calc(100vh-160px)]">
+      {!clientMode && (
+        <div className="absolute top-20 left-4 w-72 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl p-4 pointer-events-auto z-10 flex flex-col max-h-[calc(100vh-160px)]">
         <div className="flex gap-1 bg-slate-900 p-1 rounded-lg mb-4 shrink-0">
           <button 
             onClick={() => setLeftPanelTab('cameras')} 
@@ -753,7 +803,7 @@ export default function CCTVMap() {
                                   map.setZoom(20);
                                 }
                               }}
-                              className={`w-full text-left p-2 rounded border transition-all ${activeCamId === cam.id ? 'bg-brand-blue/10 border-brand-blue/50 text-white' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-600'}`}
+                              className={`w-full text-left p-2 rounded border transition-all ${activeCamId === cam.id ? 'bg-brand-blue/10 border-brand-blue/50 text-slate-950 hover:bg-brand-cyan' : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-600'}`}
                             >
                               <div className="font-bold text-sm truncate">{cam.name}</div>
                               <div className="text-[10px] text-slate-500 truncate">{modelDisplay}</div>
@@ -993,6 +1043,7 @@ export default function CCTVMap() {
           )}
         </div>
       </div>
+      )}
 
 
       {/* Right Floating Panel */}
@@ -1007,6 +1058,7 @@ export default function CCTVMap() {
             <Plus className="w-4 h-4 mr-2" /> Agregar Cámara
           </Button>
           
+          {!clientMode && (
           <div className="border border-slate-800 rounded-lg overflow-hidden bg-slate-900/50">
             <details className="group">
               <summary className="flex items-center justify-between p-3 cursor-pointer select-none text-xs font-tech font-bold text-slate-300 uppercase tracking-widest hover:bg-slate-800/50 transition-colors">
@@ -1022,6 +1074,7 @@ export default function CCTVMap() {
               </div>
             </details>
           </div>
+          )}
         </div>
 
         {activeCamId ? (
@@ -1030,6 +1083,12 @@ export default function CCTVMap() {
               {cameras.find(c => c.id === activeCamId)?.type === 'wifi' ? 'Configurar Equipo Wi-Fi' : 'Configurar Cámara'}
             </h3>
             
+            {clientMode ? (
+              <div className="space-y-2">
+                <p className="text-xs text-slate-400">Las configuraciones detalladas están ocultas. Puede mover la cámara o sugerir eliminarla.</p>
+              </div>
+            ) : (
+              <>
             <div className="space-y-2">
               <label className="text-xs text-slate-400">Identificador / Nombre</label>
               <input 
@@ -1122,11 +1181,18 @@ export default function CCTVMap() {
                 className="w-full accent-brand-blue"
               />
             </div>
+            </>
+            )}
+            
             
             <Button variant="destructive" size="sm" className="w-full mt-4" onClick={() => {
-              setCameras(cams => cams.filter(c => c.id !== activeCamId));
+              if (clientMode) {
+                setCameras(cams => cams.map(c => c.id === activeCamId ? { ...c, isRemovedProposal: true } : c));
+              } else {
+                setCameras(cams => cams.filter(c => c.id !== activeCamId));
+              }
               setActiveCamId(null);
-            }}>Eliminar Cámara</Button>
+            }}>{clientMode ? 'Sugerir Eliminar' : 'Eliminar Cámara'}</Button>
           </div>
         ) : (
           <div className="space-y-6">

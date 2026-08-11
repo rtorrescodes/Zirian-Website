@@ -3,6 +3,35 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+function serializeQuote(quote: any) {
+  if (!quote) return quote;
+  return {
+    ...quote,
+    total: quote.total ? Number(quote.total) : 0,
+    subtotal: quote.subtotal ? Number(quote.subtotal) : 0,
+    impuestos: quote.impuestos ? Number(quote.impuestos) : 0,
+    comision_fija: quote.comision_fija ? Number(quote.comision_fija) : 0,
+    costo_real: quote.costo_real ? Number(quote.costo_real) : 0,
+    utilidad_real: quote.utilidad_real ? Number(quote.utilidad_real) : 0,
+    monto_pagado: quote.monto_pagado ? Number(quote.monto_pagado) : 0,
+    items: quote.items ? quote.items.map((item: any) => ({
+      ...item,
+      cantidad: item.cantidad ? Number(item.cantidad) : 0,
+      precio_unitario: item.precio_unitario ? Number(item.precio_unitario) : 0,
+      total: item.total ? Number(item.total) : 0,
+      costo_unitario: item.costo_unitario ? Number(item.costo_unitario) : 0,
+      cantidad_planeada: item.cantidad_planeada ? Number(item.cantidad_planeada) : 0,
+      cantidad_usada: item.cantidad_usada ? Number(item.cantidad_usada) : 0,
+      product: item.product ? {
+        ...item.product,
+        precio_base: item.product.precio_base ? Number(item.product.precio_base) : 0,
+        costo_estimado: item.product.costo_estimado ? Number(item.product.costo_estimado) : null,
+        stock_general: item.product.stock_general ? Number(item.product.stock_general) : 0,
+      } : undefined
+    })) : undefined
+  };
+}
+
 export async function createQuote(data: {
   clientId: number;
   subtotal: number;
@@ -13,6 +42,7 @@ export async function createQuote(data: {
   condiciones?: string;
   validez_dias?: number;
   template?: string;
+  requiere_factura?: boolean;
   items: {
     productId: number | null;
     descripcion: string;
@@ -44,11 +74,11 @@ export async function createQuote(data: {
   });
 
   revalidatePath("/admin/cotizador");
-  return quote;
+  return serializeQuote(quote);
 }
 
 export async function getQuotes() {
-  return await prisma.quote.findMany({
+  const quotes = await prisma.quote.findMany({
     include: {
       client: true,
       items: {
@@ -59,6 +89,7 @@ export async function getQuotes() {
     },
     orderBy: { fecha_creacion: 'desc' }
   });
+  return quotes.map(serializeQuote);
 }
 
 export async function deleteQuote(id: number) {
@@ -79,7 +110,7 @@ export async function deleteQuote(id: number) {
 }
 
 export async function updateQuote(id: number, data: any) {
-  const { items, brochures, ...quoteData } = data;
+  const { items, brochures, requiere_factura, ...quoteData } = data;
 
   // Delete existing items
   await prisma.quoteItem.deleteMany({
@@ -94,6 +125,7 @@ export async function updateQuote(id: number, data: any) {
     where: { id },
     data: {
       ...quoteData,
+      requiere_factura: requiere_factura,
       items: {
         create: items,
       },
@@ -105,11 +137,11 @@ export async function updateQuote(id: number, data: any) {
 
   revalidatePath("/admin/cotizaciones");
   revalidatePath(`/admin/cotizaciones/${id}`);
-  return quote;
+  return serializeQuote(quote);
 }
 
 export async function getQuoteByToken(token: string) {
-  return await prisma.quote.findUnique({
+  const quote = await prisma.quote.findUnique({
     where: { token },
     include: {
       client: true,
@@ -119,6 +151,7 @@ export async function getQuoteByToken(token: string) {
       cctvProject: true
     }
   });
+  return serializeQuote(quote);
 }
 
 export async function acceptQuote(token: string) {
@@ -126,8 +159,34 @@ export async function acceptQuote(token: string) {
     where: { token },
     data: { status: 'Aprobado' }
   });
+  
+  // Create blank ServiceOrder
+  await prisma.serviceOrder.upsert({
+    where: { quoteId: quote.id },
+    create: { quoteId: quote.id, status: 'Pendiente' },
+    update: {}
+  });
+
   revalidatePath("/admin/cotizaciones");
   revalidatePath(`/presupuesto/${token}`);
-  return quote;
+  return serializeQuote(quote);
+}
+
+export async function adminAcceptQuote(id: number) {
+  const quote = await prisma.quote.update({
+    where: { id },
+    data: { status: 'Aprobado' }
+  });
+  
+  // Create blank ServiceOrder
+  await prisma.serviceOrder.upsert({
+    where: { quoteId: quote.id },
+    create: { quoteId: quote.id, status: 'Pendiente' },
+    update: {}
+  });
+
+  revalidatePath("/admin/cotizaciones");
+  if (quote.token) revalidatePath(`/presupuesto/${quote.token}`);
+  return serializeQuote(quote);
 }
 

@@ -5,17 +5,19 @@ import { Plus, Users, Edit2, FileText, Phone, Mail, MapPin } from 'lucide-react'
 import { AppShell } from '@/components/panel/app-shell';
 import { ClientFilters } from '@/components/clientes/client-filters';
 import { ClickableRow } from '@/components/ui/clickable-row';
+import { DeleteClientButton } from '@/components/clientes/delete-client-button';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ClientesAdminPage(props: { searchParams?: Promise<{ q?: string; status?: string; origen?: string; tipo?: string }> }) {
+export default async function ClientesAdminPage(props: { searchParams?: Promise<{ q?: string; status?: string; origen?: string; tipo?: string; ciudad?: string }> }) {
   const searchParams = await props.searchParams;
   const query = searchParams?.q || '';
   const statusFilter = searchParams?.status || 'all';
   const origenFilter = searchParams?.origen || 'all';
   const tipoFilter = searchParams?.tipo || 'all';
+  const ciudadFilter = searchParams?.ciudad || 'all';
 
-  const clients = await getClients(query, statusFilter, origenFilter, tipoFilter);
+  const clients = await getClients(query, statusFilter, origenFilter, tipoFilter, ciudadFilter);
 
   return (
     <AppShell title="CRM / Clientes" subtitle="Gestiona tus prospectos y clientes, y genera cotizaciones al instante.">
@@ -26,7 +28,7 @@ export default async function ClientesAdminPage(props: { searchParams?: Promise<
             <p className="font-tech text-sm text-slate-400">{clients.length} registros encontrados</p>
           </div>
           <Link href="/admin/clientes/editor">
-            <Button className="bg-brand-blue hover:bg-brand-blue/80 text-white font-tech uppercase tracking-wider font-bold shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all">
+            <Button className="bg-brand-blue hover:bg-brand-cyan text-slate-950 font-tech uppercase tracking-wider font-bold shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all">
               <Plus className="mr-2 h-4 w-4" />
               Nuevo Lead
             </Button>
@@ -66,9 +68,15 @@ export default async function ClientesAdminPage(props: { searchParams?: Promise<
                     <ClickableRow key={client.id} href={`/admin/clientes/editor/${client.id}`} className="hover:bg-slate-950/20 transition duration-150">
                       <td className="px-6 py-4">
                         <div>
-                          <p className="font-semibold text-white">{client.nombre}</p>
-                          {client.empresa && <p className="text-xs text-slate-400">{client.empresa}</p>}
-                          <div className="flex flex-col gap-0.5 mt-1">
+                          {client.empresa ? (
+                            <>
+                              <p className="font-bold text-white uppercase tracking-wider font-tech">{client.empresa}</p>
+                              <p className="text-xs text-slate-400 mt-0.5">{client.nombre}</p>
+                            </>
+                          ) : (
+                            <p className="font-semibold text-white">{client.nombre}</p>
+                          )}
+                          <div className="flex flex-col gap-0.5 mt-2">
                             <span className="text-[10px] text-slate-400 flex items-center gap-1 font-tech">
                               <Phone className="h-3 w-3" /> {client.telefono}
                             </span>
@@ -85,14 +93,17 @@ export default async function ClientesAdminPage(props: { searchParams?: Promise<
                           <p className="font-medium text-white mb-1">{client.tipo_instalacion || 'Sin Tipo Especificado'}</p>
                           {client.marca_ev && <p className="text-slate-400 mb-1">EV: {client.marca_ev}</p>}
                           {client.ubicacion && (
-                            <a 
-                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.ubicacion)}`} 
-                              target="_blank" 
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1 text-brand-blue hover:text-brand-cyan hover:underline transition"
-                            >
-                              <MapPin className="h-3 w-3" /> Ver Mapa
-                            </a>
+                            <div className="flex flex-col gap-1 mt-1">
+                              {client.ciudad && <p className="text-slate-300 font-bold">{client.ciudad}</p>}
+                              <a 
+                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(client.ubicacion)}`} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 text-brand-blue hover:text-brand-cyan hover:underline transition"
+                              >
+                                <MapPin className="h-3 w-3" /> Ver Mapa
+                              </a>
+                            </div>
                           )}
                         </div>
                       </td>
@@ -118,7 +129,7 @@ export default async function ClientesAdminPage(props: { searchParams?: Promise<
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Link href={`/admin/cotizador?clientId=${client.id}`}>
-                            <Button size="sm" className="h-8 bg-brand-blue/10 text-brand-blue hover:text-white hover:bg-brand-blue border border-brand-blue/30 transition-all font-tech font-bold uppercase text-[10px] tracking-wider">
+                            <Button size="sm" className="h-8 bg-brand-blue/10 text-brand-blue hover:text-slate-950 hover:bg-brand-blue border border-brand-blue/30 transition-all font-tech font-bold uppercase text-[10px] tracking-wider">
                               <FileText className="h-3.5 w-3.5 mr-1.5" />
                               Cotizar
                             </Button>
@@ -128,6 +139,7 @@ export default async function ClientesAdminPage(props: { searchParams?: Promise<
                               <Edit2 className="h-4 w-4" />
                             </Button>
                           </Link>
+                          <DeleteClientButton clientId={client.id} clientName={client.nombre} />
                         </div>
                       </td>
                     </ClickableRow>

@@ -43,7 +43,13 @@ export default async function CotizacionesPage() {
                   {quote.client.nombre}
                 </p>
               </div>
-              <Badge variant="outline" className="border-brand-blue/30 bg-brand-blue/10 text-brand-blue font-tech uppercase">
+              <Badge variant="outline" className={`font-tech uppercase ${
+                quote.status === 'Aprobado' ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' :
+                quote.status === 'Enviada' ? 'border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan' :
+                quote.status === 'Borrador' ? 'border-slate-500/30 bg-slate-500/10 text-slate-400' :
+                quote.status === 'Cancelada' || quote.status === 'Ignorada' ? 'border-red-500/30 bg-red-500/10 text-red-400' :
+                'border-brand-blue/30 bg-brand-blue/10 text-brand-blue'
+              }`}>
                 {quote.status}
               </Badge>
             </div>
@@ -74,7 +80,7 @@ export default async function CotizacionesPage() {
               </a>
             </div>
             
-            <QuoteActions quoteId={quote.id} token={quote.token || undefined} />
+            <QuoteActions quoteId={quote.id} token={quote.token || undefined} status={quote.status} />
           </Card>
         ))}
         {quotes.length === 0 && (

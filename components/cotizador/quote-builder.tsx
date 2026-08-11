@@ -26,6 +26,7 @@ const PDFViewer = dynamic(() => import('@react-pdf/renderer').then(m => m.PDFVie
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
@@ -150,6 +151,7 @@ export function QuoteBuilder({
   const [savedQuoteId, setSavedQuoteId] = useState<number | null>(initialQuote?.id || null)
   const [mostrarDesglose, setMostrarDesglose] = useState(initialQuote?.mostrar_desglose ?? false)
   const [template, setTemplate] = useState<string>(initialQuote?.template || 'ev_charger')
+  const [requiereFactura, setRequiereFactura] = useState<boolean>(initialQuote ? (initialQuote.requiere_factura || initialQuote.impuestos > 0) : true)
 
   const resetBuilder = () => {
     setSaved(false)
@@ -227,7 +229,7 @@ export function QuoteBuilder({
   }
 
   const subtotal = items.reduce((s, i) => s + (Number(i.product.precio_base) * i.qty), 0)
-  const iva = subtotal * IVA_RATE
+  const iva = requiereFactura ? subtotal * IVA_RATE : 0
   const total = subtotal + iva
 
   const handleSave = async () => {
@@ -240,6 +242,7 @@ export function QuoteBuilder({
         total: total,
         mostrar_desglose: mostrarDesglose,
         template: template,
+        requiere_factura: requiereFactura,
         items: items.map(i => ({
           productId: i.product.id < 0 ? null : i.product.id,
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
@@ -486,7 +489,7 @@ export function QuoteBuilder({
               type="button"
               onClick={addItem}
               disabled={!pickedProduct}
-              className="flex-1 bg-brand-blue text-white font-tech font-bold uppercase tracking-widest hover:bg-brand-blue/80 disabled:opacity-40 shadow-[0_0_15px_rgba(0,163,255,0.3)] transition-all"
+              className="flex-1 bg-brand-blue text-slate-950 hover:bg-brand-cyan font-tech font-bold uppercase tracking-widest hover:bg-brand-blue/80 disabled:opacity-40 shadow-[0_0_15px_rgba(0,163,255,0.3)] transition-all"
             >
               <Plus className="h-4 w-4 mr-2" />
               Agregar a la cotización
@@ -637,7 +640,7 @@ export function QuoteBuilder({
                                     <button 
                                       type="button" 
                                       onClick={() => addDirectItem(rec.recommended, i.qty)}
-                                      className="text-[10px] bg-slate-800 hover:bg-brand-blue hover:text-white text-slate-300 px-1.5 py-0.5 rounded flex items-center gap-1 transition-colors whitespace-nowrap font-medium"
+                                      className="text-[10px] bg-slate-800 hover:bg-brand-blue hover:text-slate-950 hover:bg-brand-cyan text-slate-300 px-1.5 py-0.5 rounded flex items-center gap-1 transition-colors whitespace-nowrap font-medium"
                                     >
                                       <Plus className="w-2.5 h-2.5" /> Agregar
                                     </button>
@@ -684,7 +687,22 @@ export function QuoteBuilder({
                 <dt className="text-[11px] font-tech font-bold uppercase tracking-wider text-slate-400">IVA (16%)</dt>
                 <dd className="font-mono font-medium text-white">{currencyExact(iva)}</dd>
               </div>
-              <div className="mt-2 flex items-center justify-between border-t border-slate-800 pt-4">
+            </dl>
+
+            <div className="mt-4 flex items-center space-x-2">
+              <Switch
+                id="requiere-factura"
+                checked={requiereFactura}
+                onCheckedChange={setRequiereFactura}
+                className="data-[state=checked]:bg-brand-blue"
+              />
+              <Label htmlFor="requiere-factura" className="font-tech text-xs font-bold uppercase tracking-widest text-slate-400">
+                Incluir IVA (Requiere Factura)
+              </Label>
+            </div>
+
+            <dl className="mt-4 border-t border-slate-800 pt-4">
+              <div className="flex items-center justify-between">
                 <dt className="font-tech text-sm font-bold uppercase tracking-widest text-white">
                   Total
                 </dt>
@@ -729,7 +747,7 @@ export function QuoteBuilder({
                   'h-12 w-full text-[11px] font-tech font-bold uppercase tracking-widest transition-all disabled:opacity-40',
                   saved
                     ? 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.4)]'
-                    : 'bg-brand-blue text-white hover:bg-brand-blue/80 shadow-[0_0_15px_rgba(0,163,255,0.4)]',
+                    : 'bg-brand-blue text-slate-950 hover:bg-brand-cyan hover:bg-brand-blue/80 shadow-[0_0_15px_rgba(0,163,255,0.4)]',
                 )}
               >
                 {saved ? (
@@ -847,8 +865,6 @@ export function QuoteBuilder({
                         <th className="py-2 px-2 border border-slate-300 w-48">Producto</th>
                         <th className="py-2 px-2 border border-slate-300">Descripción</th>
                         <th className="py-2 px-2 border border-slate-300 w-24 text-right">Precio</th>
-                        <th className="py-2 px-2 border border-slate-300 w-16 text-center">Desc</th>
-                        <th className="py-2 px-2 border border-slate-300 w-24 text-right">Venta</th>
                         <th className="py-2 px-2 border border-slate-300 w-12 text-center">IVA</th>
                         <th className="py-2 px-2 border border-slate-300 w-24 text-right">Total</th>
                       </tr>
@@ -864,10 +880,8 @@ export function QuoteBuilder({
                              {item.detalles && <div className="text-slate-500 mt-1 whitespace-pre-wrap">{item.detalles}</div>}
                           </td>
                           <td className="py-2 px-2 border border-slate-300 text-right">${Number(item.product.precio_base).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
-                          <td className="py-2 px-2 border border-slate-300 text-center text-slate-400">0%</td>
-                          <td className="py-2 px-2 border border-slate-300 text-right">${(Number(item.product.precio_base) * item.qty).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
-                          <td className="py-2 px-2 border border-slate-300 text-center">16%</td>
-                          <td className="py-2 px-2 border border-slate-300 text-right font-bold bg-slate-100">${(Number(item.product.precio_base) * item.qty * 1.16).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
+                          <td className="py-2 px-2 border border-slate-300 text-center">{(requiereFactura || initialQuote?.impuestos > 0) ? '16%' : '0%'}</td>
+                          <td className="py-2 px-2 border border-slate-300 text-right font-bold bg-slate-100">${(Number(item.product.precio_base) * item.qty * ((requiereFactura || initialQuote?.impuestos > 0) ? 1.16 : 1)).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -899,26 +913,7 @@ export function QuoteBuilder({
                   </div>
                 </div>
 
-                {/* Double Column Info */}
-                <div className="px-12 flex gap-8 mb-4">
-                  <div className="flex-1 border-t-2 border-slate-300 pt-2">
-                    <h3 className="text-[#1C497B] font-bold text-sm uppercase tracking-wider mb-2">Alcance del Servicio</h3>
-                    <ul className="list-disc pl-5 text-xs text-slate-700 flex flex-col gap-1">
-                      <li>Instalación y puesta en marcha del equipo.</li>
-                      <li>Sistema de aterrizaje a tierra conforme a norma.</li>
-                      <li>Interruptor de seguridad y canalización estética.</li>
-                      <li>Pruebas de conectividad y entrega operativa.</li>
-                    </ul>
-                  </div>
-                  <div className="flex-1 border-t-2 border-slate-300 pt-2">
-                    <h3 className="text-[#1C497B] font-bold text-sm uppercase tracking-wider mb-2">Términos y Condiciones</h3>
-                    <ul className="text-xs text-slate-700 flex flex-col gap-1">
-                      <li><strong className="text-slate-900">Pago:</strong> Adelanto 60% para inicio y el resto al finalizar.</li>
-                      <li><strong className="text-slate-900">Agenda:</strong> Notificar con 3 días de anticipación.</li>
-                      <li><strong className="text-slate-900">Garantía:</strong> 1 año en instalación y componentes.</li>
-                    </ul>
-                  </div>
-                </div>
+
 
                 {/* Compromiso Zirian */}
                 <div className="px-12 border-t-2 border-slate-300 pt-3">
@@ -934,14 +929,8 @@ export function QuoteBuilder({
                     </div>
                     <div className="w-1/2 flex flex-col items-center">
                       <p className="text-xs font-bold text-[#1C497B] mb-2">Gracias por su confianza</p>
-                      {/* Fake Image Placeholder for Gallery */}
-                      <div className="flex h-16 w-full bg-slate-200">
-                        <div className="flex-1 border-r border-white bg-slate-300 overflow-hidden">
-                          {/* Placeholder images would go here, maybe imported from public */}
-                        </div>
-                        <div className="flex-1 border-r border-white bg-slate-400"></div>
-                        <div className="flex-1 border-r border-white bg-slate-300"></div>
-                        <div className="flex-1 bg-slate-400"></div>
+                      <div className="flex h-16 w-full mt-2">
+                        <img src="/instalaciones-strip.jpg" alt="Instalaciones Zirian" className="w-full h-full object-cover" />
                       </div>
                     </div>
                   </div>

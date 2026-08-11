@@ -1,12 +1,12 @@
 import nodemailer from "nodemailer";
 
-export async function enviarCorreo(asunto: string, cuerpoHtml: string): Promise<boolean> {
+export async function enviarCorreo(asunto: string, cuerpoHtml: string, destinatario?: string): Promise<boolean> {
   const host = process.env.SMTP_HOST || "smtp.titan.email";
   const port = parseInt(process.env.SMTP_PORT || "465", 10);
   const user = process.env.SMTP_USER || "admin@alddea.com";
   const pass = process.env.SMTP_PASS || "g8LccgL6hy(N43Aw";
   const from = process.env.SMTP_FROM || "admin@alddea.com";
-  const to = process.env.SMTP_TO || "admin@alddea.com";
+  const to = destinatario || process.env.SMTP_TO || "admin@alddea.com";
 
   try {
     const transporter = nodemailer.createTransport({
@@ -23,7 +23,7 @@ export async function enviarCorreo(asunto: string, cuerpoHtml: string): Promise<
     });
 
     const info = await transporter.sendMail({
-      from: `Zirian Web Notification <${from}>`,
+      from: `Zirian <${from}>`,
       to,
       subject: asunto,
       html: cuerpoHtml,

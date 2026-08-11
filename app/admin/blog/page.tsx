@@ -22,10 +22,10 @@ export default async function BlogAdminPage() {
           </Link>
         </div>
 
-        <div className="rounded-xl border border-border bg-white overflow-hidden shadow-sm">
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-sm">
           {posts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="rounded-full bg-slate-100 p-4 mb-4">
+              <div className="rounded-full bg-slate-800 p-4 mb-4">
                 <BookOpen className="h-8 w-8 text-slate-400" />
               </div>
               <h3 className="text-lg font-semibold text-foreground">Aún no hay publicaciones</h3>
@@ -39,7 +39,7 @@ export default async function BlogAdminPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50 text-xs uppercase text-muted-foreground border-b border-border">
+                <thead className="bg-slate-950 text-xs uppercase text-slate-400 border-b border-slate-800 font-tech tracking-wider">
                   <tr>
                     <th className="px-6 py-4 font-medium">Título</th>
                     <th className="px-6 py-4 font-medium">Estatus</th>
@@ -47,21 +47,21 @@ export default async function BlogAdminPage() {
                     <th className="px-6 py-4 font-medium text-right">Acciones</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-slate-800">
                   {posts.map((post) => (
-                    <tr key={post.id} className="hover:bg-slate-50/50 transition-colors">
+                    <tr key={post.id} className="hover:bg-slate-800/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           {post.featured_image ? (
-                            <img src={post.featured_image} alt="" className="h-10 w-10 rounded object-cover border border-border" />
+                            <img src={post.featured_image} alt="" className="h-10 w-10 rounded object-cover border border-slate-700" />
                           ) : (
-                            <div className="h-10 w-10 rounded bg-slate-100 flex items-center justify-center border border-border">
+                            <div className="h-10 w-10 rounded bg-slate-800 flex items-center justify-center border border-slate-700">
                               <BookOpen className="h-4 w-4 text-slate-400" />
                             </div>
                           )}
                           <div>
-                            <p className="font-medium text-foreground">{post.title}</p>
-                            <p className="text-xs text-muted-foreground truncate max-w-[200px]">{post.slug}</p>
+                            <p className="font-medium text-slate-200">{post.title}</p>
+                            <p className="text-xs text-slate-400 truncate max-w-[200px]">{post.slug}</p>
                           </div>
                         </div>
                       </td>
@@ -69,10 +69,10 @@ export default async function BlogAdminPage() {
                         {post.status === 'Published' ? (
                           <Badge variant="outline" className="bg-brand-green/10 text-brand-green border-brand-green/20">Publicado</Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-slate-100 text-slate-600 border-slate-200">Borrador</Badge>
+                          <Badge variant="outline" className="bg-slate-800 text-slate-300 border-slate-700">Borrador</Badge>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-muted-foreground whitespace-nowrap">
+                      <td className="px-6 py-4 text-slate-400 whitespace-nowrap">
                         {new Date(post.createdAt).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' })}
                       </td>
                       <td className="px-6 py-4 text-right">

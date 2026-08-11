@@ -20,6 +20,7 @@ import {
   Map,
   LogOut,
   Camera,
+  Calendar,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -27,6 +28,7 @@ import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { ZirianLogo } from './zirian-logo'
+import AIChatWidget from '@/components/ai/AIChatWidget'
 
 interface NavItem {
   label: string
@@ -42,11 +44,12 @@ const nav: NavItem[] = [
   { label: 'Cotizaciones', href: '/admin/cotizaciones', icon: FileText },
   { label: 'Productos / Catálogo', href: '/admin/productos', icon: Settings },
   { label: 'Clientes / CRM', href: '/admin/clientes', icon: Users },
+  { label: 'Calendario', href: '/admin/calendario', icon: Calendar },
   { label: 'Levantamientos', href: '/admin/levantamientos', icon: Map },
-  { label: 'Diseño CCTV', href: '/admin/diseno-cctv', icon: Camera },
+  { label: 'Diseño CCTV', href: '/admin/design-cctv', icon: Camera },
   { label: 'Mantenimientos', href: '/admin/mantenimientos', icon: Wrench },
-  { label: 'Tickets', href: '/admin/tickets', icon: LifeBuoy, badge: '9' },
-  { label: 'Reportes', href: '#reportes', icon: BarChart3, soon: true },
+  { label: 'Tickets', href: '/admin/tickets', icon: LifeBuoy },
+  { label: 'Reportes', href: '/admin/reportes', icon: BarChart3 },
   { label: 'Blog / Guías', href: '/admin/blog', icon: FileText },
   { label: 'Partners', href: '/admin/partners', icon: Users },
 ]
@@ -112,18 +115,28 @@ function SidebarContent({ onNavigate, user }: { onNavigate?: () => void, user?: 
       </div>
       <div className="border-t border-slate-800 p-3">
         {(!user || user.role === 'SuperAdmin' || user.role === 'Gerente') && (
-          <Link
-            href="/admin/configuracion/usuarios"
-            onClick={onNavigate}
-            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-tech uppercase tracking-widest text-slate-400 transition-colors hover:bg-slate-800/60 hover:text-white"
-          >
-            <Settings className="h-[18px] w-[18px] text-slate-500" />
-            Usuarios y Accesos
-          </Link>
+          <>
+            <Link
+              href="/admin/configuracion/usuarios"
+              onClick={onNavigate}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-tech uppercase tracking-widest text-slate-400 transition-colors hover:bg-slate-800/60 hover:text-white"
+            >
+              <Users className="h-[18px] w-[18px] text-slate-500" />
+              Usuarios y Accesos
+            </Link>
+            <Link
+              href="/admin/ajustes"
+              onClick={onNavigate}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-tech uppercase tracking-widest text-slate-400 transition-colors hover:bg-slate-800/60 hover:text-white"
+            >
+              <Settings className="h-[18px] w-[18px] text-slate-500" />
+              Ajustes Globales
+            </Link>
+          </>
         )}
         <Link href="/admin/perfil" className="mt-2 flex items-center gap-3 rounded-lg bg-slate-900/50 border border-slate-800 px-3 py-2.5 transition hover:bg-slate-800 group">
           <Avatar className="h-9 w-9 border border-brand-blue/30 shadow-[0_0_10px_rgba(0,163,255,0.1)]">
-            <AvatarFallback className="bg-brand-blue/10 text-xs font-bold text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition">
+            <AvatarFallback className="bg-brand-blue/10 text-xs font-bold text-brand-blue group-hover:bg-brand-blue group-hover:text-slate-950 hover:bg-brand-cyan transition">
               {user ? user.name.substring(0, 2).toUpperCase() : 'MV'}
             </AvatarFallback>
           </Avatar>
@@ -243,6 +256,7 @@ export function AppShell({
 
         <main className="flex-1 p-4 sm:p-6">{children}</main>
       </div>
+      <AIChatWidget />
     </div>
   )
 }

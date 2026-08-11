@@ -6,6 +6,34 @@ import { PDFDocument } from 'pdf-lib';
 import React from 'react';
 import fs from 'fs';
 import path from 'path';
+function serializeQuote(quote: any) {
+  if (!quote) return quote;
+  return {
+    ...quote,
+    total: quote.total ? Number(quote.total) : 0,
+    subtotal: quote.subtotal ? Number(quote.subtotal) : 0,
+    impuestos: quote.impuestos ? Number(quote.impuestos) : 0,
+    comision_fija: quote.comision_fija ? Number(quote.comision_fija) : 0,
+    costo_real: quote.costo_real ? Number(quote.costo_real) : 0,
+    utilidad_real: quote.utilidad_real ? Number(quote.utilidad_real) : 0,
+    monto_pagado: quote.monto_pagado ? Number(quote.monto_pagado) : 0,
+    items: quote.items ? quote.items.map((item: any) => ({
+      ...item,
+      cantidad: item.cantidad ? Number(item.cantidad) : 0,
+      precio_unitario: item.precio_unitario ? Number(item.precio_unitario) : 0,
+      total: item.total ? Number(item.total) : 0,
+      costo_unitario: item.costo_unitario ? Number(item.costo_unitario) : 0,
+      cantidad_planeada: item.cantidad_planeada ? Number(item.cantidad_planeada) : 0,
+      cantidad_usada: item.cantidad_usada ? Number(item.cantidad_usada) : 0,
+      product: item.product ? {
+        ...item.product,
+        precio_base: item.product.precio_base ? Number(item.product.precio_base) : 0,
+        costo_estimado: item.product.costo_estimado ? Number(item.product.costo_estimado) : null,
+        stock_general: item.product.stock_general ? Number(item.product.stock_general) : 0,
+      } : undefined
+    })) : undefined
+  };
+}
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -45,8 +73,9 @@ export async function GET(
     }
 
     // Generate base PDF stream
+    const plainQuote = serializeQuote(quote);
     const stream = await renderToStream(
-      React.createElement(BaseQuotePdf, { quote, client: quote.client }) as any
+      React.createElement(BaseQuotePdf, { quote: plainQuote, client: plainQuote.client }) as any
     );
 
     // Convert NodeJS Readable stream to buffer
@@ -133,8 +162,8 @@ export async function GET(
         'Content-Disposition': `inline; filename="Cotizacion_ZIR-${quote.id.toString().padStart(4, '0')}.pdf"`,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating PDF:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return new NextResponse(`Error: ${error.message}\nStack: ${error.stack}`, { status: 500 });
   }
 }

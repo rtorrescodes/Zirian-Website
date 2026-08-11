@@ -14,6 +14,7 @@ export function ClientFilters() {
   const [status, setStatus] = useState(searchParams?.get('status') || 'all');
   const [origen, setOrigen] = useState(searchParams?.get('origen') || 'all');
   const [tipo, setTipo] = useState(searchParams?.get('tipo') || 'all');
+  const [ciudad, setCiudad] = useState(searchParams?.get('ciudad') || 'all');
 
   const createQueryString = useCallback(
     (name: string, value: string) => {
@@ -42,6 +43,7 @@ export function ClientFilters() {
     if (key === 'status') setStatus(val);
     if (key === 'origen') setOrigen(val);
     if (key === 'tipo') setTipo(val);
+    if (key === 'ciudad') setCiudad(val);
     router.push(pathname + '?' + createQueryString(key, val));
   };
 
@@ -100,6 +102,19 @@ export function ClientFilters() {
           <option value="Redes">Redes / WiFi</option>
           <option value="Híbrido">Múltiple / Híbrido</option>
           <option value="Otro">Otro</option>
+        </select>
+        
+        <select 
+          className="h-10 rounded-md border border-slate-700 bg-slate-950/80 px-3 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue flex-1 sm:flex-none"
+          value={ciudad}
+          onChange={(e) => handleFilterChange('ciudad', e.target.value)}
+        >
+          <option value="all">Ciudad: Todas</option>
+          <option value="Cabo San Lucas">Cabo San Lucas</option>
+          <option value="San José del Cabo">San José del Cabo</option>
+          <option value="Todos Santos">Todos Santos</option>
+          <option value="Cabo del Este">Cabo del Este</option>
+          <option value="La Paz">La Paz</option>
         </select>
       </div>
     </div>

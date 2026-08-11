@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || ''
 const DEEPSEEK_API_URL = 'https://api.deepseek.com/chat/completions'
 

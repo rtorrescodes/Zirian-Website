@@ -10,6 +10,10 @@ import Link from 'next/link';
 import { createClient, updateClient } from '@/app/actions/clients';
 import { ClientActivities } from './client-activities';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useJsApiLoader, Autocomplete } from '@react-google-maps/api';
+import { ClientContactsEditor } from './client-contacts-editor';
+
+const libraries: any = ['places'];
 
 interface ClientEditorProps {
   initialData?: any;
@@ -20,6 +24,14 @@ interface ClientEditorProps {
 export function ClientEditor({ initialData, partners, initialActivities = [] }: ClientEditorProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
+  
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+    libraries
+  });
+
   const [formData, setFormData] = useState({
     nombre: initialData?.nombre || '',
     empresa: initialData?.empresa || '',
@@ -29,6 +41,7 @@ export function ClientEditor({ initialData, partners, initialActivities = [] }: 
     tipo_instalacion: initialData?.tipo_instalacion || '',
     distancia_centro_carga: initialData?.distancia_centro_carga || '',
     ubicacion: initialData?.ubicacion || '',
+    ciudad: initialData?.ciudad || '',
     status: initialData?.status || 'Lead',
     origen: initialData?.origen || 'Directo',
     notas: initialData?.notas || '',
@@ -40,6 +53,28 @@ export function ClientEditor({ initialData, partners, initialActivities = [] }: 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const onLoad = (autocompleteObj: google.maps.places.Autocomplete) => {
+    setAutocomplete(autocompleteObj);
+  };
+
+  const onPlaceChanged = () => {
+    if (autocomplete !== null) {
+      const place = autocomplete.getPlace();
+      let ciudad = '';
+      if (place.address_components) {
+        const locality = place.address_components.find((c: any) => c.types.includes('locality'));
+        const sublocality = place.address_components.find((c: any) => c.types.includes('sublocality_level_1'));
+        const adminArea2 = place.address_components.find((c: any) => c.types.includes('administrative_area_level_2'));
+        ciudad = locality?.long_name || sublocality?.long_name || adminArea2?.long_name || '';
+      }
+      setFormData(prev => ({
+        ...prev,
+        ubicacion: place.formatted_address || prev.ubicacion,
+        ciudad: ciudad || prev.ciudad
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,9 +147,21 @@ export function ClientEditor({ initialData, partners, initialActivities = [] }: 
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Ubicación / Dirección *</label>
-                <Input name="ubicacion" value={formData.ubicacion} onChange={handleChange} required className="" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Ubicación / Dirección *</label>
+                  {isLoaded ? (
+                    <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+                      <Input name="ubicacion" value={formData.ubicacion} onChange={handleChange} required className="" placeholder="Buscar dirección..." />
+                    </Autocomplete>
+                  ) : (
+                    <Input name="ubicacion" value={formData.ubicacion} onChange={handleChange} required className="" />
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Ciudad / Municipio</label>
+                  <Input name="ciudad" value={formData.ciudad} onChange={handleChange} placeholder="Ej. Cabo San Lucas" className="" />
+                </div>
               </div>
             </div>
 
@@ -224,8 +271,15 @@ export function ClientEditor({ initialData, partners, initialActivities = [] }: 
                 <Textarea name="notas" value={formData.notas} onChange={handleChange} className="resize-none h-24 bg-slate-950/80 border-slate-700 text-white placeholder:text-slate-600 focus-visible:ring-emerald-500" placeholder="Comentarios sobre el cliente..." />
               </div>
             </div>
+            
+            {initialData && (
+              <ClientContactsEditor 
+                clientId={initialData.id} 
+                initialContacts={initialData.contacts || []} 
+              />
+            )}
 
-            <Button type="submit" disabled={isSaving} className="w-full bg-brand-blue hover:bg-brand-blue/80 text-white font-tech uppercase tracking-widest font-bold h-14 text-lg shadow-[0_0_20px_rgba(0,163,255,0.4)] transition-all">
+            <Button type="submit" disabled={isSaving} className="w-full bg-brand-blue hover:bg-brand-cyan text-slate-950 font-tech uppercase tracking-widest font-bold h-14 text-lg shadow-[0_0_20px_rgba(0,163,255,0.4)] transition-all">
               {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Save className="h-5 w-5 mr-2" />}
               {initialData ? 'Guardar Cambios' : 'Registrar Cliente'}
             </Button>

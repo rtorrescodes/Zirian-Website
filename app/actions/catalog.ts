@@ -22,10 +22,17 @@ export async function createProductCategory(data: { nombre: string, descripcion?
 // --- PRODUCTS ---
 
 export async function getProducts() {
-  return await prisma.product.findMany({
+  const products = await prisma.product.findMany({
     include: { category: true },
     orderBy: { nombre: 'asc' }
   });
+  
+  return products.map(p => ({
+    ...p,
+    precio_base: p.precio_base ? Number(p.precio_base) : 0,
+    costo_estimado: p.costo_estimado ? Number(p.costo_estimado) : null,
+    stock_general: p.stock_general ? Number(p.stock_general) : 0,
+  }));
 }
 
 export async function createProduct(data: {
@@ -42,7 +49,12 @@ export async function createProduct(data: {
     data
   });
   revalidatePath("/admin/catalogo");
-  return result;
+  return {
+    ...result,
+    precio_base: result.precio_base ? Number(result.precio_base) : 0,
+    costo_estimado: result.costo_estimado ? Number(result.costo_estimado) : null,
+    stock_general: result.stock_general ? Number(result.stock_general) : 0,
+  };
 }
 
 // --- SUPPLIERS ---

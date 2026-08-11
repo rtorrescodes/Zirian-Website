@@ -18,7 +18,7 @@ export async function getProducts(query = '', categoryId?: number) {
     where.categoryId = categoryId
   }
 
-  return await prisma.product.findMany({
+  const products = await prisma.product.findMany({
     where,
     include: {
       category: true,
@@ -30,10 +30,26 @@ export async function getProducts(query = '', categoryId?: number) {
     },
     orderBy: { nombre: 'asc' }
   })
+
+  return products.map(p => ({
+    ...p,
+    precio_base: p.precio_base ? Number(p.precio_base) : 0,
+    costo_estimado: p.costo_estimado ? Number(p.costo_estimado) : null,
+    stock_general: p.stock_general ? Number(p.stock_general) : 0,
+    recommendations: p.recommendations.map(r => ({
+      ...r,
+      recommended: {
+        ...r.recommended,
+        precio_base: r.recommended.precio_base ? Number(r.recommended.precio_base) : 0,
+        costo_estimado: r.recommended.costo_estimado ? Number(r.recommended.costo_estimado) : null,
+        stock_general: r.recommended.stock_general ? Number(r.recommended.stock_general) : 0
+      }
+    }))
+  }))
 }
 
 export async function getProductById(id: number) {
-  return await prisma.product.findUnique({
+  const p = await prisma.product.findUnique({
     where: { id },
     include: {
       category: true,
@@ -44,6 +60,24 @@ export async function getProductById(id: number) {
       }
     }
   })
+
+  if (!p) return null;
+
+  return {
+    ...p,
+    precio_base: p.precio_base ? Number(p.precio_base) : 0,
+    costo_estimado: p.costo_estimado ? Number(p.costo_estimado) : null,
+    stock_general: p.stock_general ? Number(p.stock_general) : 0,
+    recommendations: p.recommendations.map(r => ({
+      ...r,
+      recommended: {
+        ...r.recommended,
+        precio_base: r.recommended.precio_base ? Number(r.recommended.precio_base) : 0,
+        costo_estimado: r.recommended.costo_estimado ? Number(r.recommended.costo_estimado) : null,
+        stock_general: r.recommended.stock_general ? Number(r.recommended.stock_general) : 0
+      }
+    }))
+  }
 }
 
 export async function getCategories() {
@@ -71,6 +105,7 @@ export async function createProduct(data: {
   unidad_medida?: string;
   activo?: boolean;
   categoryId: number;
+  notas?: string;
 }) {
   const product = await prisma.product.create({
     data: {
@@ -83,12 +118,18 @@ export async function createProduct(data: {
       costo_estimado: data.costo_estimado,
       unidad_medida: data.unidad_medida || 'Pieza',
       activo: data.activo !== undefined ? data.activo : true,
-      categoryId: data.categoryId
+      categoryId: data.categoryId,
+      notas: data.notas
     }
   })
   
   revalidatePath('/admin/productos')
-  return product
+  return {
+    ...product,
+    precio_base: product.precio_base ? Number(product.precio_base) : 0,
+    costo_estimado: product.costo_estimado ? Number(product.costo_estimado) : null,
+    stock_general: product.stock_general ? Number(product.stock_general) : 0,
+  }
 }
 
 export async function updateProduct(id: number, data: {
@@ -102,6 +143,7 @@ export async function updateProduct(id: number, data: {
   unidad_medida?: string;
   activo?: boolean;
   categoryId?: number;
+  notas?: string;
 }) {
   const product = await prisma.product.update({
     where: { id },
@@ -109,7 +151,12 @@ export async function updateProduct(id: number, data: {
   })
   
   revalidatePath('/admin/productos')
-  return product
+  return {
+    ...product,
+    precio_base: product.precio_base ? Number(product.precio_base) : 0,
+    costo_estimado: product.costo_estimado ? Number(product.costo_estimado) : null,
+    stock_general: product.stock_general ? Number(product.stock_general) : 0,
+  }
 }
 
 export async function deleteProduct(id: number) {

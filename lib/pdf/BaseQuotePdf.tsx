@@ -326,11 +326,11 @@ export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => 
     // Show all items as they are
     displayItems = quote.items.map((i: any) => ({
       qty: Number(i.cantidad),
-      name: i.product.nombre,
+      name: i.product?.nombre || i.descripcion || 'Producto/Servicio',
       desc: i.descripcion || '',
       price: Number(i.precio_unitario),
       total: Number(i.total),
-      iva: Number(i.total) * 0.16
+      iva: (quote.requiere_factura || quote.impuestos > 0) ? Number(i.total) * 0.16 : 0
     }));
   } else {
     // Group by grupo_impresion
@@ -338,7 +338,7 @@ export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => 
     const isGeneral = quote.template === 'general';
     
     quote.items.forEach((i: any) => {
-      const groupName = i.product.grupo_impresion || (isGeneral ? 'Equipos y Materiales' : 'Instalación de Cargador EV');
+      const groupName = i.product?.grupo_impresion || (isGeneral ? 'Equipos y Materiales' : 'Instalación de Cargador EV');
       if (!groups[groupName]) {
         groups[groupName] = {
           qty: 1,
@@ -357,14 +357,14 @@ export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => 
       const itemTotal = Number(i.total);
       groups[groupName].price += itemTotal;
       groups[groupName].total += itemTotal;
-      groups[groupName].iva += itemTotal * 0.16;
+      groups[groupName].iva += (quote.requiere_factura || quote.impuestos > 0) ? itemTotal * 0.16 : 0;
     });
 
     displayItems = Object.values(groups);
   }
 
   const calculatedSubtotal = displayItems.reduce((acc: number, item: any) => acc + item.total, 0);
-  const calculatedIva = calculatedSubtotal * 0.16;
+  const calculatedIva = (quote.requiere_factura || quote.impuestos > 0) ? calculatedSubtotal * 0.16 : 0;
   const calculatedTotal = calculatedSubtotal + calculatedIva;
 
   return (
@@ -391,9 +391,9 @@ export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => 
             <Text style={styles.infoBlockTitle}>Cliente</Text>
             <View style={styles.infoBlockContent}>
               <Text style={styles.clientName}>{client.nombre}</Text>
-              {client.empresa && <Text style={styles.clientDetail}>{client.empresa}</Text>}
+              {client.empresa ? <Text style={styles.clientDetail}>{client.empresa}</Text> : null}
               <Text style={styles.clientDetail}>{client.ubicacion || 'Sin dirección registrada'}</Text>
-              {client.telefono && <Text style={styles.clientDetail}>{client.telefono}</Text>}
+              {client.telefono ? <Text style={styles.clientDetail}>{client.telefono}</Text> : null}
             </View>
           </View>
           <View style={styles.infoBlockRight}>
@@ -448,7 +448,7 @@ export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => 
                   <Text style={styles.productDesc}>{item.desc}</Text>
                 </View>
                 <Text style={styles.tdPrice}>{formatCurrency(item.price)}</Text>
-                <Text style={styles.tdIVA}>16%</Text>
+                <Text style={styles.tdIVA}>{(quote.requiere_factura || quote.impuestos > 0) ? '16%' : '0%'}</Text>
                 <Text style={styles.tdTotal}>{formatCurrency(item.total + item.iva)}</Text>
               </View>
             ))
@@ -459,7 +459,7 @@ export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => 
         <View style={styles.totalsWrapper}>
           <View style={styles.totalsLeft}>
             <Text style={styles.totalsNoteText}>Nota Técnica:</Text>
-            {quote.notas_cliente && <Text style={{ fontSize: 8, color: '#475569', marginTop: 3 }}>{quote.notas_cliente}</Text>}
+            {quote.notas_cliente ? <Text style={{ fontSize: 8, color: '#475569', marginTop: 3 }}>{quote.notas_cliente}</Text> : null}
           </View>
           <View style={styles.totalsRight}>
             <View style={styles.totalsRow}>
@@ -500,11 +500,11 @@ export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => 
         </View>
 
         {/* Footer Banner */}
-        {quote.template !== 'general' && (
+        {quote.template !== 'general' ? (
           <View style={styles.footerBanner}>
             <Text style={styles.footerBannerText}>MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.</Text>
           </View>
-        )}
+        ) : null}
 
         {/* 6 Terms Blocks */}
         <View style={styles.termsWrapper}>

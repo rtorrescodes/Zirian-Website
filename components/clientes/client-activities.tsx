@@ -87,7 +87,7 @@ export function ClientActivities({ clientId, initialActivities }: { clientId: nu
             required
           />
           
-          <Button type="submit" disabled={isSaving} className="sm:w-auto h-10 self-end bg-brand-blue hover:bg-brand-blue/80 text-white font-tech font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(0,163,255,0.3)] transition-all">
+          <Button type="submit" disabled={isSaving} className="sm:w-auto h-10 self-end bg-brand-blue hover:bg-brand-blue/80 text-slate-950 hover:bg-brand-cyan font-tech font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(0,163,255,0.3)] transition-all">
             {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
             Agregar
           </Button>

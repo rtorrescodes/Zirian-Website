@@ -41,7 +41,8 @@ export function ProductEditor({ initialData, categories: initialCategories, allP
     costo_estimado: initialData?.costo_estimado || '',
     unidad_medida: initialData?.unidad_medida || 'Pieza',
     activo: initialData?.activo !== undefined ? initialData.activo : true,
-    categoryId: initialData?.categoryId?.toString() || ''
+    categoryId: initialData?.categoryId?.toString() || '',
+    notas: initialData?.notas || ''
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -140,7 +141,7 @@ export function ProductEditor({ initialData, categories: initialCategories, allP
                       onChange={(e) => setNewCategoryName(e.target.value)}
                       className="bg-slate-900 border-slate-700 text-white h-8 text-sm"
                     />
-                    <Button type="button" onClick={handleCreateCategory} className="h-8 bg-brand-blue hover:bg-brand-blue/80 text-white text-xs font-bold uppercase">
+                    <Button type="button" onClick={handleCreateCategory} className="h-8 bg-brand-blue hover:bg-brand-blue/80 text-slate-950 hover:bg-brand-cyan text-xs font-bold uppercase">
                       Crear
                     </Button>
                   </div>
@@ -189,6 +190,12 @@ export function ProductEditor({ initialData, categories: initialCategories, allP
                 <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Descripción Breve</label>
                 <Textarea name="descripcion" value={formData.descripcion} onChange={handleChange} placeholder="Detalles visibles en la cotización..." className=" min-h-[100px]" />
               </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Notas Internas</label>
+                <Textarea name="notas" value={formData.notas} onChange={handleChange} placeholder="Referencias, URLs, notas técnicas para uso interno..." className=" min-h-[100px]" />
+                <p className="text-[10px] text-slate-500">Estas notas no serán visibles para el cliente.</p>
+              </div>
             </div>
           </div>
 
@@ -234,7 +241,7 @@ export function ProductEditor({ initialData, categories: initialCategories, allP
               </div>
             </div>
 
-            <Button type="submit" disabled={isSaving} className="w-full bg-brand-blue hover:bg-brand-blue/80 text-white h-12 font-tech font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all">
+            <Button type="submit" disabled={isSaving} className="w-full bg-brand-blue hover:bg-brand-blue/80 text-slate-950 hover:bg-brand-cyan h-12 font-tech font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all">
               {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
               {initialData ? 'Guardar Cambios' : 'Crear Producto'}
             </Button>

@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,500&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
   --color-brand-dark: #0B0F19;
@@ -66,3 +67,62 @@ p {
   background-attachment: fixed;
   background-size: 56px 97px, 100% 100%;
 }
+
+/* ReactQuill Dark Theme Overrides */
+.quill-dark .ql-toolbar.ql-snow {
+  background-color: #0f172a;
+  border-color: #334155;
+}
+.quill-dark .ql-container.ql-snow {
+  border-color: #334155;
+  color: #f8fafc;
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+.quill-dark .ql-editor {
+  min-height: 400px;
+}
+.quill-dark .ql-editor.ql-blank::before {
+  color: #64748b;
+}
+.quill-dark .ql-snow .ql-stroke {
+  stroke: #94a3b8;
+}
+.quill-dark .ql-snow .ql-fill {
+  fill: #94a3b8;
+}
+.quill-dark .ql-snow .ql-picker {
+  color: #94a3b8;
+}
+.quill-dark .ql-snow .ql-picker-options {
+  background-color: #0f172a;
+  border-color: #334155;
+}
+.quill-dark .ql-snow .ql-tooltip {
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+}
+.quill-dark .ql-snow .ql-tooltip input[type=text] {
+  background-color: #020617;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+
+/* Quill Highlights Fix */
+.quill-dark .ql-editor blockquote {
+  border-left: 4px solid #00D2FF !important;
+  background-color: rgba(0, 210, 255, 0.05);
+  padding: 10px 15px;
+  margin: 10px 0;
+  border-radius: 0 4px 4px 0;
+  color: #f1f5f9;
+  font-style: italic;
+}
+.quill-dark .ql-editor strong {
+  color: #00D2FF;
+  font-weight: 700;
+}
+
