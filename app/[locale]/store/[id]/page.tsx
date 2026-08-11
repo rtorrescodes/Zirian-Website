@@ -116,10 +116,10 @@ export default async function ProductPage({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between border-t border-slate-700/50 pt-4 mt-4">
-                  <div>
+                <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-700/50 pt-4 mt-4">
+                  <div className="min-w-fit">
                     <p className="text-xs text-slate-400 uppercase tracking-wider">{isEn ? 'Pricing' : 'Precio'}</p>
-                    <p className="text-xl font-bold font-tech text-white mt-1">
+                    <p className="text-xl sm:text-2xl font-bold font-tech text-white mt-1 whitespace-nowrap">
                       {product.precios?.precio_lista 
                         ? `$${precioVenta.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`
                         : (isEn ? 'Custom Quote' : 'Cotización a medida')}
@@ -128,15 +128,17 @@ export default async function ProductPage({
                       <p className="text-[10px] text-slate-500 uppercase mt-1">{isEn ? 'Tax Included' : 'IVA Incluido'}</p>
                     )}
                   </div>
-                  <AddToCartButton 
-                    productId={product.producto_id}
-                    title={product.titulo}
-                    brand={product.marca || null}
-                    model={product.modelo || null}
-                    image={product.img_portada || null}
-                    priceMxn={precioVenta}
-                    locale={locale}
-                  />
+                  <div className="w-full sm:w-auto">
+                    <AddToCartButton 
+                      productId={product.producto_id}
+                      title={product.titulo}
+                      brand={product.marca || null}
+                      model={product.modelo || null}
+                      image={product.img_portada || null}
+                      priceMxn={precioVenta}
+                      locale={locale}
+                    />
+                  </div>
                 </div>
               </div>
 

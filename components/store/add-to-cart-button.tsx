@@ -59,10 +59,10 @@ export function AddToCartButton({ productId, title, brand, model, image, priceMx
     <button
       onClick={handleAddToCart}
       disabled={loading || added}
-      className={`w-auto py-3 px-6 rounded-xl font-bold font-title uppercase tracking-widest text-sm flex items-center justify-center gap-3 transition-all ${
+      className={`w-full py-3 px-4 sm:px-6 rounded-xl font-bold font-title uppercase tracking-widest text-sm flex items-center justify-center gap-3 transition-all ${
         added 
           ? 'bg-[#00FF41] text-black' 
-          : 'bg-brand-blue hover:bg-white text-black hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,210,255,0.2)]'
+          : 'bg-brand-blue hover:bg-white text-black hover:scale-[1.02] active:scale-95 shadow-[0_0_20px_rgba(0,210,255,0.2)]'
       }`}
     >
       {loading ? (
