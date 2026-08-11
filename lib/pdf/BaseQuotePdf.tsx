@@ -313,55 +313,21 @@ const styles = StyleSheet.create({
 });
 
 export const BaseQuotePdf = ({ quote, client }: { quote: any, client: any }) => {
-  const logoPath = typeof window !== 'undefined' ? '/logo-zirian-cotizador.jpg' : require('path').join(process.cwd(), 'public', 'logo-zirian-cotizador.jpg');
-  const stripPath = typeof window !== 'undefined' ? '/instalaciones-strip.jpg' : require('path').join(process.cwd(), 'public', 'instalaciones-strip.jpg');
+  const logoPath = typeof window !== 'undefined' ? '/logo-zirian-cotizador.png' : require('path').join(process.cwd(), 'public', 'logo-zirian-cotizador.png');
+  const stripPath = typeof window !== 'undefined' ? '/instalaciones-strip.png' : require('path').join(process.cwd(), 'public', 'instalaciones-strip.png');
 
   const createdAt = new Date(quote.fecha_creacion);
   const validUntil = new Date(createdAt.getTime() + (quote.validez_dias || 15) * 86400000);
 
-  // LOGIC: Grouping
-  let displayItems: any[] = [];
-  
-  if (quote.mostrar_desglose) {
-    // Show all items as they are
-    displayItems = quote.items.map((i: any) => ({
-      qty: Number(i.cantidad),
-      name: i.product?.nombre || i.descripcion || 'Producto/Servicio',
-      desc: i.descripcion || '',
-      price: Number(i.precio_unitario),
-      total: Number(i.total),
-      iva: (quote.requiere_factura || quote.impuestos > 0) ? Number(i.total) * 0.16 : 0
-    }));
-  } else {
-    // Group by grupo_impresion
-    const groups: Record<string, any> = {};
-    const isGeneral = quote.template === 'general';
-    
-    quote.items.forEach((i: any) => {
-      const groupName = i.product?.grupo_impresion || (isGeneral ? 'Equipos y Materiales' : 'Instalación de Cargador EV');
-      if (!groups[groupName]) {
-        groups[groupName] = {
-          qty: 1,
-          name: groupName,
-          desc: '',
-          price: 0,
-          total: 0,
-          iva: 0
-        };
-      }
-      
-      if (i.descripcion && !groups[groupName].desc.includes(i.descripcion)) {
-        groups[groupName].desc += (groups[groupName].desc ? '\n' : '') + i.descripcion;
-      }
-      
-      const itemTotal = Number(i.total);
-      groups[groupName].price += itemTotal;
-      groups[groupName].total += itemTotal;
-      groups[groupName].iva += (quote.requiere_factura || quote.impuestos > 0) ? itemTotal * 0.16 : 0;
-    });
-
-    displayItems = Object.values(groups);
-  }
+  // Show all items as they are, matching the live preview exactly
+  let displayItems = quote.items.map((i: any) => ({
+    qty: Number(i.cantidad),
+    name: i.product?.nombre || i.descripcion || 'Producto/Servicio',
+    desc: i.descripcion || '',
+    price: Number(i.precio_unitario),
+    total: Number(i.total),
+    iva: (quote.requiere_factura || quote.impuestos > 0) ? Number(i.total) * 0.16 : 0
+  }));
 
   const calculatedSubtotal = displayItems.reduce((acc: number, item: any) => acc + item.total, 0);
   const calculatedIva = (quote.requiere_factura || quote.impuestos > 0) ? calculatedSubtotal * 0.16 : 0;
