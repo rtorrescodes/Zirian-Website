@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -20,6 +20,7 @@ import {
   LogOut,
   Camera,
   Calendar,
+  Database,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -125,6 +126,14 @@ function SidebarContent({ onNavigate, user }: { onNavigate?: () => void, user?: 
               Usuarios y Accesos
             </Link>
             <Link
+              href="/admin/configuracion/syscom"
+              onClick={onNavigate}
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-tech uppercase tracking-widest text-slate-400 transition-colors hover:bg-slate-800/60 hover:text-white"
+            >
+              <Database className="h-[18px] w-[18px] text-slate-500" />
+              Catálogo Syscom
+            </Link>
+            <Link
               href="/admin/ajustes"
               onClick={onNavigate}
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-tech uppercase tracking-widest text-slate-400 transition-colors hover:bg-slate-800/60 hover:text-white"
@@ -161,11 +170,12 @@ function SidebarContent({ onNavigate, user }: { onNavigate?: () => void, user?: 
   )
 }
 
+
 export function AppShell({
   title,
   subtitle,
   children,
-  user,
+  user: initialUser,
 }: {
   title: string
   subtitle?: string
@@ -173,6 +183,20 @@ export function AppShell({
   user?: { name: string; role: string }
 }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [user, setUser] = useState(initialUser)
+
+  useEffect(() => {
+    if (!initialUser) {
+      fetch('/api/auth')
+        .then(res => res.json())
+        .then(data => {
+          if (data.authenticated && data.user) {
+            setUser({ name: data.user.name, role: data.user.role })
+          }
+        })
+        .catch(console.error)
+    }
+  }, [initialUser])
 
   return (
     <div className="flex min-h-screen bg-brand-dark text-slate-100 font-sans bg-premium-mesh-dark">

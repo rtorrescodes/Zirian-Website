@@ -82,6 +82,11 @@ export async function GET() {
   if (session && session.value) {
     try {
       const payload = await verifyAuth(session.value);
+      const dbUser = await prisma.user.findUnique({ where: { id: payload.id } });
+      if (dbUser) {
+        payload.name = dbUser.nombre;
+        payload.role = dbUser.role;
+      }
       return NextResponse.json({ authenticated: true, user: payload });
     } catch (err) {
       return NextResponse.json({ authenticated: false }, { status: 401 });

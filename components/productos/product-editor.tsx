@@ -117,12 +117,12 @@ export function ProductEditor({ initialData, categories: initialCategories, allP
               <div className="space-y-2">
                 <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Categoría *</label>
                 <div className="flex gap-2">
-                  <Select name="categoryId" value={formData.categoryId} onValueChange={(v) => setFormData(p => ({ ...p, categoryId: v }))} required>
+                  <Select name="categoryId" value={formData.categoryId || "none"} onValueChange={(v) => setFormData(p => ({ ...p, categoryId: v === "none" ? "" : v }))} required>
                     <SelectTrigger className="flex-1">
                       <SelectValue placeholder="Selecciona una categoría..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Selecciona una categoría...</SelectItem>
+                      <SelectItem value="none" disabled>Selecciona una categoría...</SelectItem>
                       {categories.map(c => (
                         <SelectItem key={c.id} value={c.id.toString()}>{c.nombre}</SelectItem>
                       ))}
@@ -182,7 +182,19 @@ export function ProductEditor({ initialData, categories: initialCategories, allP
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Proveedor</label>
-                  <Input name="proveedor_default" value={formData.proveedor_default} onChange={handleChange} placeholder="Ej. Zirian, Syscom..." className="" />
+                  <Select name="proveedor_default" value={formData.proveedor_default || "none"} onValueChange={(v) => setFormData(p => ({ ...p, proveedor_default: v === "none" ? "" : v }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona proveedor..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Sin Especificar</SelectItem>
+                      <SelectItem value="Zirian">Zirian</SelectItem>
+                      <SelectItem value="Syscom">Syscom</SelectItem>
+                      <SelectItem value="Eléctrica Dos Hermanos">Eléctrica Dos Hermanos</SelectItem>
+                      <SelectItem value="Eléctrica Casper">Eléctrica Casper</SelectItem>
+                      <SelectItem value="Enercom">Enercom</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
