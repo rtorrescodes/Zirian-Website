@@ -14,6 +14,7 @@ interface QuotePreviewProps {
   total: number;
   moneda?: string;
   impuestosIniciales?: number;
+  mostrarDesglose?: boolean;
 }
 
 export function QuotePreview({
@@ -27,9 +28,41 @@ export function QuotePreview({
   total,
   moneda = 'MXN',
   impuestosIniciales = 0,
+  mostrarDesglose = false,
 }: QuotePreviewProps) {
   const isEn = template === 'ev_charger_en';
   const isGeneral = template === 'general';
+
+  // Group items logic
+  let displayItems: any[] = [];
+  if (mostrarDesglose) {
+    displayItems = items;
+  } else {
+    const groups: Record<string, any> = {};
+    items.forEach((i: any) => {
+      const groupName = i.product?.grupo_impresion || 'Concepto General';
+      if (!groups[groupName]) {
+        groups[groupName] = {
+          qty: 1,
+          product: {
+            nombre: groupName,
+            precio_base: 0
+          },
+          detalles: '',
+          isGroup: true
+        };
+      }
+      if (i.detalles && !groups[groupName].detalles.includes(i.detalles)) {
+        groups[groupName].detalles += (groups[groupName].detalles ? ' • ' : '') + i.detalles;
+      } else if (i.product?.descripcion && !groups[groupName].detalles.includes(i.product.descripcion)) {
+        groups[groupName].detalles += (groups[groupName].detalles ? ' • ' : '') + i.product.descripcion;
+      }
+      
+      const itemTotal = Number(i.product.precio_base) * i.qty;
+      groups[groupName].product.precio_base += itemTotal;
+    });
+    displayItems = Object.values(groups);
+  }
 
   return (
     <div className="mx-auto mt-10 max-w-7xl">
@@ -121,16 +154,16 @@ export function QuotePreview({
                       </tr>
                     </thead>
                     <tbody className="align-top">
-                      {items.length === 0 ? (
+                      {displayItems.length === 0 ? (
                         <tr><td colSpan={8} className="py-8 text-center text-slate-400 italic">Agrega conceptos a la cotización</td></tr>
-                      ) : items.map((item, idx) => (
+                      ) : displayItems.map((item, idx) => (
                         <tr key={idx} className={idx % 2 === 0 ? 'bg-slate-50' : 'bg-white'}>
                           <td className="py-2 px-2 border border-slate-300 text-center font-bold">{item.qty}</td>
                           <td className="py-2 px-2 border border-slate-300">
                              <div className="font-bold text-slate-900">{item.product.nombre}</div>
                           </td>
                           <td className="py-2 px-2 border border-slate-300 text-slate-600 text-[10px] whitespace-pre-wrap leading-tight">
-                             {item.detalles || item.product?.descripcion || ''}
+                             {item.detalles || (!item.isGroup && item.product?.descripcion) || ''}
                           </td>
                           <td className="py-2 px-2 border border-slate-300 text-right">${Number(item.product.precio_base).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
                           <td className="py-2 px-2 border border-slate-300 text-center">{(requiereFactura || impuestosIniciales > 0) ? '16%' : '0%'}</td>

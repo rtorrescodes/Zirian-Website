@@ -480,6 +480,7 @@ export function QuoteBuilder({
         items={items}
         requiereFactura={requiereFactura}
         notasCliente={notasCliente}
+        mostrarDesglose={mostrarDesglose}
         subtotal={subtotal}
         iva={iva}
         total={total}

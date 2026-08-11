@@ -326,15 +326,50 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
   const createdAt = new Date(quote.fecha_creacion);
   const validUntil = new Date(createdAt.getTime() + (quote.validez_dias || 15) * 86400000);
 
-  // Show all items as they are, matching the live preview exactly
-  let displayItems = quote.items.map((i: any) => ({
-    qty: Number(i.cantidad),
-    name: i.product?.nombre || i.descripcion || 'Producto/Servicio',
-    desc: i.descripcion || '',
-    price: Number(i.precio_unitario),
-    total: Number(i.total),
-    iva: (quote.requiere_factura || quote.impuestos > 0) ? Number(i.total) * 0.16 : 0
-  }));
+  let displayItems: any[] = [];
+  
+  if (quote.mostrar_desglose) {
+    displayItems = quote.items.map((i: any) => ({
+      qty: Number(i.cantidad),
+      name: i.product?.nombre || i.descripcion || 'Producto/Servicio',
+      desc: i.descripcion || '',
+      price: Number(i.precio_unitario),
+      total: Number(i.total),
+      iva: (quote.requiere_factura || quote.impuestos > 0) ? Number(i.total) * 0.16 : 0,
+      isGroup: false
+    }));
+  } else {
+    const groups: Record<string, any> = {};
+    quote.items.forEach((i: any) => {
+      const groupName = i.product?.grupo_impresion || 'Concepto General';
+      if (!groups[groupName]) {
+        groups[groupName] = {
+          qty: 1,
+          name: groupName,
+          desc: '',
+          price: 0,
+          total: 0,
+          iva: 0,
+          isGroup: true
+        };
+      }
+      
+      const pDesc = i.product?.descripcion || '';
+      if (i.descripcion && !groups[groupName].desc.includes(i.descripcion)) {
+        groups[groupName].desc += (groups[groupName].desc ? ' • ' : '') + i.descripcion;
+      } else if (pDesc && !groups[groupName].desc.includes(pDesc)) {
+        groups[groupName].desc += (groups[groupName].desc ? ' • ' : '') + pDesc;
+      }
+      
+      const itemTotal = Number(i.total);
+      const itemIva = (quote.requiere_factura || quote.impuestos > 0) ? itemTotal * 0.16 : 0;
+      
+      groups[groupName].price += itemTotal;
+      groups[groupName].total += itemTotal;
+      groups[groupName].iva += itemIva;
+    });
+    displayItems = Object.values(groups);
+  }
 
   const calculatedSubtotal = displayItems.reduce((acc: number, item: any) => acc + item.total, 0);
   const calculatedIva = (quote.requiere_factura || quote.impuestos > 0) ? calculatedSubtotal * 0.16 : 0;
