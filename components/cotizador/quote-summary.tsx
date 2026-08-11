@@ -23,6 +23,9 @@ interface QuoteSummaryProps {
   subtotal: number;
   subtotalCost: number;
   ganancia: number;
+  originalSubtotal: number;
+  groupPrices: Record<string, number>;
+  onGroupPriceChange: (gName: string, val: number) => void;
   iva: number;
   total: number;
   isSaving: boolean;
@@ -49,6 +52,9 @@ export function QuoteSummary({
   setMotivoRechazo,
   subtotal,
   ganancia,
+  originalSubtotal,
+  groupPrices,
+  onGroupPriceChange,
   total,
   isSaving,
   isSaved,
@@ -80,6 +86,28 @@ export function QuoteSummary({
             </Label>
           </div>
           
+          {!mostrarDesglose && Object.keys(groupPrices).length > 0 && (
+            <div className="mt-4 p-3 bg-slate-900 rounded-lg border border-slate-800 space-y-3">
+              <Label className="font-tech text-[10px] font-bold uppercase tracking-widest text-brand-blue block mb-2">
+                Ajustar Precios por Grupo
+              </Label>
+              {Object.entries(groupPrices).map(([gName, val]) => (
+                <div key={gName} className="flex flex-col gap-1">
+                  <span className="text-[10px] text-slate-400 truncate pr-2">{gName}</span>
+                  <div className="relative">
+                    <span className="absolute left-2 top-1.5 text-xs text-slate-500">$</span>
+                    <input
+                      type="number"
+                      value={val === 0 ? '' : val}
+                      onChange={(e) => onGroupPriceChange(gName, Number(e.target.value))}
+                      className="w-full bg-slate-950 border border-slate-700 text-white rounded p-1 pl-5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
           <div className="mt-4 flex items-center space-x-2">
             <Switch
               id="requiere-factura"
@@ -101,13 +129,14 @@ export function QuoteSummary({
                 {currencyExact(total)}
               </dd>
             </div>
-            {ganancia > 0 && (
+            {ganancia !== 0 && (
               <div className="flex items-center justify-between">
-                <dt className="font-tech text-[10px] font-bold uppercase tracking-widest text-orange-400/80">
+                <dt className="font-tech text-[10px] font-bold uppercase tracking-widest text-slate-400">
                   Ganancia Estimada
                 </dt>
-                <dd className="font-mono text-sm font-bold text-orange-400/90 drop-shadow-[0_0_10px_rgba(251,146,60,0.2)]">
+                <dd className={`font-mono text-sm font-bold drop-shadow-md ${ganancia < 0 || subtotal < originalSubtotal ? 'text-red-500' : 'text-orange-400'}`}>
                   {currencyExact(ganancia)}
+                  {(ganancia < 0 || subtotal < originalSubtotal) && ' ⚠️'}
                 </dd>
               </div>
             )}

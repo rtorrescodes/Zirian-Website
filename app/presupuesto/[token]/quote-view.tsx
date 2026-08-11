@@ -24,23 +24,27 @@ export function QuoteView({ quote, token }: { quote: any; token: string }) {
     }));
   } else {
     const groups: Record<string, any> = {};
+    const groupPrices = quote.group_prices || {};
     quote.items.forEach((i: any) => {
-      const groupName = i.product?.grupo_impresion || 'Instalación y Configuración';
+      const groupName = i.product?.grupo_impresion || 'Concepto General';
       if (!groups[groupName]) {
         groups[groupName] = {
           qty: 1,
           name: groupName,
           desc: '',
-          price: 0,
-          total: 0,
+          price: groupPrices[groupName] !== undefined ? groupPrices[groupName] : 0,
+          total: groupPrices[groupName] !== undefined ? groupPrices[groupName] : 0,
           unidad: 'Servicio'
         };
       }
       if (i.descripcion && !groups[groupName].desc.includes(i.descripcion)) {
         groups[groupName].desc += (groups[groupName].desc ? ' • ' : '') + i.descripcion;
       }
-      groups[groupName].price += Number(i.total);
-      groups[groupName].total += Number(i.total);
+      
+      if (groupPrices[groupName] === undefined) {
+        groups[groupName].price += Number(i.total);
+        groups[groupName].total += Number(i.total);
+      }
     });
     displayItems = Object.values(groups);
   }

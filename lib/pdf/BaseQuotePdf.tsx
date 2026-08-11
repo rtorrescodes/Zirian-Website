@@ -340,14 +340,17 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
     }));
   } else {
     const groups: Record<string, any> = {};
+    const groupPrices = quote.group_prices || {};
+    
     quote.items.forEach((i: any) => {
       const groupName = i.product?.grupo_impresion || 'Concepto General';
+      
       if (!groups[groupName]) {
         groups[groupName] = {
           qty: 1,
           name: groupName,
           desc: '',
-          price: 0,
+          price: groupPrices[groupName] !== undefined ? groupPrices[groupName] : 0,
           total: 0,
           iva: 0,
           isGroup: true
@@ -361,13 +364,19 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
         groups[groupName].desc += (groups[groupName].desc ? ' • ' : '') + pDesc;
       }
       
-      const itemTotal = Number(i.total);
-      const itemIva = (quote.requiere_factura || quote.impuestos > 0) ? itemTotal * 0.16 : 0;
-      
-      groups[groupName].price += itemTotal;
-      groups[groupName].total += itemTotal;
-      groups[groupName].iva += itemIva;
+      // If there is NO custom price, we sum the actual items. Otherwise, we ignore individual item totals!
+      if (groupPrices[groupName] === undefined) {
+        const itemTotal = Number(i.total);
+        groups[groupName].price += itemTotal;
+      }
     });
+    
+    // Now calculate Total & IVA per group based on their final overridden prices
+    Object.values(groups).forEach(g => {
+      g.total = g.price;
+      g.iva = (quote.requiere_factura || quote.impuestos > 0) ? g.total * 0.16 : 0;
+    });
+    
     displayItems = Object.values(groups);
   }
 

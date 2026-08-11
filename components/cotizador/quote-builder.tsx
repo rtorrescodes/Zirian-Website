@@ -164,6 +164,7 @@ export function QuoteBuilder({
   const [isSaving, setIsSaving] = useState(false)
   const [savedQuoteId, setSavedQuoteId] = useState<number | null>(initialQuote?.id || null)
   const [mostrarDesglose, setMostrarDesglose] = useState(initialQuote?.mostrar_desglose ?? false)
+  const [groupPrices, setGroupPrices] = useState<Record<string, number>>(initialQuote?.group_prices || {})
   const [template, setTemplate] = useState<string>(initialQuote?.template || 'ev_charger')
   const [notasCliente, setNotasCliente] = useState(initialQuote?.notas_cliente || '')
   const [requiereFactura, setRequiereFactura] = useState<boolean>(initialQuote ? (initialQuote.requiere_factura || initialQuote.impuestos > 0) : true)
@@ -280,10 +281,41 @@ export function QuoteBuilder({
     setAttachments((prev) => [...prev, ...next])
   }
 
-  const subtotal = items.reduce((s, i) => s + (Number(i.product.precio_base) * i.qty), 0)
+  const baseSubtotal = items.reduce((s, i) => s + (Number(i.product.precio_base) * i.qty), 0)
   const subtotalCost = items.reduce((s, i) => s + (Number(i.product.costo_estimado || 0) * i.qty), 0)
+
+  // Use an effect to auto-populate groupPrices with the base calculated values when items change
+  // so the user can then override them.
+  useEffect(() => {
+    if (!mostrarDesglose) {
+      const calculatedGroups: Record<string, number> = {};
+      items.forEach((i: any) => {
+        const groupName = i.product?.grupo_impresion || 'Concepto General';
+        if (!calculatedGroups[groupName]) calculatedGroups[groupName] = 0;
+        calculatedGroups[groupName] += Number(i.product.precio_base) * i.qty;
+      });
+      
+      setGroupPrices((prev) => {
+        const next = { ...prev };
+        let changed = false;
+        // Only set the default value if the user hasn't overridden it
+        for (const [gName, val] of Object.entries(calculatedGroups)) {
+          if (next[gName] === undefined) {
+            next[gName] = val;
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    }
+  }, [items, mostrarDesglose]);
+
+  // Actual subtotal calculation logic
+  const customSubtotal = Object.values(groupPrices).reduce((s, val) => s + (Number(val) || 0), 0);
+  const subtotal = mostrarDesglose ? baseSubtotal : (Object.keys(groupPrices).length > 0 ? customSubtotal : baseSubtotal);
+  
   const ganancia = subtotal - subtotalCost
-  const iva = requiereFactura ? subtotal * IVA_RATE : 0
+  const iva = requiereFactura ? subtotal * 0.16 : 0
   const total = subtotal + iva
 
   const handleSave = async () => {
@@ -296,6 +328,7 @@ export function QuoteBuilder({
         impuestos: iva,
         total: total,
         mostrar_desglose: mostrarDesglose,
+        group_prices: groupPrices,
         template: template,
         requiere_factura: requiereFactura,
         status: status,
@@ -464,6 +497,10 @@ export function QuoteBuilder({
           ganancia={ganancia}
           iva={iva}
           total={total}
+          originalSubtotal={baseSubtotal}
+          groupPrices={groupPrices}
+          onGroupPriceChange={(gName, val) => setGroupPrices(p => ({ ...p, [gName]: val }))}
+          onSave={handleSave}
           isSaving={isSaving}
           isSaved={saved}
           savedQuoteId={savedQuoteId}
@@ -481,6 +518,7 @@ export function QuoteBuilder({
         requiereFactura={requiereFactura}
         notasCliente={notasCliente}
         mostrarDesglose={mostrarDesglose}
+        groupPrices={groupPrices}
         subtotal={subtotal}
         iva={iva}
         total={total}

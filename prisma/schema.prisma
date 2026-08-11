@@ -84,6 +84,7 @@ model Quote {
   notas_cliente     String?   @db.Text
   terminos          String?   @db.Text
   mostrar_desglose  Boolean   @default(false)
+  group_prices      Json?
   motivo_rechazo    String?   @db.VarChar(255)
 
   // Finanzas Internas y Comisiones

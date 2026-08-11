@@ -15,6 +15,7 @@ interface QuotePreviewProps {
   moneda?: string;
   impuestosIniciales?: number;
   mostrarDesglose?: boolean;
+  groupPrices?: Record<string, number>;
 }
 
 export function QuotePreview({
@@ -29,6 +30,7 @@ export function QuotePreview({
   moneda = 'MXN',
   impuestosIniciales = 0,
   mostrarDesglose = false,
+  groupPrices = {},
 }: QuotePreviewProps) {
   const isEn = template === 'ev_charger_en';
   const isGeneral = template === 'general';
@@ -41,25 +43,32 @@ export function QuotePreview({
     const groups: Record<string, any> = {};
     items.forEach((i: any) => {
       const groupName = i.product?.grupo_impresion || 'Concepto General';
+      
+      // Initialize if missing
       if (!groups[groupName]) {
         groups[groupName] = {
           qty: 1,
           product: {
             nombre: groupName,
-            precio_base: 0
+            precio_base: groupPrices[groupName] !== undefined ? groupPrices[groupName] : 0
           },
           detalles: '',
           isGroup: true
         };
       }
+      
+      // Concatenate descriptions
       if (i.detalles && !groups[groupName].detalles.includes(i.detalles)) {
         groups[groupName].detalles += (groups[groupName].detalles ? ' • ' : '') + i.detalles;
       } else if (i.product?.descripcion && !groups[groupName].detalles.includes(i.product.descripcion)) {
         groups[groupName].detalles += (groups[groupName].detalles ? ' • ' : '') + i.product.descripcion;
       }
       
-      const itemTotal = Number(i.product.precio_base) * i.qty;
-      groups[groupName].product.precio_base += itemTotal;
+      // Sum prices ONLY IF there is no custom groupPrice override for this group
+      if (groupPrices[groupName] === undefined) {
+        const itemTotal = Number(i.product.precio_base) * i.qty;
+        groups[groupName].product.precio_base += itemTotal;
+      }
     });
     displayItems = Object.values(groups);
   }
