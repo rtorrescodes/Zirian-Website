@@ -370,7 +370,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
             <View style={styles.infoBlockContent}>
               <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>Fecha: </Text>{createdAt.toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
               <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>Validez: </Text>{validUntil.toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
-              <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>Agente: </Text>Zirian Team</Text>
+              <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>Agente: </Text>Ing. Rodrigo Torres</Text>
             </View>
           </View>
         </View>
@@ -454,11 +454,11 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
           <View style={styles.compromisoLeft}>
             <Text style={styles.compromisoTextItalic}>
               {quote.template === 'general'
-                ? '"En Zirian México nos especializamos en soluciones tecnológicas adaptadas a su entorno, garantizando siempre los más altos estándares de calidad, seguridad y eficiencia."'
-                : '"En Zirian México nos especializamos en soluciones adaptadas al entorno de BCS, priorizando la compatibilidad técnica con marcas líderes como BYD."'
+                ? '"Diseñamos e integramos soluciones tecnológicas de alta ingeniería, garantizando eficiencia, seguridad y calidad superior en BCS."'
+                : '"Garantizamos infraestructura líder y compatible con BYD, operando bajo los más estrictos estándares normativos de seguridad en BCS."'
               }
             </Text>
-            <Text style={styles.compromisoAuthor}>System Administrator - Equipo Zirian México</Text>
+            <Text style={styles.compromisoAuthor}>Equipo Zirian México</Text>
           </View>
         </View>
 
