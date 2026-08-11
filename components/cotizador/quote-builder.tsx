@@ -49,6 +49,7 @@ interface Client {
 interface Product {
   id: number
   nombre: string
+  descripcion?: string | null
   codigo: string | null
   precio_base: any // Decimal from DB
   unidad_medida: string
@@ -978,7 +979,7 @@ export function QuoteBuilder({
                              <div className="font-bold text-slate-900">{item.product.nombre}</div>
                           </td>
                           <td className="py-2 px-2 border border-slate-300 text-slate-600 text-[10px] whitespace-pre-wrap leading-tight">
-                             {item.detalles || ''}
+                             {item.detalles || item.product?.descripcion || ''}
                           </td>
                           <td className="py-2 px-2 border border-slate-300 text-right">${Number(item.product.precio_base).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
                           <td className="py-2 px-2 border border-slate-300 text-center">{(requiereFactura || initialQuote?.impuestos > 0) ? '16%' : '0%'}</td>
@@ -1083,12 +1084,12 @@ export function QuoteBuilder({
                   </div>
                 </div>
 
+                </div>
               </div>
               );
             })()}
             </div>
           </div>
-        </div>
       </Card>
     </div>
     </>
