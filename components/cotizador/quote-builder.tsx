@@ -832,9 +832,7 @@ export function QuoteBuilder({
                   <div className="flex-1">
                     <div className="bg-[#1C497B] text-white font-bold text-xs px-2 py-1 uppercase tracking-wider">Detalles de Emisión</div>
                     <div className="p-3 text-sm flex flex-col gap-1">
-                      {/* eslint-disable-next-line react-hooks/purity */}
                       <p><span className="font-bold">Fecha:</span> {new Date().toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
-                      {/* eslint-disable-next-line react-hooks/purity */}
                       <p><span className="font-bold">Validez:</span> {new Date(Date.now() + 15 * 86400000).toLocaleDateString('es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
                       <p><span className="font-bold">Agente:</span> Zirian Team</p>
                     </div>

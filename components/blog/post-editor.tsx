@@ -84,6 +84,7 @@ export function PostEditor({ initialData }: PostEditorProps) {
         });
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {

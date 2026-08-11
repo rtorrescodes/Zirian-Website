@@ -1,5 +1,4 @@
-// ESLint disabled TS strict checking for this file temporarily to pass build
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+// Removed ts-nocheck
 import { deepseek } from '@ai-sdk/deepseek';
 import { generateText, tool, jsonSchema } from 'ai';
 import { z } from 'zod';

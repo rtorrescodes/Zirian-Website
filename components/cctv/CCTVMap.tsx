@@ -189,6 +189,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
         })
         .catch(console.error);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoLoadId, map, loadedProjectInfo]);
 
   const onLoad = useCallback(function callback(map: google.maps.Map) {
@@ -351,6 +352,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
     }, 2000);
 
     return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cameras, layers, visibleLayers, activeLayer, sections]);
 
   const handleSave = async (isUpdate: boolean = false) => {
