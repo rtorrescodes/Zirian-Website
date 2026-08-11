@@ -112,7 +112,7 @@ export default function CalendarPage() {
                     </p>
                     
                     <Dialog>
-                      <DialogTrigger asChild>
+                      <DialogTrigger>
                         <Button 
                           size="sm" 
                           onClick={() => setSelectedOrder(order.id)}

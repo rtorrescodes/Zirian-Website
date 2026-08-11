@@ -100,16 +100,19 @@ export default function TicketsPage() {
                 
                 <div className="flex flex-col gap-2 min-w-[200px] border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-6 justify-center">
                   {ticket.foto_path && (
-                    <Button variant="outline" size="sm" className="w-full justify-start border-slate-700 bg-slate-950 text-slate-300 hover:text-brand-blue" asChild>
-                      <a href={ticket.foto_path} target="_blank" rel="noreferrer">
-                        <ExternalLink className="w-4 h-4 mr-2" /> Ver Foto Adjunta
-                      </a>
-                    </Button>
+                    <a 
+                      href={ticket.foto_path} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-slate-700 bg-slate-950 text-slate-300 hover:text-brand-blue hover:bg-slate-800 h-9 px-3 w-full justify-start"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" /> Ver Foto Adjunta
+                    </a>
                   )}
                   
                   {ticket.status !== 'Resuelto' && (
                     <Dialog>
-                      <DialogTrigger asChild>
+                      <DialogTrigger>
                         <Button size="sm" className="w-full justify-start bg-brand-blue hover:bg-brand-blue/90 text-white font-tech uppercase tracking-wider">
                           Actualizar Estatus
                         </Button>

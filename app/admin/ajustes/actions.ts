@@ -1,7 +1,7 @@
 'use server';
 
-import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from 'next/cache';
+import { prisma } from '@/lib/prisma';
 
 export async function getStripeEnvironment() {
   const result: any[] = await prisma.$queryRaw`SELECT value FROM "SystemSetting" WHERE key = 'stripe_environment' LIMIT 1`;

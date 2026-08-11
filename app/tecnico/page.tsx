@@ -79,10 +79,10 @@ export default async function TechnicianDashboard() {
                             {order.fecha_programada ? new Date(order.fecha_programada).toLocaleDateString('es-MX') : 'Por programar'}
                           </span>
                         </div>
-                        <h3 className="mt-2 truncate font-medium text-foreground">{order.quote.client.nombre}</h3>
+                        <h3 className="mt-2 truncate font-medium text-foreground">{order.quote?.client?.nombre}</h3>
                         <p className="mt-1 flex items-center gap-1 truncate text-xs text-muted-foreground">
                           <MapPin className="h-3 w-3" />
-                          {order.quote.client.ubicacion || 'Sin ubicación'}
+                          {order.quote?.client?.ubicacion || 'Sin ubicación'}
                         </p>
                       </div>
                       <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" />

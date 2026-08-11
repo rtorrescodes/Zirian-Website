@@ -21,16 +21,16 @@ export default async function OrderDetailPage({ params }: { params: { id: string
           <span className="text-xs font-semibold text-muted-foreground">{order.status}</span>
         </div>
         
-        <h1 className="mt-3 text-xl font-bold text-foreground">{order.quote.client.nombre}</h1>
+        <h1 className="mt-3 text-xl font-bold text-foreground">{order.quote?.client?.nombre}</h1>
         
         <div className="mt-4 space-y-3">
           <div className="flex items-start gap-3 text-sm text-muted-foreground">
             <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-green" />
-            <span className="flex-1">{order.quote.client.ubicacion || 'Sin dirección registrada'}</span>
+            <span className="flex-1">{order.quote?.client?.ubicacion || 'Sin dirección registrada'}</span>
           </div>
           <div className="flex items-start gap-3 text-sm text-muted-foreground">
             <User className="mt-0.5 h-4 w-4 shrink-0 text-brand-green" />
-            <span className="flex-1">{order.quote.client.telefono}</span>
+            <span className="flex-1">{order.quote?.client?.telefono}</span>
           </div>
           <div className="flex items-start gap-3 text-sm text-muted-foreground">
             <FileText className="mt-0.5 h-4 w-4 shrink-0 text-brand-green" />
@@ -45,7 +45,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
           Equipos a Instalar
         </h2>
         <ul className="rounded-xl border border-border bg-card divide-y divide-border">
-          {order.quote.items.map((item) => (
+          {order.quote?.items?.map((item) => (
             <li key={item.id} className="p-3 text-sm flex justify-between">
               <span className="font-medium">{item.descripcion}</span>
               <span className="text-muted-foreground font-semibold">x{Number(item.cantidad)}</span>
