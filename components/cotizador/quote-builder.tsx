@@ -266,6 +266,54 @@ export function QuoteBuilder({
     }
   }
 
+  const handleViewPdf = async () => {
+    if (!selectedClient || items.length === 0) return;
+    
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      newWindow.document.write('<div style="font-family: sans-serif; padding: 2rem; text-align: center;">Guardando cambios y generando PDF actualizado...</div>');
+    }
+    
+    try {
+      const payload = {
+        clientId: selectedClient.id,
+        subtotal: subtotal,
+        impuestos: iva,
+        total: total,
+        mostrar_desglose: mostrarDesglose,
+        template: template,
+        requiere_factura: requiereFactura,
+        items: items.map(i => ({
+          productId: i.product.id < 0 ? null : i.product.id,
+          descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
+          cantidad: i.qty,
+          precio_unitario: Number(i.product.precio_base),
+          total: Number(i.product.precio_base) * i.qty
+        }))
+      }
+      
+      let quote;
+      if (initialQuote?.id) {
+        quote = await updateQuote(initialQuote.id, payload);
+      } else {
+        quote = await createQuote(payload);
+      }
+      
+      setSaved(true);
+      setSavedQuoteId(quote.id);
+      
+      if (newWindow) {
+        newWindow.location.href = `/api/quotes/${quote.id}/pdf`;
+      }
+    } catch (error) {
+      console.error("Error saving and viewing quote", error);
+      if (newWindow) {
+        newWindow.document.write('<div style="font-family: sans-serif; padding: 2rem; color: red;">Ocurrió un error al generar el PDF. Verifica tu conexión.</div>');
+      }
+    }
+  }
+
+
   return (
     <>
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-[1.15fr_1fr]">
@@ -765,15 +813,11 @@ export function QuoteBuilder({
               <Button
                 type="button"
                 variant="outline"
-                disabled={!savedQuoteId}
-                onClick={() => {
-                  if (savedQuoteId) {
-                    window.open(`/api/quotes/${savedQuoteId}/pdf`, '_blank')
-                  }
-                }}
+                disabled={items.length === 0 || !selectedClient}
+                onClick={handleViewPdf}
                 className={cn(
                   "h-12 w-full border-slate-700 bg-slate-900 text-[11px] font-tech font-bold uppercase tracking-widest transition-colors",
-                  savedQuoteId ? "text-brand-blue hover:text-white border-brand-blue/50 hover:bg-brand-blue/20 hover:border-brand-blue" : "disabled:opacity-40 text-slate-500"
+                  (items.length > 0 && selectedClient) ? "text-brand-blue hover:text-white border-brand-blue/50 hover:bg-brand-blue/20 hover:border-brand-blue" : "disabled:opacity-40 text-slate-500"
                 )}
               >
                 <FileText className="mr-2 h-4 w-4" />
