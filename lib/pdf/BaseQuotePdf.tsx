@@ -26,7 +26,9 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   logo: {
-    height: 40,
+    height: 45,
+    width: 180,
+    objectFit: 'contain',
     marginBottom: 10,
   },
   companyInfo: {
