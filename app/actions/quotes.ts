@@ -168,8 +168,26 @@ export async function updateQuote(id: number, data: any) {
     }
   });
 
+  if (quote.status === 'Rechazada' || quote.status === 'Cancelada') {
+    await prisma.client.update({
+      where: { id: quote.clientId },
+      data: { status: 'Prospecto (perdido)' }
+    });
+
+    await prisma.clientActivity.create({
+      data: {
+        clientId: quote.clientId,
+        tipo: 'Nota General', // Using Nota General as it exists, or could be 'Cotización Perdida' if any string is allowed
+        descripcion: `La cotización COT-${new Date(quote.fecha_creacion).getFullYear()}-${String(quote.id).padStart(4, '0')} ha sido marcada como perdida.\nMotivo: ${quote.motivo_rechazo || 'No especificado'}`,
+        url: `/admin/cotizaciones/${quote.id}`
+      }
+    });
+  }
+
   revalidatePath("/admin/cotizaciones");
   revalidatePath(`/admin/cotizaciones/${id}`);
+  revalidatePath("/admin/clientes");
+  revalidatePath(`/admin/clientes/${quote.clientId}`);
   return serializeQuote(quote);
 }
 

@@ -178,6 +178,7 @@ export function ClientEditor({ initialData, partners, initialActivities = [] }: 
                     <SelectContent>
                       <SelectItem value="Lead">Lead (Nuevo)</SelectItem>
                       <SelectItem value="Prospect">Prospecto (Contactado)</SelectItem>
+                      <SelectItem value="Prospecto (perdido)">Prospecto (Perdido)</SelectItem>
                       <SelectItem value="Cliente">Cliente (Compró)</SelectItem>
                     </SelectContent>
                   </Select>

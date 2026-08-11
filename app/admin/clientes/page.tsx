@@ -121,6 +121,7 @@ export default async function ClientesAdminPage(props: { searchParams?: Promise<
                         <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-[10px] font-bold font-tech uppercase tracking-wider border ${
                           client.status === 'Cliente' ? 'bg-brand-green/10 text-brand-green border-brand-green/30' :
                           client.status === 'Prospect' ? 'bg-brand-blue/10 text-brand-blue border-brand-blue/30' :
+                          client.status === 'Prospecto (perdido)' ? 'bg-red-500/10 text-red-500 border-red-500/30' :
                           'bg-slate-800/50 text-slate-300 border-slate-700'
                         }`}>
                           {client.status}
