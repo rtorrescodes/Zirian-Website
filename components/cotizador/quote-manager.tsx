@@ -42,7 +42,11 @@ export function QuoteManager({ quote }: QuoteManagerProps) {
 
     let message = `Hola ${contactName} saludos, buen dia, espero que te encuentres bien. Me ayudas a cotizar lo siguiente por favor:\n\n`
     providerItems.forEach((item: any) => {
-      message += `- ${item.cantidad} ${item.product.unidad_medida} de ${item.product.nombre}\n`
+      let unidad = item.product.unidad_medida || 'Pieza';
+      if (item.product.nombre.toLowerCase().includes('cable')) {
+        unidad = 'metros';
+      }
+      message += `* ${item.cantidad} ${unidad} de ${item.product.nombre}\n`
     })
 
     return message
