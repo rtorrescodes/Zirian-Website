@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 40,
     backgroundColor: '#25B150',
     paddingVertical: 4,
-    marginBottom: 10,
+    marginBottom: 2,
   },
   bannerText: {
     color: '#ffffff',
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   pageFooter: {
-    marginTop: 10,
+    marginTop: 0,
     marginHorizontal: 40,
     backgroundColor: '#25B150',
     flexDirection: 'row',
@@ -471,7 +471,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
         {/* Footer Banner */}
         {quote.template !== 'general' ? (
           <View style={styles.footerBanner}>
-            <Text style={styles.footerBannerText}>MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.</Text>
+            <Text style={styles.footerBannerText}>MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y{"\n"}cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.</Text>
           </View>
         ) : null}
 

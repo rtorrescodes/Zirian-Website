@@ -892,7 +892,7 @@ export function QuoteBuilder({
                 </div>
 
                 {/* Green/Teal Banner */}
-                <div className="mx-12 mb-4 bg-[#25B150] text-white text-[10px] font-bold text-center py-1 uppercase tracking-wider">
+                <div className="mx-12 mb-1 bg-[#25B150] text-white text-[10px] font-bold text-center py-1 uppercase tracking-wider">
                   {template === 'general'
                     ? 'Alta Ingeniería Eléctrica / Automatización / Videovigilancia / Redes / Sistemas'
                     : 'Cargadores EV / Paneles Solares / Riego automático / Aires Acondicionados / Portones Eléctricos / Redes Internet / Sistemas'}
@@ -983,13 +983,11 @@ export function QuoteBuilder({
                 {/* Green Legal Footer */}
                 <div className="absolute bottom-6 left-6 right-6">
                   {template !== 'general' && (
-                    <div className="bg-[#25B150] text-white p-3 mb-2">
-                      <p className="text-[10px] font-bold text-center uppercase tracking-wider mb-2">
-                        Mantenga su garantía: Contamos con certificación y cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.
-                      </p>
+                    <div className="mx-12 bg-[#25B150] text-white text-[9px] font-bold text-center py-1 px-4 mt-1">
+                      MANTENGA SU GARANTÍA BYD: Contamos con certificación EC1641 Instalación de Cargadores EV avalada por la CFE y<br/>cumplimiento estricto de la NOM-001-SEDE-2012 de Instalaciones Eléctricas.
                     </div>
                   )}
-                  <div className="grid grid-cols-3 gap-3 text-[8px] leading-tight opacity-90 text-slate-500">
+                  <div className="grid grid-cols-3 gap-3 text-[8px] leading-tight opacity-90 text-slate-500 mt-4">
                       <div>
                         <p className="font-bold mb-0.5">1. ALCANCE DE LA OFERTA</p>
                         <p>La cotización cubre únicamente los conceptos descritos. Cualquier trabajo adicional será cotizado por separado.</p>
