@@ -16,6 +16,8 @@ interface QuoteSummaryProps {
   setMostrarDesglose: (val: boolean) => void;
   template: string;
   setTemplate: (val: string) => void;
+  notasCliente: string;
+  setNotasCliente: (val: string) => void;
   motivoRechazo: string;
   setMotivoRechazo: (val: string) => void;
   subtotal: number;
@@ -41,6 +43,8 @@ export function QuoteSummary({
   setMostrarDesglose,
   template,
   setTemplate,
+  notasCliente,
+  setNotasCliente,
   motivoRechazo,
   setMotivoRechazo,
   subtotal,
@@ -122,8 +126,18 @@ export function QuoteSummary({
                 <option value="general">Cotización General (CCTV, etc)</option>
               </select>
             </div>
-            
-            <div className="flex flex-col gap-2">
+
+            <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-slate-800">
+              <label className="text-[11px] font-tech font-bold uppercase tracking-wider text-slate-400">Nota Técnica (Opcional)</label>
+              <textarea
+                value={notasCliente}
+                onChange={(e) => setNotasCliente(e.target.value)}
+                placeholder="Añade notas adicionales para el cliente..."
+                className="w-full bg-slate-900 border border-slate-700 text-white rounded p-2 text-xs outline-none focus-visible:ring-1 focus-visible:ring-brand-blue min-h-[60px]"
+              />
+            </div>
+
+            <div className="mt-6 flex flex-col gap-3">
               <label className="text-[11px] font-tech font-bold uppercase tracking-wider text-slate-400">Estatus de Cotización</label>
               <select
                 value={status}

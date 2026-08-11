@@ -25,6 +25,9 @@ interface ProductSearchProps {
   setSearchMode: (mode: 'local' | 'syscom') => void;
   productQuery: string;
   setProductQuery: (query: string) => void;
+  initialCategories: any[];
+  activeCategory: number | null;
+  setActiveCategory: (id: number | null) => void;
   initialProducts: Product[];
   isSearchingSyscom: boolean;
   syscomResults: { items: any[]; filteredOut: number };
@@ -42,6 +45,9 @@ export function ProductSearch({
   setSearchMode,
   productQuery,
   setProductQuery,
+  initialCategories,
+  activeCategory,
+  setActiveCategory,
   initialProducts,
   isSearchingSyscom,
   syscomResults,
@@ -98,6 +104,26 @@ export function ProductSearch({
           Syscom (API)
         </button>
       </div>
+
+      {searchMode === 'local' && (
+        <div className="bg-slate-900 border-b border-slate-700 p-2">
+          <select
+            value={activeCategory ?? ''}
+            onChange={(e) => {
+              setActiveCategory(Number(e.target.value))
+              setProductQuery('')
+              setPickedProductId(null)
+            }}
+            className="w-full h-10 rounded-md border border-slate-700 bg-slate-950 px-3 text-sm text-white focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none"
+          >
+            {initialCategories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       <div className="relative border-b border-slate-700 bg-slate-950/80 p-3">
         <SearchIcon className={cn("absolute left-6 top-1/2 h-5 w-5 -translate-y-1/2", searchMode === 'syscom' ? "text-brand-cyan" : "text-brand-blue")} />
