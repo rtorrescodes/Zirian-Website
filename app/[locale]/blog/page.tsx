@@ -9,17 +9,24 @@ import { FeaturedProductWidget } from '@/components/store/featured-product-widge
 export const dynamic = 'force-dynamic'
 export const revalidate = 60
 
-export default async function BlogIndexPage({ params }: { params: Promise<{ locale: string }> }) {
-  const posts = await getPublishedPosts()
+export default async function BlogIndexPage({ params, searchParams }: { params: Promise<{ locale: string }>, searchParams: Promise<{ category?: string }> }) {
+  const allPosts = await getPublishedPosts()
   const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
   const isEn = resolvedParams.locale === 'en';
   
-  // Calculate categories
-  const categoriesCount = posts.reduce((acc, post) => {
+  // Calculate categories across ALL posts
+  const categoriesCount = allPosts.reduce((acc, post) => {
     const cat = post.category || 'Tech Blog';
     acc[cat] = (acc[cat] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
+
+  // Filter for display
+  const categoryFilter = resolvedSearchParams.category;
+  const posts = categoryFilter 
+    ? allPosts.filter(p => (p.category || 'Tech Blog') === categoryFilter)
+    : allPosts;
 
   return (
     <div className="min-h-screen bg-brand-dark text-slate-100 font-sans selection:bg-brand-blue/30 selection:text-white">
@@ -85,9 +92,9 @@ export default async function BlogIndexPage({ params }: { params: Promise<{ loca
                             alt={title} 
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
-                          <div className="absolute top-3 left-3 bg-brand-green/20 text-brand-green border border-brand-green/30 text-[10px] uppercase font-bold px-2 py-1 rounded backdrop-blur-sm z-10">
+                          <Link href={`/${resolvedParams.locale}/blog?category=${encodeURIComponent(post.category || 'Tech Blog')}`} className="absolute top-3 left-3 bg-brand-green/20 hover:bg-brand-green hover:text-slate-900 text-brand-green border border-brand-green/30 text-[10px] uppercase font-bold px-2 py-1 rounded backdrop-blur-sm z-20 transition-colors">
                             {post.category || 'Tech Blog'}
-                          </div>
+                          </Link>
                         </div>
                       )}
                       <div className="flex flex-col p-6 w-full flex-1">
@@ -140,19 +147,22 @@ export default async function BlogIndexPage({ params }: { params: Promise<{ loca
                 {isEn ? 'Categories' : 'Categorías'}
               </h3>
               <ul className="space-y-3">
-                {Object.entries(categoriesCount).map(([category, count]) => (
-                  <li key={category}>
-                    <a href="#" className="flex items-center justify-between group">
-                      <span className="text-slate-400 group-hover:text-brand-green transition-colors flex items-center text-sm font-mono">
-                        <ChevronRight className="h-4 w-4 mr-2 text-slate-600 group-hover:text-brand-green transition-colors" />
-                        {category}
-                      </span>
-                      <span className="bg-slate-800 text-slate-300 text-xs px-2 py-1 rounded font-tech">
-                        {String(count)}
-                      </span>
-                    </a>
-                  </li>
-                ))}
+                {Object.entries(categoriesCount).map(([category, count]) => {
+                  const isActive = categoryFilter === category;
+                  return (
+                    <li key={category}>
+                      <Link href={`/${resolvedParams.locale}/blog?category=${encodeURIComponent(category)}`} className="flex items-center justify-between group">
+                        <span className={`transition-colors flex items-center text-sm font-mono ${isActive ? 'text-brand-green font-bold' : 'text-slate-400 group-hover:text-brand-green'}`}>
+                          <ChevronRight className={`h-4 w-4 mr-2 transition-colors ${isActive ? 'text-brand-green' : 'text-slate-600 group-hover:text-brand-green'}`} />
+                          {category}
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded font-tech ${isActive ? 'bg-brand-green/20 text-brand-green' : 'bg-slate-800 text-slate-300'}`}>
+                          {String(count)}
+                        </span>
+                      </Link>
+                    </li>
+                  )
+                })}
               </ul>
             </div>
             

@@ -31,9 +31,12 @@ export async function getPosts() {
   });
 }
 
-export async function getPublishedPosts() {
+export async function getPublishedPosts(category?: string) {
   return await prisma.post.findMany({
-    where: { status: 'Published' },
+    where: { 
+      status: 'Published',
+      ...(category ? { category } : {})
+    },
     orderBy: { publishedAt: 'desc' }
   });
 }

@@ -73,7 +73,9 @@ export default async function BlogPostPage({ params }: Props) {
             <article className="lg:col-span-3">
               <header className="mb-10">
                 <div className="flex items-center gap-4 text-sm text-brand-green mb-6 font-tech uppercase tracking-widest">
-                  <span className="bg-brand-green/10 border border-brand-green/30 px-3 py-1 rounded-sm text-xs font-bold">Tech Blog</span>
+                  <Link href={`/${resolvedParams.locale}/blog?category=${encodeURIComponent(post.category || 'Tech Blog')}`} className="bg-brand-green/10 border border-brand-green/30 px-3 py-1 rounded-sm text-xs font-bold hover:bg-brand-green/20 hover:text-white transition-colors cursor-pointer">
+                    {post.category || 'Tech Blog'}
+                  </Link>
                   <time dateTime={post.publishedAt?.toISOString() || post.createdAt.toISOString()} className="flex items-center text-slate-400">
                     <Calendar className="w-4 h-4 mr-2" />
                     {new Date(post.publishedAt || post.createdAt).toLocaleDateString(isEn ? 'en-US' : 'es-MX', {
