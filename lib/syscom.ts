@@ -1,3 +1,5 @@
+import { getSyscomSettings } from '@/app/actions/syscom-settings';
+
 let syscomToken: string | null = null;
 let tokenExpiresAt: number = 0;
 
@@ -86,13 +88,32 @@ export async function searchSyscomProducts(query: string = "cctv"): Promise<Sysc
     }
 
     const data = await response.json();
+    let results: any[] = [];
+    
     if (data && Array.isArray(data.productos)) {
-      return data.productos.filter((p: any) => p.existencia && (p.existencia.nuevo > 0 || (p.total_existencia && p.total_existencia > 0)));
+      results = data.productos;
+    } else if (Array.isArray(data)) {
+      results = data;
     }
-    if (Array.isArray(data)) {
-      return data.filter((p: any) => p.existencia && (p.existencia.nuevo > 0 || (p.total_existencia && p.total_existencia > 0)));
+    
+    // Filter by stock
+    results = results.filter((p: any) => p.existencia && (p.existencia.nuevo > 0 || (p.total_existencia && p.total_existencia > 0)));
+
+    // Fetch allowed brands and models from db
+    const settings = await getSyscomSettings();
+    if (settings.brands.length > 0 || settings.models.length > 0) {
+      results = results.filter((p: any) => {
+        const brand = (p.marca || '').toUpperCase();
+        const model = (p.modelo || '').toUpperCase();
+        
+        const isBrandAllowed = settings.brands.length === 0 || settings.brands.includes(brand);
+        const isModelAllowed = settings.models.length === 0 || settings.models.includes(model);
+        
+        return isBrandAllowed && isModelAllowed;
+      });
     }
-    return [];
+
+    return results;
   } catch (error) {
     console.error("Syscom Search Error:", error);
     return [];

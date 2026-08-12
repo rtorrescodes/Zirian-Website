@@ -116,19 +116,19 @@ export default async function ProductPage({
 
               {/* Added Value Widget (Fills remaining empty space) */}
               <div className="flex-1 p-6 lg:p-8 bg-slate-900/60 hidden lg:flex flex-col justify-center">
-                <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider font-mono text-brand-cyan">Beneficios Zirian</h4>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <ShieldCheck className="h-5 w-5 text-brand-blue flex-shrink-0 mt-0.5" />
-                    <span className="text-xs text-slate-300 leading-relaxed">Equipos 100% originales, nuevos y sellados. Respaldados por la garantía oficial del fabricante.</span>
+                <h4 className="text-base font-bold text-white mb-5 uppercase tracking-wider font-mono text-brand-cyan">Beneficios Zirian</h4>
+                <div className="space-y-6">
+                  <div className="flex items-start gap-4">
+                    <ShieldCheck className="h-6 w-6 text-brand-blue flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-slate-300 leading-relaxed">Equipos 100% originales, nuevos y sellados. Respaldados por la garantía oficial del fabricante.</span>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <Truck className="h-5 w-5 text-brand-cyan flex-shrink-0 mt-0.5" />
-                    <span className="text-xs text-slate-300 leading-relaxed">Envíos asegurados a todo México. Rastreo en tiempo real hasta la puerta de tu obra o domicilio.</span>
+                  <div className="flex items-start gap-4">
+                    <Truck className="h-6 w-6 text-brand-cyan flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-slate-300 leading-relaxed">Envíos asegurados a todo México. Rastreo en tiempo real hasta la puerta de tu obra o domicilio.</span>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-[#00FF41] flex-shrink-0 mt-0.5" />
-                    <span className="text-xs text-slate-300 leading-relaxed">Soporte técnico especializado disponible post-venta para ayudarte en tu integración.</span>
+                  <div className="flex items-start gap-4">
+                    <CheckCircle2 className="h-6 w-6 text-[#00FF41] flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-slate-300 leading-relaxed">Soporte técnico especializado disponible post-venta para ayudarte en tu integración.</span>
                   </div>
                 </div>
               </div>
