@@ -716,7 +716,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       </div>
 
       {gpsTracking && userLocation && (
-        <div className="absolute bottom-28 md:bottom-12 left-1/2 -translate-x-1/2 z-[60] pointer-events-auto">
+        <div className="absolute bottom-40 md:bottom-12 left-1/2 -translate-x-1/2 z-[60] pointer-events-auto">
           <Button 
             onClick={() => handleAddDevice('camera', userLocation)}
             className="rounded-full shadow-[0_0_30px_rgba(0,163,255,0.6)] bg-brand-blue text-slate-950 hover:bg-brand-blue/90 h-14 px-8 font-tech font-bold uppercase tracking-widest text-sm animate-pulse border-2 border-white/20"
@@ -1463,7 +1463,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
         </div>
       )}
       {/* Bottom Mobile Action Bar */}
-      <div className={`fixed bottom-6 left-4 right-4 flex items-center justify-center gap-4 z-40 md:hidden pointer-events-none transition-opacity duration-300 ${mobilePanel !== 'none' ? 'opacity-0' : 'opacity-100'}`}>
+      <div className={`fixed bottom-24 left-4 right-4 flex items-center justify-center gap-4 z-40 md:hidden pointer-events-none transition-opacity duration-300 ${mobilePanel !== 'none' ? 'opacity-0' : 'opacity-100'}`}>
         <Button 
           onClick={() => setMobilePanel(p => p === 'left' ? 'none' : 'left')} 
           className={`pointer-events-auto rounded-full w-12 h-12 shadow-lg transition-colors ${mobilePanel === 'left' ? 'bg-brand-blue text-slate-950' : 'bg-slate-900 text-white border border-slate-700'}`}

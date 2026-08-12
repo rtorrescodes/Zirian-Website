@@ -5,7 +5,7 @@ import CCTVMap from '@/components/cctv/CCTVMap';
 
 export default function CCTVDesignerPage() {
   return (
-    <div className="w-screen h-screen overflow-hidden bg-black">
+    <div className="fixed inset-0 w-full h-[100dvh] overflow-hidden bg-black z-50">
       <Suspense fallback={<div className="text-white p-8">Cargando diseñador...</div>}>
         <CCTVMap />
       </Suspense>
