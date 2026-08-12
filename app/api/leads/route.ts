@@ -20,13 +20,25 @@ export async function GET() {
   try {
     const leads = await prisma.client.findMany({
       where: {
-        status: "Lead"
+        status: { in: ["Lead", "Contactado", "Visita Programada"] }
       },
       orderBy: {
         fecha_creacion: "desc",
       },
     });
-    return NextResponse.json(leads);
+
+    const mappedLeads = leads.map(lead => {
+      let tipo_lead = "Contacto Directo";
+      if (lead.notas && lead.notas.includes("Tipo Lead:")) {
+        const match = lead.notas.match(/Tipo Lead:\s*(.*)/);
+        if (match && match[1]) {
+          tipo_lead = match[1].trim();
+        }
+      }
+      return { ...lead, tipo_lead };
+    });
+
+    return NextResponse.json(mappedLeads);
   } catch (error) {
     console.error("Failed to fetch leads: ", error);
     return NextResponse.json({ error: "Error en base de datos" }, { status: 500 });

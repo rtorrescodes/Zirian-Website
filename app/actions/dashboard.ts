@@ -52,7 +52,7 @@ export async function getDashboardMetrics() {
   // 2. Distribución de Leads por Status
   const leadsDistribution = await prisma.client.groupBy({
     by: ['status'],
-    where: { tipo_lead: 'Cotización Cualificada' },
+    where: { status: { in: ['Lead', 'Contactado', 'Visita Programada'] } },
     _count: { id: true }
   });
 
