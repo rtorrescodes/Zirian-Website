@@ -6,12 +6,12 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Zirian | Alta Ingeniería Eléctrica y Cargadores EV en Los Cabos",
   description: "Líderes en infraestructura para vehículos eléctricos, instalaciones eléctricas de alta gama, domótica y redes en Los Cabos y La Paz. Certificación NOM y CFE.",
-  metadataBase: new URL("https://zirian.com"),
+  metadataBase: new URL("https://zirian.mx"),
   openGraph: {
     type: "website",
     title: "Zirian | Alta Ingeniería Eléctrica y Cargadores EV en Los Cabos",
     description: "Líderes en infraestructura para vehículos eléctricos, instalaciones eléctricas de alta gama, domótica y redes en Los Cabos y La Paz. Certificación NOM y CFE.",
-    url: "https://zirian.com",
+    url: "https://zirian.mx",
     images: [
       {
         url: "/assets/images/hero_ev_charger.jpg",

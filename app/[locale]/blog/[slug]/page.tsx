@@ -21,13 +21,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const isEn = resolvedParams.locale === 'en';
   const title = isEn && post.title_en ? post.title_en : post.title;
   const excerpt = isEn && post.excerpt_en ? post.excerpt_en : post.excerpt;
+  const description = excerpt || `Lee sobre ${title} en el blog de Zirian.`;
 
   return {
     title: `${title} | Zirian Blog`,
-    description: excerpt || `Zirian Blog - ${title}`,
+    description: description,
     openGraph: {
       title: title,
-      description: excerpt || '',
+      description: description,
+      type: 'article',
+      images: post.featured_image ? [post.featured_image] : [],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: title,
+      description: description,
       images: post.featured_image ? [post.featured_image] : [],
     }
   }
