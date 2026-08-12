@@ -73,7 +73,17 @@ export async function createQuote(data: {
     }
   });
 
+  await prisma.clientActivity.create({
+    data: {
+      clientId: quote.clientId,
+      tipo: 'Presupuesto',
+      descripcion: `Cotización creada: COT-${new Date(quote.fecha_creacion).getFullYear()}-${String(quote.id).padStart(4, '0')} (Monto: $${Number(quote.total).toLocaleString('es-MX')})`,
+      url: `/admin/cotizaciones/${quote.id}`
+    }
+  });
+
   revalidatePath("/admin/cotizador");
+  revalidatePath(`/admin/clientes/${quote.clientId}`);
   return serializeQuote(quote);
 }
 
@@ -160,6 +170,18 @@ export async function getQuotes() {
 }
 
 export async function deleteQuote(id: number) {
+  const quote = await prisma.quote.findUnique({ where: { id } });
+
+  if (quote) {
+    await prisma.clientActivity.create({
+      data: {
+        clientId: quote.clientId,
+        tipo: 'Nota General',
+        descripcion: `Cotización eliminada: COT-${new Date(quote.fecha_creacion).getFullYear()}-${String(quote.id).padStart(4, '0')} (Monto: $${Number(quote.total).toLocaleString('es-MX')})`,
+      }
+    });
+  }
+
   // Prisma will cascade delete items if configured, but let's delete items first to be safe
   await prisma.quoteItem.deleteMany({
     where: { quoteId: id }
@@ -211,8 +233,18 @@ export async function updateQuote(id: number, data: any) {
     await prisma.clientActivity.create({
       data: {
         clientId: quote.clientId,
-        tipo: 'Nota General', // Using Nota General as it exists, or could be 'Cotización Perdida' if any string is allowed
+        tipo: 'Nota General',
         descripcion: `La cotización COT-${new Date(quote.fecha_creacion).getFullYear()}-${String(quote.id).padStart(4, '0')} ha sido marcada como perdida.\nMotivo: ${quote.motivo_rechazo || 'No especificado'}`,
+        url: `/admin/cotizaciones/${quote.id}`
+      }
+    });
+  } else {
+    // Log general update
+    await prisma.clientActivity.create({
+      data: {
+        clientId: quote.clientId,
+        tipo: 'Presupuesto',
+        descripcion: `Cotización actualizada: COT-${new Date(quote.fecha_creacion).getFullYear()}-${String(quote.id).padStart(4, '0')} (Estatus: ${quote.status})`,
         url: `/admin/cotizaciones/${quote.id}`
       }
     });
