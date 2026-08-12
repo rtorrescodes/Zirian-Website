@@ -320,11 +320,24 @@ export function QuoteBuilder({
   // so the user can then override them.
   useEffect(() => {
     if (!mostrarDesglose) {
-      const calculatedGroups: Record<string, number> = {};
+      const calculatedGroups: Record<string, number> = {
+        'Equipos': 0,
+        'Materiales': 0,
+        'Mano de Obra': 0,
+      };
+      
       items.forEach((i: any) => {
-        const groupName = i.product?.grupo_impresion || 'Concepto General';
-        if (!calculatedGroups[groupName]) calculatedGroups[groupName] = 0;
-        calculatedGroups[groupName] += Number(i.product.precio_base) * i.qty;
+        const groupName = (i.product?.grupo_impresion || '').toLowerCase();
+        const nameLower = (i.product?.nombre || '').toLowerCase();
+        
+        let targetGroup = 'Equipos';
+        if (groupName.includes('material') || groupName.includes('cable') || nameLower.includes('cable') || nameLower.includes('tubo') || nameLower.includes('conector') || nameLower.includes('cinta') || nameLower.includes('tubería') || nameLower.includes('registro')) {
+          targetGroup = 'Materiales';
+        } else if (groupName.includes('mano de obra') || groupName.includes('instalaci') || groupName.includes('servicio') || nameLower.includes('instalaci') || nameLower.includes('mano de obra') || nameLower.includes('servicio')) {
+          targetGroup = 'Mano de Obra';
+        }
+
+        calculatedGroups[targetGroup] += Number(i.product.precio_base) * i.qty;
       });
       
       setGroupPrices((prev) => {

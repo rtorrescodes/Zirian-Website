@@ -329,15 +329,20 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
   let displayItems: any[] = [];
   
   if (quote.mostrar_desglose) {
-    displayItems = quote.items.map((i: any) => ({
-      qty: Number(i.cantidad),
-      name: i.product?.nombre || i.descripcion || 'Producto/Servicio',
-      desc: i.descripcion || '',
-      price: Number(i.precio_unitario),
-      total: Number(i.total),
-      iva: (quote.requiere_factura || quote.impuestos > 0) ? Number(i.total) * 0.16 : 0,
-      isGroup: false
-    }));
+    displayItems = quote.items.map((i: any) => {
+      let unit = (i.product?.unidad_medida || 'PZA').substring(0, 3).toUpperCase();
+      if ((i.product?.nombre || '').toLowerCase().includes('cable')) unit = 'MTS';
+      
+      return {
+        qty: `${Number(i.cantidad)} ${unit}`,
+        name: i.product?.nombre || i.descripcion || 'Producto/Servicio',
+        desc: i.descripcion || '',
+        price: Number(i.precio_unitario),
+        total: Number(i.total),
+        iva: (quote.requiere_factura || quote.impuestos > 0) ? Number(i.total) * 0.16 : 0,
+        isGroup: false
+      };
+    });
   } else {
     const groups: Record<string, any> = {};
     const groupPrices = quote.group_prices || {};
@@ -347,7 +352,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
       
       if (!groups[groupName]) {
         groups[groupName] = {
-          qty: 1,
+          qty: "1 LOTE",
           name: groupName,
           desc: '',
           price: groupPrices[groupName] !== undefined ? groupPrices[groupName] : 0,
