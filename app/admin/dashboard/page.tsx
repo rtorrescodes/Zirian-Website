@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { getDashboardMetrics } from "@/app/actions/dashboard";
 import { AppShell } from "@/components/panel/app-shell";
+import { DashboardAnalytics } from "@/components/panel/dashboard-analytics";
 
 interface Lead {
   id: number;
@@ -52,7 +53,15 @@ export default function AdminDashboardPage() {
   const [authorized, setAuthorized] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
-  const [metrics, setMetrics] = useState({ totalLeadsCount: 0, qualifiedQuotesCount: 0, openTicketsCount: 0 });
+  const [metrics, setMetrics] = useState<any>({
+    totalLeadsCount: 0,
+    qualifiedQuotesCount: 0,
+    openTicketsCount: 0,
+    totalRevenue: 0,
+    monthlyRevenue: [],
+    leadData: [],
+    ticketData: []
+  });
   const [loading, setLoading] = useState(true);
 
   // Filters and Selection States
@@ -304,8 +313,17 @@ export default function AdminDashboardPage() {
         </section>
 
         {/* METRICS CARDS PANEL */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           
+          {/* Card 0: Total Revenue */}
+          <div className="bg-slate-900/60 border border-slate-800/80 hover:border-amber-500/50 hover:scale-[1.02] transition duration-300 p-6 rounded-2xl flex flex-col items-center justify-center text-center shadow-md group">
+            <span className="text-[10px] text-slate-500 font-tech uppercase tracking-widest font-semibold">Ingresos Históricos</span>
+            <span className="text-3xl font-extrabold text-white font-tech mt-2 group-hover:text-amber-400 transition">
+              ${(metrics.totalRevenue / 1000).toLocaleString('es-MX', { maximumFractionDigits: 1 })}k
+            </span>
+            <span className="text-[10px] text-slate-400 mt-2 font-tech">Ventas Cerradas/Aprobadas</span>
+          </div>
+
           {/* Card 1: Total Leads */}
           <div
             onClick={() => {
@@ -314,8 +332,8 @@ export default function AdminDashboardPage() {
             }}
             className="bg-slate-900/60 border border-slate-800/80 hover:border-brand-blue hover:scale-[1.02] transition duration-300 p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer group shadow-md"
           >
-            <span className="text-xs text-slate-500 font-tech uppercase tracking-widest font-semibold">Total de Leads</span>
-            <span className="text-4xl font-extrabold text-white font-tech mt-2 group-hover:text-brand-blue transition">
+            <span className="text-[10px] text-slate-500 font-tech uppercase tracking-widest font-semibold">Total de Leads</span>
+            <span className="text-3xl font-extrabold text-white font-tech mt-2 group-hover:text-brand-blue transition">
               {totalLeadsCount}
             </span>
             <span className="text-[10px] text-slate-400 mt-2 font-tech">Prospectos registrados</span>
@@ -329,11 +347,11 @@ export default function AdminDashboardPage() {
             }}
             className="bg-slate-900/60 border border-slate-800/80 hover:border-brand-green hover:scale-[1.02] transition duration-300 p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer group shadow-md"
           >
-            <span className="text-xs text-slate-500 font-tech uppercase tracking-widest font-semibold">Cotizaciones Cualificadas</span>
-            <span className="text-4xl font-extrabold text-white font-tech mt-2 group-hover:text-brand-green transition">
+            <span className="text-[10px] text-slate-500 font-tech uppercase tracking-widest font-semibold">Cualificados</span>
+            <span className="text-3xl font-extrabold text-white font-tech mt-2 group-hover:text-brand-green transition">
               {qualifiedQuotesCount}
             </span>
-            <span className="text-[10px] text-emerald-400 mt-2 font-tech font-bold">Cargadores EV</span>
+            <span className="text-[10px] text-emerald-400 mt-2 font-tech font-bold">Cotizaciones Activas</span>
           </div>
 
           {/* Card 3: Support Tickets */}
@@ -343,13 +361,20 @@ export default function AdminDashboardPage() {
             }}
             className="bg-slate-900/60 border border-slate-800/80 hover:border-red-500/50 hover:scale-[1.02] transition duration-300 p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer group shadow-md"
           >
-            <span className="text-xs text-slate-500 font-tech uppercase tracking-widest font-semibold">Tickets Abiertos</span>
-            <span className="text-4xl font-extrabold text-white font-tech mt-2 group-hover:text-red-400 transition">
+            <span className="text-[10px] text-slate-500 font-tech uppercase tracking-widest font-semibold">Tickets Abiertos</span>
+            <span className="text-3xl font-extrabold text-white font-tech mt-2 group-hover:text-red-400 transition">
               {openTicketsCount}
             </span>
             <span className="text-[10px] text-slate-400 mt-2 font-tech">Garantías y soporte</span>
           </div>
         </section>
+
+        {/* VISUAL ANALYTICS DASHBOARD */}
+        <DashboardAnalytics 
+          monthlyRevenue={metrics.monthlyRevenue || []} 
+          leadData={metrics.leadData || []} 
+          ticketData={metrics.ticketData || []} 
+        />
 
         {/* CALENDAR SECTION: Eventos & Visitas Programadas */}
         <section id="calendar-section" className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden backdrop-blur-sm p-6 shadow-md">
