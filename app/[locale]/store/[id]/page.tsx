@@ -72,7 +72,7 @@ export default async function ProductPage({
           
           {product.categorias && product.categorias.length > 0 && (
             <>
-              {product.categorias
+              {[...product.categorias]
                 .sort((a, b) => (a.nivel || 0) - (b.nivel || 0))
                 .map((cat, idx) => (
                   <div key={cat.id || idx} className="flex items-center gap-2">
