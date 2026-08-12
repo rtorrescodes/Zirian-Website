@@ -746,7 +746,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       {/* Left Sidebar (Cameras & Organization) */}
       {/* Left Floating Panel (Layers/Organization) */}
       {!clientMode && (
-      <div className={`absolute top-20 left-4 w-72 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl overflow-hidden pointer-events-auto z-10 flex flex-col max-h-[80vh] transition-transform ${mobilePanel === 'left' ? 'translate-x-0' : '-translate-x-[150%] md:translate-x-0'}`}>
+      <div className={`absolute top-20 left-4 w-72 p-4 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl overflow-hidden pointer-events-auto z-10 flex flex-col max-h-[80vh] transition-transform ${mobilePanel === 'left' ? 'translate-x-0' : '-translate-x-[150%] md:translate-x-0'}`}>
         <div className="flex gap-1 bg-slate-900 p-1 rounded-lg mb-4 shrink-0">
           <button 
             onClick={() => setLeftPanelTab('cameras')} 
@@ -1161,7 +1161,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
                   <button 
                     onClick={() => {
                       const cam = cameras.find(c => c.id === activeCamId);
-                      if (cam) navigator.clipboard.writeText(`${cam.lat.toFixed(6)}, ${cam.lng.toFixed(6)}`);
+                      if (cam && navigator.clipboard) navigator.clipboard.writeText(`${cam.lat.toFixed(6)}, ${cam.lng.toFixed(6)}`);
                     }}
                     className="text-brand-blue hover:text-white"
                     title="Copiar Coordenadas"

@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Search as SearchIcon, Loader2, Plus, Box, ExternalLink, Check } from 'lucide-react';
+import { Search as SearchIcon, Loader2, Plus, Box, ExternalLink, Check, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,6 +31,7 @@ interface ProductSearchProps {
   initialProducts: Product[];
   isSearchingSyscom: boolean;
   syscomResults: { items: any[]; filteredOut: number };
+  executeSyscomSearch: (query: string) => void;
   pickedProductId: number | string | null;
   setPickedProductId: (id: number | string | null) => void;
   addItem: () => void;
@@ -51,6 +52,7 @@ export function ProductSearch({
   initialProducts,
   isSearchingSyscom,
   syscomResults,
+  executeSyscomSearch,
   pickedProductId,
   setPickedProductId,
   addItem,
@@ -69,6 +71,16 @@ export function ProductSearch({
         (p.marca && p.marca.toLowerCase().includes(q)),
     );
   }, [initialProducts, productQuery]);
+
+  // Debounce for Syscom Search (4+ characters)
+  useEffect(() => {
+    if (searchMode === 'syscom' && productQuery.length >= 4) {
+      const handler = setTimeout(() => {
+        executeSyscomSearch(productQuery);
+      }, 800);
+      return () => clearTimeout(handler);
+    }
+  }, [productQuery, searchMode]);
 
   const currencyExact = (value: number) => {
     return new Intl.NumberFormat('es-MX', {
@@ -125,19 +137,36 @@ export function ProductSearch({
         </div>
       )}
 
-      <div className="relative border-b border-slate-700 bg-slate-950/80 p-3">
-        <SearchIcon className={cn("absolute left-6 top-1/2 h-5 w-5 -translate-y-1/2", searchMode === 'syscom' ? "text-brand-cyan" : "text-brand-blue")} />
-        <Input
-          value={productQuery}
-          onChange={(e) => setProductQuery(e.target.value)}
-          placeholder={searchMode === 'local' ? "Buscar productos locales..." : "Buscar en Syscom (mínimo 3 letras)..."}
-          className={cn(
-            "h-12 border-slate-700 bg-slate-900 pl-11 text-lg text-white placeholder:text-slate-500",
-            searchMode === 'syscom' ? "focus-visible:ring-brand-cyan" : "focus-visible:ring-brand-blue"
+      <div className="relative border-b border-slate-700 bg-slate-950/80 p-3 flex gap-2">
+        <div className="relative flex-1">
+          <SearchIcon className={cn("absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2", searchMode === 'syscom' ? "text-brand-cyan" : "text-brand-blue")} />
+          <Input
+            value={productQuery}
+            onChange={(e) => setProductQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && searchMode === 'syscom') {
+                e.preventDefault();
+                executeSyscomSearch(productQuery);
+              }
+            }}
+            placeholder={searchMode === 'local' ? "Buscar locales..." : "Buscar en Syscom (mín. 3 letras)..."}
+            className={cn(
+              "h-12 border-slate-700 bg-slate-900 pl-10 pr-10 text-lg text-white placeholder:text-slate-500",
+              searchMode === 'syscom' ? "focus-visible:ring-brand-cyan" : "focus-visible:ring-brand-blue"
+            )}
+          />
+          {searchMode === 'syscom' && isSearchingSyscom && (
+            <Loader2 className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-brand-cyan" />
           )}
-        />
-        {searchMode === 'syscom' && isSearchingSyscom && (
-          <Loader2 className="absolute right-6 top-1/2 h-5 w-5 -translate-y-1/2 animate-spin text-brand-cyan" />
+        </div>
+        {searchMode === 'syscom' && (
+          <Button 
+            onClick={() => executeSyscomSearch(productQuery)}
+            disabled={isSearchingSyscom || productQuery.length < 3}
+            className="h-12 w-12 bg-brand-cyan hover:bg-brand-cyan/80 text-slate-950 shrink-0"
+          >
+            <ArrowRight className="h-5 w-5" />
+          </Button>
         )}
       </div>
 

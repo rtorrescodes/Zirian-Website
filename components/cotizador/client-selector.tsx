@@ -55,7 +55,7 @@ export function ClientSelector({ clients, selectedClient, setSelectedClient }: C
       </button>
 
       {clientOpen && (
-        <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+        <div className="absolute z-[9999] mt-2 w-full overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-[0_0_20px_rgba(0,0,0,0.8)]">
           <div className="relative border-b border-slate-800 p-2 bg-slate-950/50">
             <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <Input

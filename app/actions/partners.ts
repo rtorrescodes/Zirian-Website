@@ -21,18 +21,29 @@ export async function getPartnersWithMetrics() {
 
   return partners.map(partner => {
     let totalVendido = 0;
+    let comisionEstimada = 0;
+    const comisionPorcentaje = partner.comision_base ? Number(partner.comision_base) : 0;
     
     partner.referrals.forEach(client => {
       client.quotes.forEach(quote => {
-        totalVendido += Number(quote.total);
+        const quoteTotal = Number(quote.total);
+        totalVendido += quoteTotal;
+        
+        const hasCustomCommission = quote.comision_partner !== null;
+        const baseCommission = (quoteTotal * comisionPorcentaje) / 100;
+        const finalCommission = hasCustomCommission ? Number(quote.comision_partner) : baseCommission;
+        comisionEstimada += finalCommission;
       });
     });
 
-    const comisionPorcentaje = partner.comision_base ? Number(partner.comision_base) : 0;
-    const comisionEstimada = (totalVendido * comisionPorcentaje) / 100;
-
     return {
-      ...partner,
+      id: partner.id,
+      nombre: partner.nombre,
+      marca: partner.marca,
+      telefono: partner.telefono,
+      email: partner.email,
+      activo: partner.activo,
+      comision_base: partner.comision_base ? Number(partner.comision_base) : null,
       totalReferidos: partner.referrals.length,
       totalVendido,
       comisionEstimada
@@ -57,27 +68,54 @@ export async function getPartnerDetails(id: number) {
   if (!partner) return null;
 
   let totalVendidoAprobado = 0;
+  const comisionPorcentaje = partner.comision_base ? Number(partner.comision_base) : 0;
+  let comisionEstimadaTotal = 0;
   
   const clientesConVentas = partner.referrals.map(client => {
     let totalVendidoPorCliente = 0;
-    client.quotes.forEach(quote => {
+    
+    // Convert decimals to numbers for the frontend
+    const serializedQuotes = client.quotes.map(quote => {
+      const quoteTotal = Number(quote.total);
+      const hasCustomCommission = quote.comision_partner !== null;
+      const baseCommission = (quoteTotal * comisionPorcentaje) / 100;
+      const finalCommission = hasCustomCommission ? Number(quote.comision_partner) : baseCommission;
+      
       if (quote.status === 'Aprobada') {
-        totalVendidoPorCliente += Number(quote.total);
-        totalVendidoAprobado += Number(quote.total);
+        totalVendidoPorCliente += quoteTotal;
+        totalVendidoAprobado += quoteTotal;
+        comisionEstimadaTotal += finalCommission;
       }
+      
+      return {
+        ...quote,
+        total: quoteTotal,
+        subtotal: Number(quote.subtotal),
+        impuestos: Number(quote.impuestos),
+        comision_partner: quote.comision_partner ? Number(quote.comision_partner) : null,
+        costo_real: quote.costo_real ? Number(quote.costo_real) : null,
+        utilidad_real: quote.utilidad_real ? Number(quote.utilidad_real) : null,
+        comision_fija: quote.comision_fija ? Number(quote.comision_fija) : null,
+        monto_pagado: quote.monto_pagado ? Number(quote.monto_pagado) : 0,
+        calculatedCommission: finalCommission
+      };
     });
 
     return {
       ...client,
-      totalVendidoPorCliente
+      totalVendidoPorCliente,
+      quotes: serializedQuotes
     };
   });
 
-  const comisionPorcentaje = partner.comision_base ? Number(partner.comision_base) : 0;
-  const comisionEstimadaTotal = (totalVendidoAprobado * comisionPorcentaje) / 100;
-
   return {
-    ...partner,
+    id: partner.id,
+    nombre: partner.nombre,
+    marca: partner.marca,
+    telefono: partner.telefono,
+    email: partner.email,
+    activo: partner.activo,
+    comision_base: partner.comision_base ? Number(partner.comision_base) : null,
     clientes: clientesConVentas,
     totalVendidoAprobado,
     comisionEstimadaTotal

@@ -39,7 +39,8 @@ export async function searchSyscomForQuote(query: string) {
     precioEspecialUSD: p.precios?.precio_1 ? parseFloat(p.precios.precio_1.toString().replace(/,/g, '')) : 0,
     precioListaMXN: p.precios?.precio_lista ? parseFloat(p.precios.precio_lista.toString().replace(/,/g, '')) * tc : 0,
     precioEspecialMXN: p.precios?.precio_1 ? parseFloat(p.precios.precio_1.toString().replace(/,/g, '')) * tc : 0,
-    stock: p.existencia?.nuevo || p.total_existencia || 0
+    stock: p.existencia?.nuevo || p.total_existencia || 0,
+    categorias: p.categorias || []
   }));
 
   return { items, filteredOut };

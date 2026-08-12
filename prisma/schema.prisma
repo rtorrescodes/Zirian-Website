@@ -89,6 +89,7 @@ model Quote {
 
   // Finanzas Internas y Comisiones
   comision_fija Decimal @default(1500) @db.Decimal(10, 2)
+  comision_partner Decimal? @db.Decimal(10, 2)
   costo_real    Decimal @default(0) @db.Decimal(10, 2)
   utilidad_real Decimal @default(0) @db.Decimal(10, 2)
 

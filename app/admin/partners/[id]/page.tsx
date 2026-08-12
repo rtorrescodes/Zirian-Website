@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Edit2, Mail, Phone, Users, DollarSign, Percent, CheckCircle2 } from 'lucide-react';
 import { notFound } from 'next/navigation';
+import PartnerQuotesTable from '@/components/partners/PartnerQuotesTable';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,52 +98,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
             Aún no ha referido clientes.
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-slate-50 text-xs uppercase text-muted-foreground border-b border-border">
-                <tr>
-                  <th className="px-6 py-4 font-medium">Cliente</th>
-                  <th className="px-6 py-4 font-medium">Fecha de Alta</th>
-                  <th className="px-6 py-4 font-medium">Estatus del Lead</th>
-                  <th className="px-6 py-4 font-medium text-right">Cotizaciones Aprobadas</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {partner.clientes.map((cliente) => (
-                  <tr key={cliente.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <p className="font-medium text-foreground">{cliente.nombre}</p>
-                      {cliente.empresa && <p className="text-xs text-muted-foreground">{cliente.empresa}</p>}
-                    </td>
-                    <td className="px-6 py-4 text-muted-foreground">
-                      {new Date(cliente.fecha_creacion).toLocaleDateString('es-MX')}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                        cliente.status === 'Cliente' ? 'bg-brand-green/10 text-brand-green ring-brand-green/20' :
-                        cliente.status === 'Prospect' ? 'bg-blue-50 text-blue-700 ring-blue-600/20' :
-                        'bg-slate-100 text-slate-600 ring-slate-500/10'
-                      }`}>
-                        {cliente.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      {cliente.totalVendidoPorCliente > 0 ? (
-                        <div className="flex flex-col items-end">
-                          <span className="font-semibold text-foreground">{formatCurrency(cliente.totalVendidoPorCliente)}</span>
-                          <span className="text-[10px] text-brand-green flex items-center gap-1 mt-0.5">
-                            <CheckCircle2 className="h-3 w-3" /> Aprobada
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">Sin ventas aprobadas</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <PartnerQuotesTable clients={partner.clientes} />
         )}
       </div>
     </div>

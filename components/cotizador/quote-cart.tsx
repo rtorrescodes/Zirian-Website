@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Package, Trash2, Plus, Minus, Paperclip, X, Check } from 'lucide-react';
+import { Package, Trash2, Plus, Minus, Paperclip, X, Check, Battery, Sun, Wind, Camera, Wifi, Zap } from 'lucide-react';
 import { useRef } from 'react';
 
 interface QuoteCartProps {
@@ -13,6 +13,18 @@ interface QuoteCartProps {
   attachments: any[];
   addDirectItem: (product: any, qty: number) => void;
 }
+
+const getCategoryIcon = (categoryId: number) => {
+  switch (categoryId) {
+    case 5: return <Wind className="h-5 w-5 text-brand-blue" />; // Aire Acondicionado
+    case 6: return <Sun className="h-5 w-5 text-brand-blue" />; // Panel Solar
+    case 7: return <Battery className="h-5 w-5 text-brand-blue" />; // Batería
+    case 2: return <Camera className="h-5 w-5 text-brand-blue" />; // CCTV
+    case 3: return <Wifi className="h-5 w-5 text-brand-blue" />; // Redes
+    case 1: return <Zap className="h-5 w-5 text-brand-blue" />; // Instalación EV
+    default: return <Package className="h-5 w-5 text-brand-blue" />; // General
+  }
+};
 
 export function QuoteCart({ items, updateQty, removeItem, onFiles, removeFile, attachments, addDirectItem }: QuoteCartProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -41,7 +53,7 @@ export function QuoteCart({ items, updateQty, removeItem, onFiles, removeFile, a
               {items.map((i) => (
                 <li key={i.product.id} className="flex items-start gap-3 py-4">
                   <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-900 border border-slate-800 shadow-[0_0_10px_rgba(0,0,0,0.5)]">
-                    <Package className="h-5 w-5 text-brand-blue" />
+                    {getCategoryIcon(i.product.categoryId)}
                   </div>
                   <div className="flex min-w-0 flex-1 flex-col justify-between h-full">
                     <div>

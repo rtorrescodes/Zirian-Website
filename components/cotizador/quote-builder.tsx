@@ -40,6 +40,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { createQuote, updateQuote } from '@/app/actions/quotes'
 import { searchSyscomForQuote } from '@/app/actions/syscom'
 
+
 interface Category {
   id: number
   nombre: string
@@ -130,6 +131,21 @@ export function QuoteBuilder({
   const [qty, setQty] = useState(1)
   const [itemDetails, setItemDetails] = useState('')
 
+  const executeSyscomSearch = async (q: string) => {
+    if (q.length < 3) return;
+    setIsSearchingSyscom(true);
+    setSyscomResults({ items: [], filteredOut: 0 });
+    setPickedProductId(null);
+    try {
+      const res = await searchSyscomForQuote(q);
+      setSyscomResults(res);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSearchingSyscom(false);
+    }
+  };
+
   const getInitialItems = () => {
     if (!initialQuote?.items) return []
     return initialQuote.items.map((i: any) => {
@@ -202,6 +218,22 @@ export function QuoteBuilder({
     if (typeof pickedProductId === 'string' && pickedProductId.startsWith('syscom-')) {
       const sp = syscomResults.items && syscomResults.items.find(r => r.id === pickedProductId)
       if (!sp) return null
+      let catId = 4; // General
+      const catsStr = JSON.stringify(sp.categorias || []).toLowerCase();
+      const nameStr = sp.nombre.toLowerCase();
+
+      if (catsStr.includes('aire acondicionado') || catsStr.includes('minisplit') || nameStr.includes('aire acondicionado')) {
+        catId = 5;
+      } else if (catsStr.includes('solar') || catsStr.includes('fotovoltaico') || catsStr.includes('panel') || nameStr.includes('solar')) {
+        catId = 6;
+      } else if (catsStr.includes('bater') || catsStr.includes('acumulador') || nameStr.includes('bateria') || nameStr.includes('batería')) {
+        catId = 7;
+      } else if (catsStr.includes('cctv') || catsStr.includes('videovigilancia') || nameStr.includes('cámara') || nameStr.includes('dvr')) {
+        catId = 2; // CCTV
+      } else if (catsStr.includes('redes') || catsStr.includes('switch') || catsStr.includes('router')) {
+        catId = 3; // Redes
+      }
+
       return {
         id: -Math.floor(Math.random() * 100000),
         nombre: sp.nombre,
@@ -210,7 +242,7 @@ export function QuoteBuilder({
         precio_base: sp.precioListaMXN,
         costo_estimado: sp.precioEspecialMXN,
         unidad_medida: 'Pieza',
-        categoryId: 0,
+        categoryId: catId,
       } as Product
     }
     return initialProducts.find((p) => p.id === pickedProductId) ?? null
@@ -438,6 +470,7 @@ export function QuoteBuilder({
           initialProducts={initialProducts}
           isSearchingSyscom={isSearchingSyscom}
           syscomResults={syscomResults}
+          executeSyscomSearch={executeSyscomSearch}
           pickedProductId={pickedProductId}
           setPickedProductId={setPickedProductId}
           addItem={addItem}
@@ -534,7 +567,7 @@ function SectionTitle({
   step,
   label,
 }: {
-  icon: React.ComponentType<{ className?: string }>
+  icon: any
   step: string
   label: string
 }) {

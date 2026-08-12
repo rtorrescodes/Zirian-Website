@@ -217,20 +217,60 @@ export function ProductEditor({ initialData, categories: initialCategories, allP
               <h3 className="font-tech text-sm font-bold uppercase tracking-widest text-brand-blue border-b border-slate-800 pb-3">Precios y Costos</h3>
               
               <div className="space-y-2">
-                <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Precio Base (Venta) *</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-slate-500">$</span>
-                  <Input type="number" step="0.01" name="precio_base" value={formData.precio_base} onChange={handleChange} required className="pl-8 bg-slate-950/80 border-slate-700 text-brand-cyan font-tech text-lg focus-visible:ring-brand-blue" />
-                </div>
-              </div>
-
-              <div className="space-y-2">
                 <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Costo Estimado (Interno)</label>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-slate-500">$</span>
                   <Input type="number" step="0.01" name="costo_estimado" value={formData.costo_estimado} onChange={handleChange} placeholder="0.00" className="pl-8 bg-slate-950/80 border-slate-700 text-slate-300 focus-visible:ring-brand-blue" />
                 </div>
-                <p className="text-[10px] text-slate-500">Útil para calcular márgenes de ganancia.</p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Autocalcular Precio (Markup)</label>
+                <Select onValueChange={(v) => {
+                  const markup = Number(v) / 100;
+                  const cost = parseFloat(formData.costo_estimado);
+                  if (!isNaN(cost) && cost > 0) {
+                    const price = cost * (1 + markup);
+                    setFormData(prev => ({ ...prev, precio_base: price.toFixed(2) }));
+                  }
+                }}>
+                  <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-300 focus:ring-brand-blue">
+                    <SelectValue placeholder="Selecciona margen..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10%</SelectItem>
+                    <SelectItem value="15">15%</SelectItem>
+                    <SelectItem value="20">20%</SelectItem>
+                    <SelectItem value="25">25%</SelectItem>
+                    <SelectItem value="30">30%</SelectItem>
+                    <SelectItem value="35">35%</SelectItem>
+                    <SelectItem value="40">40%</SelectItem>
+                    <SelectItem value="50">50%</SelectItem>
+                    <SelectItem value="100">100% (El Doble)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-slate-800">
+                <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Precio Base (Venta) *</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2.5 text-slate-500">$</span>
+                  <Input type="number" step="0.01" name="precio_base" value={formData.precio_base} onChange={handleChange} required className="pl-8 bg-slate-950/80 border-slate-700 text-brand-cyan font-tech text-lg focus-visible:ring-brand-blue" />
+                </div>
+                {(() => {
+                  const p = parseFloat(formData.precio_base);
+                  const c = parseFloat(formData.costo_estimado);
+                  if (!isNaN(p) && !isNaN(c) && c > 0) {
+                    const profit = p - c;
+                    const margin = (profit / c) * 100;
+                    return (
+                      <p className={`text-[11px] font-tech font-bold uppercase tracking-widest mt-2 ${profit < 0 ? 'text-red-500' : 'text-orange-400'}`}>
+                        Margen actual: {margin.toFixed(1)}% | Ganancia: ${profit.toFixed(2)}
+                      </p>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
 

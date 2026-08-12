@@ -77,6 +77,15 @@ export async function createQuote(data: {
   return serializeQuote(quote);
 }
 
+export async function updateQuotePartnerCommission(id: number, comision_partner: number | null) {
+  const quote = await prisma.quote.update({
+    where: { id },
+    data: { comision_partner }
+  });
+  revalidatePath("/admin/partners");
+  return serializeQuote(quote);
+}
+
 import { createNotification } from "./notifications";
 
 export async function getQuotes() {

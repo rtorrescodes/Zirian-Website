@@ -145,7 +145,7 @@ export async function POST(req: Request) {
       const res = await fetch('https://api.deepseek.com/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+          'Authorization': `Bearer ${(process.env.DEEPSEEK_API_KEY || '').trim()}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -157,7 +157,9 @@ export async function POST(req: Request) {
       });
 
       if (!res.ok) {
-        throw new Error(`DeepSeek API error: ${res.statusText}`);
+        const errorText = await res.text();
+        console.error("DeepSeek Auth/Error Details:", errorText);
+        throw new Error(`DeepSeek API error: ${res.statusText} - ${errorText}`);
       }
 
       const data = await res.json();

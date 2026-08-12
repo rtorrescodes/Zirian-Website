@@ -38,7 +38,7 @@ Asegúrate de NO usar markdown alrededor del JSON (ni \`\`\`json). SOLO devuelve
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+        'Authorization': `Bearer ${DEEPSEEK_API_KEY.trim()}`
       },
       body: JSON.stringify({
         model: 'deepseek-chat',

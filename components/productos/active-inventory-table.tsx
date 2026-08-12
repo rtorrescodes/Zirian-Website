@@ -128,9 +128,25 @@ export default function ActiveInventoryTable({ products }: { products: any[] }) 
                           {formatCurrency(Number(product.precio_base))}
                         </span>
                         {product.costo_estimado && (
-                          <span className="text-xs text-slate-500 mt-1">
-                            Costo: {formatCurrency(Number(product.costo_estimado))}
-                          </span>
+                          <>
+                            <span className="text-[10px] text-slate-500 mt-1">
+                              Costo: {formatCurrency(Number(product.costo_estimado))}
+                            </span>
+                            {(() => {
+                              const p = Number(product.precio_base);
+                              const c = Number(product.costo_estimado);
+                              if (p > 0 && c > 0) {
+                                const profit = p - c;
+                                const margin = (profit / c) * 100;
+                                return (
+                                  <span className={`text-[11px] font-tech tracking-wider mt-0.5 font-bold ${profit < 0 ? 'text-red-500' : 'text-orange-400'}`}>
+                                    {margin.toFixed(0)}% - {formatCurrency(profit)}
+                                  </span>
+                                );
+                              }
+                              return null;
+                            })()}
+                          </>
                         )}
                       </div>
                     </td>

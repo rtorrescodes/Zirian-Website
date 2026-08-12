@@ -8,6 +8,7 @@ export interface SyscomProduct {
   marca: string;
   img_portada: string;
   link_privado: string;
+  categorias?: any[];
   total_existencia?: number;
   existencia?: {
     nuevo?: number;
