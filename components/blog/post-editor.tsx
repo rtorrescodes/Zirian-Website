@@ -362,7 +362,7 @@ export function PostEditor({ initialData }: PostEditorProps) {
               <div className="mt-4 pt-4 border-t border-slate-800">
                 <p className="text-xs text-slate-500 mb-2 font-mono">Vista Previa Google:</p>
                 <div className="bg-white p-3 rounded-md">
-                  <div className="text-[11px] text-[#202124] mb-1 truncate">zirian.mx &gt; blog &gt; <span className="text-[#4d5156]">{formData.title ? formData.title.toLowerCase().replace(/[\s\W-]+/g, '-') : '...'}</span></div>
+                  <div className="text-[11px] text-[#202124] mb-1 truncate">zirian.com &gt; blog &gt; <span className="text-[#4d5156]">{formData.title ? formData.title.toLowerCase().replace(/[\s\W-]+/g, '-') : '...'}</span></div>
                   <div className="text-[#1a0dab] text-sm font-medium mb-1 truncate">{formData.title || 'Título del artículo'}</div>
                   <div className="text-[#4d5156] text-[11px] line-clamp-2 leading-tight">
                     {formData.excerpt || 'La meta descripción aparecerá aquí...'}
