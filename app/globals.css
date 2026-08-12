@@ -14,6 +14,9 @@
   --color-brand-light-bg: #CAD2DE; /* soft slate-gray background from user design preferences */
   --color-brand-border: #1F293D;
 
+  --color-primary: var(--color-brand-cyan);
+  --color-primary-foreground: var(--color-brand-dark);
+
   --font-sans: "Inter", sans-serif;
   --font-title: "Barlow", sans-serif;
 }

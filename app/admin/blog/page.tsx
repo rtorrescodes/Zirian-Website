@@ -15,7 +15,7 @@ export default async function BlogAdminPage() {
       <div className="space-y-6">
         <div className="flex justify-end">
           <Link href="/admin/blog/editor">
-            <Button className="bg-brand-cyan hover:bg-brand-cyan/90">
+            <Button>
               <Plus className="mr-2 h-4 w-4" />
               Nuevo Artículo
             </Button>
@@ -43,6 +43,7 @@ export default async function BlogAdminPage() {
                   <tr>
                     <th className="px-6 py-4 font-medium">Título</th>
                     <th className="px-6 py-4 font-medium">Estatus</th>
+                    <th className="px-6 py-4 font-medium">Categoría</th>
                     <th className="px-6 py-4 font-medium">Fecha</th>
                     <th className="px-6 py-4 font-medium text-right">Acciones</th>
                   </tr>
@@ -70,6 +71,15 @@ export default async function BlogAdminPage() {
                           <Badge variant="outline" className="bg-brand-green/10 text-brand-green border-brand-green/20">Publicado</Badge>
                         ) : (
                           <Badge variant="outline" className="bg-slate-800 text-slate-300 border-slate-700">Borrador</Badge>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-slate-300">
+                        {post.category ? (
+                          <Badge variant="outline" className="border-brand-cyan/30 text-brand-cyan bg-brand-cyan/10">
+                            {post.category}
+                          </Badge>
+                        ) : (
+                          <span className="text-slate-500 italic text-xs">Sin categoría</span>
                         )}
                       </td>
                       <td className="px-6 py-4 text-slate-400 whitespace-nowrap">

@@ -21,6 +21,7 @@ interface PostEditorProps {
     excerpt?: string | null;
     excerpt_en?: string | null;
     featured_image?: string | null;
+    category?: string | null;
     status: string;
     template?: string;
   };
@@ -38,6 +39,7 @@ export function PostEditor({ initialData }: PostEditorProps) {
     content_en: initialData?.content_en || '',
     status: initialData?.status || 'Draft',
     featured_image: initialData?.featured_image || '',
+    category: initialData?.category || '',
     template: initialData?.template || 'standard'
   });
 
@@ -368,6 +370,17 @@ export function PostEditor({ initialData }: PostEditorProps) {
             <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
               <h3 className="font-semibold text-slate-200 font-tech uppercase tracking-wider text-sm">Publicación</h3>
               
+              <div className="space-y-2">
+                <label className="text-xs text-slate-400 font-tech uppercase">Categoría</label>
+                <Input 
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  placeholder="Ej. Paneles Solares, EcoFlow, Redes..."
+                  className="h-10 bg-slate-950 border-slate-700 text-slate-200 text-sm"
+                />
+              </div>
+
               <div className="space-y-2">
                 <label className="text-xs text-slate-400 font-tech uppercase">Plantilla (Template)</label>
                 <select 
