@@ -38,6 +38,15 @@ export async function getPublishedPosts() {
   });
 }
 
+export async function getBlogCategories() {
+  const posts = await prisma.post.findMany({
+    select: { category: true },
+    distinct: ['category'],
+    where: { category: { not: null } }
+  });
+  return posts.map(p => p.category).filter(Boolean) as string[];
+}
+
 export async function getPostBySlug(slug: string) {
   return await prisma.post.findUnique({
     where: { slug }
@@ -63,6 +72,7 @@ export async function createPost(data: { title: string; title_en?: string | null
   });
 
   revalidatePath('/admin/blog');
+  revalidatePath('/', 'layout'); // Force refresh frontend cache
   return post;
 }
 
@@ -89,6 +99,7 @@ export async function updatePost(id: number, data: { title: string; title_en?: s
 
   revalidatePath('/admin/blog');
   revalidatePath(`/admin/blog/editor/${id}`);
+  revalidatePath('/', 'layout'); // Force refresh frontend cache
   return post;
 }
 

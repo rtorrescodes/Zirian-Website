@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Save, Loader2, ArrowLeft, Image as ImageIcon, Sparkles, Wand2, Bot } from 'lucide-react';
 import Link from 'next/link';
-import { createPost, updatePost } from '@/app/actions/blog';
+import { createPost, updatePost, getBlogCategories } from '@/app/actions/blog';
 import { generateBlogIdeas, generateFullArticle, editArticleContent } from '@/app/actions/blog-ai';
 import 'quill/dist/quill.snow.css';
 
@@ -56,7 +56,11 @@ export function PostEditor({ initialData }: PostEditorProps) {
   const quillInstance = useRef<any>(null);
   const isInitializing = useRef(false);
 
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+
   useEffect(() => {
+    getBlogCategories().then(setAvailableCategories).catch(console.error);
+
     if (typeof window !== 'undefined' && editorRef.current && !quillInstance.current && !isInitializing.current) {
       isInitializing.current = true;
       import('quill').then((QuillModule) => {
@@ -376,9 +380,15 @@ export function PostEditor({ initialData }: PostEditorProps) {
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
+                  list="category-options"
                   placeholder="Ej. Paneles Solares, EcoFlow, Redes..."
                   className="h-10 bg-slate-950 border-slate-700 text-slate-200 text-sm"
                 />
+                <datalist id="category-options">
+                  {availableCategories.map(cat => (
+                    <option key={cat} value={cat} />
+                  ))}
+                </datalist>
               </div>
 
               <div className="space-y-2">
