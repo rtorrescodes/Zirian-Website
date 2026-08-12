@@ -92,24 +92,46 @@ export default async function ProductPage({
             <div className="bg-slate-900/40 border border-slate-800 rounded-3xl overflow-hidden h-full">
               <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
             
-            {/* Left: Image Viewer */}
-            <div className="bg-white p-4 lg:p-6 flex items-center justify-center min-h-[400px] lg:border-r lg:border-slate-800/20 relative">
-              <ProductImageGallery 
-                portada={product.img_portada || 'https://via.placeholder.com/600?text=No+Image'} 
-                title={product.titulo} 
-                images={product.imagenes}
-              />
-              {product.marca && (
-                <div className="absolute top-6 left-6 bg-slate-900 text-white text-xs uppercase font-bold px-3 py-1.5 rounded-md tracking-widest shadow-lg">
-                  {product.marca}
+            {/* Left Column Container */}
+            <div className="flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800/20">
+              {/* Image Viewer */}
+              <div className="bg-white p-4 lg:p-6 flex items-center justify-center min-h-[400px] relative">
+                <ProductImageGallery 
+                  portada={product.img_portada || 'https://via.placeholder.com/600?text=No+Image'} 
+                  title={product.titulo} 
+                  images={product.imagenes}
+                />
+                {product.marca && (
+                  <div className="absolute top-6 left-6 bg-slate-900 text-white text-xs uppercase font-bold px-3 py-1.5 rounded-md tracking-widest shadow-lg">
+                    {product.marca}
+                  </div>
+                )}
+                {((product.existencia?.nuevo ?? 0) > 0 || (product.total_existencia ?? 0) > 0) && (
+                  <div className="absolute bottom-6 left-6 bg-slate-900 border border-[#00FF41]/30 text-[#00FF41] text-xs uppercase font-bold px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg">
+                    <div className="w-2 h-2 bg-[#00FF41] rounded-full animate-pulse shadow-[0_0_10px_#00FF41]"></div>
+                    Disponibilidad: {product.existencia?.nuevo || product.total_existencia} pzas.
+                  </div>
+                )}
+              </div>
+
+              {/* Added Value Widget (Fills remaining empty space) */}
+              <div className="flex-1 p-6 lg:p-8 bg-slate-900/60 hidden lg:flex flex-col justify-center">
+                <h4 className="text-sm font-bold text-white mb-4 uppercase tracking-wider font-mono text-brand-cyan">Beneficios Zirian</h4>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <ShieldCheck className="h-5 w-5 text-brand-blue flex-shrink-0 mt-0.5" />
+                    <span className="text-xs text-slate-300 leading-relaxed">Equipos 100% originales, nuevos y sellados. Respaldados por la garantía oficial del fabricante.</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Truck className="h-5 w-5 text-brand-cyan flex-shrink-0 mt-0.5" />
+                    <span className="text-xs text-slate-300 leading-relaxed">Envíos asegurados a todo México. Rastreo en tiempo real hasta la puerta de tu obra o domicilio.</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-[#00FF41] flex-shrink-0 mt-0.5" />
+                    <span className="text-xs text-slate-300 leading-relaxed">Soporte técnico especializado disponible post-venta para ayudarte en tu integración.</span>
+                  </div>
                 </div>
-              )}
-              {((product.existencia?.nuevo ?? 0) > 0 || (product.total_existencia ?? 0) > 0) && (
-                <div className="absolute bottom-6 left-6 bg-slate-900 border border-[#00FF41]/30 text-[#00FF41] text-xs uppercase font-bold px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg">
-                  <div className="w-2 h-2 bg-[#00FF41] rounded-full animate-pulse shadow-[0_0_10px_#00FF41]"></div>
-                  Disponibilidad Inmediata: {product.existencia?.nuevo || product.total_existencia} pzas.
-                </div>
-              )}
+              </div>
             </div>
 
             {/* Right: Product Info */}
