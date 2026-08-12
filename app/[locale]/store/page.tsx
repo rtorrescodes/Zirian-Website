@@ -109,10 +109,10 @@ export default async function StorePage({
       {/* Categories Fast Links */}
       <div className="bg-slate-900 border-b border-brand-border">
         <div className="max-w-7xl mx-auto px-6 py-6 flex flex-wrap gap-4 justify-center">
-          <Link href={`/${resolvedParams.locale}/store?q=hikvision`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors text-sm font-tech text-slate-300">
+          <Link href={`/${resolvedParams.locale}/store?q=cctv`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors text-sm font-tech text-slate-300">
             <ShieldCheck className="h-4 w-4 text-brand-blue" /> CCTV & Seguridad
           </Link>
-          <Link href={`/${resolvedParams.locale}/store?q=ubiquiti`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors text-sm font-tech text-slate-300">
+          <Link href={`/${resolvedParams.locale}/store?q=redes`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors text-sm font-tech text-slate-300">
             <Server className="h-4 w-4 text-brand-cyan" /> Redes
           </Link>
           <Link href={`/${resolvedParams.locale}/store?q=acceso`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors text-sm font-tech text-slate-300">

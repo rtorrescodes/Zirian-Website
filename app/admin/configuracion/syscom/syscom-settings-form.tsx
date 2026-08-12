@@ -196,7 +196,7 @@ export default function SyscomSettingsForm({
                             >
                               <option value="">Destacados (Default)</option>
                               <option value="cctv">CCTV & Seguridad</option>
-                              <option value="ubiquiti">Redes</option>
+                              <option value="redes">Redes</option>
                               <option value="acceso">Acceso</option>
                               <option value="cargador ev">Cargadores EV</option>
                               <option value="ecoflow">Baterías EcoFlow</option>
