@@ -135,3 +135,20 @@ export async function updateTaskStatus(taskId: number, type: 'scouting' | 'insta
   }
   revalidatePath('/tecnico');
 }
+
+export async function toggleBOMItem(itemId: number, isChecked: boolean, cantidad: number) {
+  try {
+    const updated = await prisma.quoteItem.update({
+      where: { id: itemId },
+      data: {
+        cantidad_usada: isChecked ? cantidad : 0
+      }
+    });
+    revalidatePath('/tecnico/orden/[id]', 'page');
+    revalidatePath('/admin/cotizaciones/[id]', 'page');
+    return updated;
+  } catch (error) {
+    console.error("Error toggling BOM item:", error);
+    throw new Error("Failed to toggle BOM item");
+  }
+}

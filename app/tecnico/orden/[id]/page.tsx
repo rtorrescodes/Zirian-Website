@@ -4,6 +4,7 @@ import { MapPin, User, FileText, CheckCircle2, Package } from 'lucide-react';
 import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ChecklistBOM } from '@/components/tecnico/checklist-bom';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,20 +40,16 @@ export default async function OrderDetailPage({ params }: { params: { id: string
         </div>
       </div>
 
-      <div className="space-y-3">
-        <h2 className="font-semibold text-foreground flex items-center gap-2">
-          <Package className="h-5 w-5 text-muted-foreground" />
-          Equipos a Instalar
-        </h2>
-        <ul className="rounded-xl border border-border bg-card divide-y divide-border">
-          {order.quote?.items?.map((item) => (
-            <li key={item.id} className="p-3 text-sm flex justify-between">
-              <span className="font-medium">{item.descripcion}</span>
-              <span className="text-muted-foreground font-semibold">x{Number(item.cantidad)}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ChecklistBOM 
+        items={order.quote?.items?.map(i => ({
+          id: i.id,
+          descripcion: i.descripcion,
+          cantidad: Number(i.cantidad),
+          unidad_medida: i.product?.unidad_medida || 'PZA',
+          cantidad_usada: i.cantidad_usada ? Number(i.cantidad_usada) : null,
+          stock_general: i.product?.stock_general ? Number(i.product.stock_general) : 0
+        })) || []} 
+      />
 
       <div className="space-y-3">
         <h2 className="font-semibold text-foreground">Evidencia Fotográfica</h2>

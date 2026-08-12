@@ -68,10 +68,19 @@ export function QuoteManager({ quote }: QuoteManagerProps) {
     <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
       {/* Panel de Items */}
       <Card className="p-5 border-slate-800 bg-slate-900/60 shadow-xl">
-        <h2 className="text-sm font-tech font-bold uppercase tracking-widest text-brand-cyan mb-4 flex items-center gap-2">
-          <Box className="w-4 h-4" />
-          Materiales e Insumos
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-tech font-bold uppercase tracking-widest text-brand-cyan flex items-center gap-2">
+            <Box className="w-4 h-4" />
+            Materiales e Insumos
+          </h2>
+          <a 
+            href={`/api/quotes/${quote.id}/bom-pdf`}
+            target="_blank"
+            className="inline-flex items-center justify-center rounded-md border border-amber-500/50 bg-amber-500/10 px-3 py-1 text-[10px] font-tech font-bold uppercase tracking-wider text-amber-500 transition-colors hover:bg-amber-500/20"
+          >
+            Imprimir BOM
+          </a>
+        </div>
         
         <div className="space-y-3">
           {quote.items.map((item: any) => (
