@@ -8,6 +8,8 @@ import { AddToCartButton } from '@/components/store/add-to-cart-button';
 import { ProductImageGallery } from '@/components/store/product-image-gallery';
 import { Metadata } from 'next';
 import { SidebarEcommerceWidget } from '@/components/store/sidebar-ecommerce-widget';
+import { auth } from '@/auth';
+import { BlacklistButton } from '@/components/store/blacklist-button';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,52 +19,60 @@ export default async function ProductPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const resolvedParams = await params;
-  const { locale, id } = resolvedParams;
+  const locale = resolvedParams.locale;
+  const id = resolvedParams.id;
   const isEn = locale === 'en';
+  
+  const session = await auth();
+  const isAdmin = session?.user?.role?.toLowerCase() === 'admin' || session?.user?.role?.toLowerCase() === 'superadmin';
   
   let product: SyscomProduct | null = null;
   
-  // If it's a mock ID, grab from mock array logic (since this is just a fallback)
-  if (id.startsWith('mock-')) {
-    product = {
-      producto_id: id,
-      modelo: "PRO-MODEL-X",
-      titulo: "Equipamiento Profesional de Alta Gama (Demo)",
-      marca: "ZIRIAN DEMO",
-      img_portada: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=600&auto=format&fit=crop",
-      link_privado: "#",
-      caracteristicas: [
-        "Resolución 4K Ultra HD",
-        "Visión nocturna a color 24/7",
-        "Protección IP67 contra agua y polvo",
-        "Inteligencia Artificial integrada",
-        "Compresión H.265+"
-      ],
-      categorias: [
-        { id: "1", nombre: "Seguridad", nivel: 1 },
-        { id: "2", nombre: "Video Vigilancia", nivel: 2 },
-        { id: "3", nombre: "Cámaras IP", nivel: 3 }
-      ]
-    };
-  } else {
-    product = await getSyscomProduct(id);
-  }
+  product = await getSyscomProduct(id);
 
   const exchangeRate = await getSyscomExchangeRate();
 
   if (!product) {
     notFound();
   }
+  
+  console.log("Categorias de este producto:", product.categorias);
 
   const precioVenta = product.precios?.precio_lista 
     ? parseFloat(product.precios.precio_lista) * exchangeRate * 1.16 
     : 0;
 
+  let mainTitle = product.titulo;
+  let subTitle = "";
+  
+  if (product.titulo.includes(' / ')) {
+    const parts = product.titulo.split(' / ').map(p => p.trim());
+    let currentLen = parts[0].length;
+    let splitAt = 1;
+    
+    for (let i = 1; i < parts.length; i++) {
+      if (currentLen > 80) break;
+      currentLen += parts[i].length + 3; // account for " / "
+      splitAt = i + 1;
+    }
+    
+    if (splitAt < parts.length) {
+      mainTitle = parts.slice(0, splitAt).join(' / ');
+      subTitle = parts.slice(splitAt).join(' / ');
+    }
+  } else if (product.titulo.length > 100) {
+    const splitIndexDot = product.titulo.indexOf('.', 80);
+    if (splitIndexDot !== -1) {
+      mainTitle = product.titulo.substring(0, splitIndexDot).trim();
+      subTitle = product.titulo.substring(splitIndexDot + 1).trim();
+    }
+  }
+
   return (
     <div className="min-h-screen bg-brand-dark text-slate-100 font-sans selection:bg-brand-blue/30 selection:text-white">
       <HomeHeader locale={locale} />
 
-      <main className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+      <main className="mx-auto max-w-7xl px-6 pt-32 pb-12 lg:px-8">
         {/* Breadcrumbs */}
         <div className="mb-8 flex flex-wrap items-center text-sm text-slate-400 gap-2 font-mono">
           <Link href={`/${locale}/store`} className="inline-flex items-center hover:text-brand-cyan transition-colors">
@@ -98,9 +108,12 @@ export default async function ProductPage({
               <div className="bg-white p-4 lg:p-6 flex items-center justify-center min-h-[400px] relative">
                 <ProductImageGallery 
                   portada={product.img_portada || 'https://via.placeholder.com/600?text=No+Image'} 
-                  title={product.titulo} 
+                  title={mainTitle} 
                   images={product.imagenes}
                 />
+                {isAdmin && (
+                  <BlacklistButton productId={product.producto_id} />
+                )}
                 {product.marca && (
                   <div className="absolute top-6 left-6 bg-slate-900 text-white text-xs uppercase font-bold px-3 py-1.5 rounded-md tracking-widest shadow-lg">
                     {product.marca}
@@ -116,19 +129,17 @@ export default async function ProductPage({
 
               {/* Added Value Widget (Fills remaining empty space) */}
               <div className="flex-1 p-6 lg:p-8 bg-slate-900/60 hidden lg:flex flex-col justify-center">
-                <h4 className="text-base font-bold text-white mb-5 uppercase tracking-wider font-mono text-brand-cyan">Beneficios Zirian</h4>
+                <h4 className="text-base font-bold text-white mb-5 uppercase tracking-wider font-mono text-brand-cyan">Asesoría e Instalación</h4>
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
                     <ShieldCheck className="h-6 w-6 text-brand-blue flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-slate-300 leading-relaxed">Equipos 100% originales, nuevos y sellados. Respaldados por la garantía oficial del fabricante.</span>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <Truck className="h-6 w-6 text-brand-cyan flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-slate-300 leading-relaxed">Envíos asegurados a todo México. Rastreo en tiempo real hasta la puerta de tu obra o domicilio.</span>
+                    <span className="text-sm text-slate-300 leading-relaxed">
+                      Si este producto lo requiere con instalación en <strong>Baja California Sur</strong>, favor de cotizar y comprarlo directamente con nosotros para poder asesorarlo y revisar muy bien todo lo necesario para su instalación.
+                    </span>
                   </div>
                   <div className="flex items-start gap-4">
                     <CheckCircle2 className="h-6 w-6 text-[#00FF41] flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-slate-300 leading-relaxed">Soporte técnico especializado disponible post-venta para ayudarte en tu integración.</span>
+                    <span className="text-sm text-slate-300 leading-relaxed">Equipos originales y garantía Zirian directa en todos nuestros servicios de integración y domótica.</span>
                   </div>
                 </div>
               </div>
@@ -139,8 +150,13 @@ export default async function ProductPage({
               <div className="mb-6">
                 <span className="text-brand-cyan font-mono text-sm uppercase tracking-wider">{product.modelo}</span>
                 <h1 className="text-2xl sm:text-3xl font-bold text-white mt-2 leading-tight">
-                  {product.titulo}
+                  {mainTitle}
                 </h1>
+                {subTitle && (
+                  <p className="text-sm text-slate-400 mt-4 leading-relaxed bg-slate-800/30 p-3 rounded-lg border border-slate-700/50">
+                    {subTitle}
+                  </p>
+                )}
               </div>
 
               <div className="bg-slate-800/50 rounded-2xl p-6 mb-8 border border-slate-700/50">

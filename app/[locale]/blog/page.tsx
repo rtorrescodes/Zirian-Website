@@ -4,6 +4,7 @@ import { FileText, ArrowRight, Calendar, Tag, ChevronRight } from 'lucide-react'
 import { HomeHeader } from '@/components/home/home-header'
 import { HomeFooter } from '@/components/home/home-footer'
 import { SidebarEcommerceWidget } from '@/components/store/sidebar-ecommerce-widget'
+import { FeaturedProductWidget } from '@/components/store/featured-product-widget'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 60
@@ -131,6 +132,7 @@ export default async function BlogIndexPage({ params }: { params: Promise<{ loca
           <aside className="space-y-8">
             <div className="sticky top-28 space-y-8">
               <SidebarEcommerceWidget locale={resolvedParams.locale} />
+              <FeaturedProductWidget locale={resolvedParams.locale} />
               
               <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
               <h3 className="text-lg font-title font-bold text-white uppercase tracking-wider mb-6 flex items-center border-b border-slate-800 pb-4">

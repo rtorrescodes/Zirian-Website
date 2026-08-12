@@ -1,4 +1,5 @@
 import { getSyscomSettings } from '@/app/actions/syscom-settings';
+import { getSyscomBlacklist } from '@/app/actions/syscom-blacklist';
 
 let syscomToken: string | null = null;
 let tokenExpiresAt: number = 0;
@@ -105,14 +106,28 @@ export async function searchSyscomProducts(query: string = "cctv"): Promise<Sysc
       results = results.filter((p: any) => {
         const brand = (p.marca || '').toUpperCase();
         const model = (p.modelo || '').toUpperCase();
+        const prodId = p.producto_id ? String(p.producto_id) : '';
         
-        const isBrandAllowed = settings.brands.length === 0 || settings.brands.includes(brand);
-        const isModelAllowed = settings.models.length === 0 || settings.models.includes(model);
+        const isBrandAllowed = settings.brands.length > 0 && settings.brands.includes(brand);
+        // User could have entered the model string or the product ID. We check both.
+        const isModelAllowed = settings.models.length > 0 && (settings.models.includes(model) || settings.models.includes(prodId));
         
-        return isBrandAllowed && isModelAllowed;
+        // If no brands are configured, but models are, only allow those models.
+        // If brands are configured, allow if brand matches OR model matches.
+        if (settings.brands.length === 0) return isModelAllowed;
+        if (settings.models.length === 0) return isBrandAllowed;
+        
+        return isBrandAllowed || isModelAllowed;
       });
     }
 
+    // Filter out blacklisted items
+    const blacklist = await getSyscomBlacklist();
+    if (blacklist.length > 0) {
+      results = results.filter((p: any) => !blacklist.includes(p.producto_id));
+    }
+
+    console.log(`[SYSCOM SEARCH] Query: "${query}", Results after filter: ${results.length}`);
     return results;
   } catch (error) {
     console.error("Syscom Search Error:", error);
@@ -172,5 +187,18 @@ export async function getSyscomProduct(id: string): Promise<SyscomProduct | null
   } catch (error) {
     console.error("Syscom Get Product Error:", error);
     return null;
+  }
+}
+
+export async function getSyscomProductsByIds(ids: string[]): Promise<SyscomProduct[]> {
+  if (!ids || ids.length === 0) return [];
+  
+  try {
+    const promises = ids.map(id => getSyscomProduct(id));
+    const results = await Promise.all(promises);
+    return results.filter((p): p is SyscomProduct => p !== null);
+  } catch (error) {
+    console.error("Error fetching multiple Syscom products:", error);
+    return [];
   }
 }

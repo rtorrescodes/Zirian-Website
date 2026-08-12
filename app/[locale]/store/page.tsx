@@ -1,51 +1,20 @@
 import { HomeHeader } from '@/components/home/home-header';
 import { HomeFooter } from '@/components/home/home-footer';
-import { searchSyscomProducts, SyscomProduct, getSyscomExchangeRate } from '@/lib/syscom';
+import { searchSyscomProducts, SyscomProduct, getSyscomExchangeRate, getSyscomProductsByIds } from '@/lib/syscom';
+import { getSyscomSettings } from '@/app/actions/syscom-settings';
 import Link from 'next/link';
-import { Search, ShoppingBag, ArrowRight, ShieldCheck, Zap, Server, Truck } from 'lucide-react';
+import { Search, ShoppingBag, ArrowRight, ShieldCheck, Zap, Server, Truck, Wind, Star, Key } from 'lucide-react';
 import { SidebarEcommerceWidget } from '@/components/store/sidebar-ecommerce-widget';
+import { FeaturedProductWidget } from '@/components/store/featured-product-widget';
+import { AuthProvider } from '@/components/store/auth-provider';
+import { FeaturedSection } from '@/components/store/featured-section';
+import { FeaturedButton } from '@/components/store/featured-button';
+import { auth } from '@/auth';
+import { BlacklistButton } from '@/components/store/blacklist-button';
 
 export const dynamic = 'force-dynamic';
 
-// MOCK DATA for preview when API is not configured
-const mockProducts: SyscomProduct[] = [
-  {
-    producto_id: "mock-1",
-    modelo: "DS-2CD2043G2-I",
-    titulo: "Cámara IP Bala 4 Megapixel / Lente 2.8 mm / 30 mts IR / Exterior IP67",
-    marca: "HIKVISION",
-    img_portada: "https://images.unsplash.com/photo-1557597774-9d273605dfa9?q=80&w=600&auto=format&fit=crop",
-    link_privado: "#",
-    precios: { precio_1: "85.50" },
-  },
-  {
-    producto_id: "mock-2",
-    modelo: "UAP-AC-PRO",
-    titulo: "Punto de Acceso UniFi AC Pro / Interior/Exterior / 802.11ac",
-    marca: "UBIQUITI",
-    img_portada: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=600&auto=format&fit=crop",
-    link_privado: "#",
-    precios: { precio_1: "145.00" },
-  },
-  {
-    producto_id: "mock-3",
-    modelo: "SUN2000-5KTL",
-    titulo: "Inversor de Red Huawei 5kW / 2 MPPT / Trifásico",
-    marca: "HUAWEI",
-    img_portada: "https://images.unsplash.com/photo-1509391366360-1e9e0481af1b?q=80&w=600&auto=format&fit=crop",
-    link_privado: "#",
-    precios: { precio_1: "850.00" },
-  },
-  {
-    producto_id: "mock-4",
-    modelo: "Pulsar Plus",
-    titulo: "Cargador Inteligente EV Wallbox Pulsar Plus 48A",
-    marca: "WALLBOX",
-    img_portada: "https://images.unsplash.com/photo-1593941707882-a5bba14938cb?q=80&w=600&auto=format&fit=crop",
-    link_privado: "#",
-    precios: { precio_1: "650.00" },
-  }
-];
+// No mock data needed anymore, using real API with whitelist.
 
 export default async function StorePage({
   params,
@@ -60,13 +29,42 @@ export default async function StorePage({
   
   const query = resolvedSearch.q || "cctv"; // Default search
   
-  let products = await searchSyscomProducts(query);
-  const exchangeRate = await getSyscomExchangeRate();
-  const isMock = products.length === 0;
+  const session = await auth();
+  const isAdmin = session?.user?.role?.toLowerCase() === 'admin' || session?.user?.role?.toLowerCase() === 'superadmin';
   
-  if (isMock) {
-    products = mockProducts;
+  const config = await getSyscomSettings();
+  
+  const allExceptionalProducts = config.models.length > 0 ? await getSyscomProductsByIds(config.models) : [];
+  const categoryMap = config.categoryMap || {};
+  
+  // Featured products are strictly those in featuredModels
+  const featuredProducts = config.featuredModels && config.featuredModels.length > 0 
+    ? await getSyscomProductsByIds(config.featuredModels)
+    : [];
+  
+  const injectedProducts = allExceptionalProducts.filter(p => {
+    const cat = categoryMap[p.producto_id] || categoryMap[p.modelo] || "";
+    return cat === query.toLowerCase();
+  });
+  
+  const isHomepage = !resolvedSearch.q;
+  
+  let products = await searchSyscomProducts(query);
+  if (query.toLowerCase() === "cargador ev") {
+    products = products.filter(p => !p.marca?.toUpperCase().includes("ECOFLOW"));
   }
+  
+  // Prepend injected products to the main products list
+  if (injectedProducts.length > 0) {
+    // Filter out duplicates just in case Syscom also returned them
+    const injectedIds = new Set(injectedProducts.map(p => String(p.producto_id)));
+    products = products.filter(p => !injectedIds.has(String(p.producto_id)));
+    products = [...injectedProducts, ...products];
+  }
+  
+  const exchangeRate = await getSyscomExchangeRate();
+  
+  console.log(`[STORE PAGE] Query: "${query}", Products Found: ${products.length}, Featured: ${featuredProducts.length}, Injected: ${injectedProducts.length}`);
 
   return (
     <div className="min-h-screen bg-brand-dark text-slate-100 font-sans selection:bg-brand-blue/30 selection:text-white">
@@ -115,13 +113,19 @@ export default async function StorePage({
             <ShieldCheck className="h-4 w-4 text-brand-blue" /> CCTV & Seguridad
           </Link>
           <Link href={`/${resolvedParams.locale}/store?q=ubiquiti`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors text-sm font-tech text-slate-300">
-            <Server className="h-4 w-4 text-brand-cyan" /> Redes Empresariales
+            <Server className="h-4 w-4 text-brand-cyan" /> Redes
+          </Link>
+          <Link href={`/${resolvedParams.locale}/store?q=acceso`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors text-sm font-tech text-slate-300">
+            <Key className="h-4 w-4 text-yellow-500" /> Acceso
           </Link>
           <Link href={`/${resolvedParams.locale}/store?q=cargador%20ev`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors text-sm font-tech text-slate-300">
-            <Zap className="h-4 w-4 text-[#00FF41]" /> Cargadores EV
+            <Zap className="h-4 w-4 text-[#00FF41]" /> Cargadores de Vehículos
           </Link>
           <Link href={`/${resolvedParams.locale}/store?q=ecoflow`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-brand-cyan hover:text-black transition-colors text-sm font-tech text-slate-300 border border-brand-cyan/20">
             <Zap className="h-4 w-4" /> Baterías EcoFlow
+          </Link>
+          <Link href={`/${resolvedParams.locale}/store?q=aufit`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-200 hover:text-black transition-colors text-sm font-tech text-slate-300 border border-slate-300/20">
+            <Wind className="h-4 w-4" /> Aires Acondicionados
           </Link>
         </div>
       </div>
@@ -133,11 +137,21 @@ export default async function StorePage({
           <div className="absolute inset-0 bg-premium-mesh-dark opacity-10"></div>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] bg-brand-blue/5 rounded-full blur-[120px] pointer-events-none"></div>
         </div>
+        <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8 relative z-10">
+          
+          {isHomepage && featuredProducts.length > 0 && (
+            <FeaturedSection 
+              products={featuredProducts} 
+              isEn={isEn} 
+              exchangeRate={exchangeRate} 
+              isAdmin={isAdmin} 
+            />
+          )}
 
-        <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8 relative z-10 grid grid-cols-1 lg:grid-cols-4 gap-12">
-        
-        {/* Main Products Container */}
-        <div className="lg:col-span-3">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+          
+          {/* Main Products Container */}
+          <div className="lg:col-span-3">
           {/* Free Shipping Banner */}
           <div className="mb-8 bg-brand-cyan/10 border border-brand-cyan/30 p-4 rounded-xl flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(0,210,255,0.15)]">
             <Truck className="h-6 w-6 text-brand-cyan animate-bounce" />
@@ -146,16 +160,41 @@ export default async function StorePage({
             </p>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {products.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-12 bg-slate-900/60 rounded-2xl border border-slate-800 text-center min-h-[400px]">
+              <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                <Search className="h-8 w-8 text-slate-500" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2 font-title uppercase tracking-wider">
+                {isEn ? 'No products found' : 'No se encontraron productos'}
+              </h3>
+              <p className="text-slate-400 max-w-md mt-4 text-xs">
+                {isEn 
+                  ? 'Try searching with a different keyword or check if the product brand is allowed in the administration whitelist.'
+                  : 'Intenta buscar con otra palabra clave o verifica si la marca del producto está permitida en la configuración del administrador.'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product) => (
               <Link href={`/${resolvedParams.locale}/store/${product.producto_id}`} key={product.producto_id} className="block group">
-                <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden hover:border-brand-cyan/50 hover:shadow-[0_0_20px_rgba(0,163,255,0.1)] transition-all flex flex-col h-full">
+                <div className="bg-slate-900/80 border border-brand-blue/30 rounded-2xl overflow-hidden hover:border-brand-cyan hover:shadow-[0_0_20px_rgba(0,163,255,0.2)] transition-all flex flex-col h-full relative">
+                  {isAdmin && (
+                    <>
+                      <BlacklistButton productId={product.producto_id} />
+                      <FeaturedButton 
+                        productId={product.producto_id} 
+                        isFeatured={config.featuredModels.includes(String(product.producto_id).toUpperCase())} 
+                      />
+                    </>
+                  )}
                   <div className="aspect-square bg-white relative p-4 flex items-center justify-center overflow-hidden">
                     <img 
                       src={product.img_portada || 'https://via.placeholder.com/400?text=No+Image'} 
                       alt={product.titulo}
                       className="max-w-full max-h-full object-contain group-hover:scale-110 transition-transform duration-500"
                     />
+
                   {product.marca && (
                     <div className="absolute top-2 right-2 bg-black/80 text-white text-[10px] uppercase font-bold px-2 py-1 rounded backdrop-blur-sm">
                       {product.marca}
@@ -195,18 +234,33 @@ export default async function StorePage({
               </div>
             </Link>
           ))}
-          </div>
+            </div>
+          )}
         </div>
 
         {/* SIDEBAR */}
         <div className="lg:col-span-1">
           <div className="sticky top-28">
-            <SidebarEcommerceWidget locale={resolvedParams.locale} />
+            <AuthProvider>
+              <SidebarEcommerceWidget locale={resolvedParams.locale} />
+            </AuthProvider>
+            <FeaturedProductWidget locale={resolvedParams.locale} />
           </div>
         </div>
+        </div>
         
+          {!isHomepage && featuredProducts.length > 0 && (
+            <FeaturedSection 
+              products={featuredProducts} 
+              isEn={isEn} 
+              exchangeRate={exchangeRate} 
+              isAdmin={isAdmin} 
+            />
+          )}
+
         </div>
       </main>
+
 
       <HomeFooter locale={resolvedParams.locale} />
     </div>

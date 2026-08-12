@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession, signIn, signOut, SessionProvider } from 'next-auth/react';
 import { ShoppingCart, User, LogOut, LogIn, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
-export function SidebarEcommerceWidget({ locale = 'es' }: { locale: string }) {
+function SidebarEcommerceWidgetInner({ locale = 'es' }: { locale: string }) {
   const { data: session, status } = useSession();
   const [cartCount, setCartCount] = useState(0);
 
@@ -104,5 +104,13 @@ export function SidebarEcommerceWidget({ locale = 'es' }: { locale: string }) {
         </div>
       )}
     </div>
+  );
+}
+
+export function SidebarEcommerceWidget({ locale = 'es' }: { locale: string }) {
+  return (
+    <SessionProvider>
+      <SidebarEcommerceWidgetInner locale={locale} />
+    </SessionProvider>
   );
 }

@@ -1,4 +1,6 @@
 import { getSyscomSettings } from '@/app/actions/syscom-settings'
+import { getSyscomBlacklist } from '@/app/actions/syscom-blacklist'
+import { getSyscomProductsByIds } from '@/lib/syscom'
 import { AppShell } from '@/components/panel/app-shell'
 import SyscomSettingsForm from './syscom-settings-form'
 import { Database, Filter } from 'lucide-react'
@@ -9,6 +11,10 @@ export const metadata = {
 
 export default async function SyscomSettingsPage() {
   const config = await getSyscomSettings()
+  const blacklist = await getSyscomBlacklist()
+  
+  const blacklistedProducts = await getSyscomProductsByIds(blacklist)
+  const exceptionalProducts = await getSyscomProductsByIds(config.models)
 
   return (
     <AppShell title="Catálogo Syscom" subtitle="Filtros y configuración de base de datos Syscom">
@@ -30,7 +36,14 @@ export default async function SyscomSettingsPage() {
             </div>
           </div>
           
-          <SyscomSettingsForm initialBrands={config.brands} initialModels={config.models} />
+          <SyscomSettingsForm 
+            initialBrands={config.brands} 
+            initialModels={config.models} 
+            initialCategoryMap={config.categoryMap}
+            initialBlacklist={blacklist}
+            blacklistedProducts={blacklistedProducts}
+            exceptionalProducts={exceptionalProducts}
+          />
           </div>
         </div>
       </div>
