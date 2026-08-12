@@ -2,6 +2,7 @@ import { HomeHeader } from '@/components/home/home-header';
 import { HomeFooter } from '@/components/home/home-footer';
 import { searchSyscomProducts, SyscomProduct, getSyscomExchangeRate, getSyscomProductsByIds } from '@/lib/syscom';
 import { getSyscomSettings } from '@/app/actions/syscom-settings';
+import { Metadata } from 'next';
 import Link from 'next/link';
 import { Search, ShoppingBag, ArrowRight, ShieldCheck, Zap, Server, Truck, Wind, Star, Key } from 'lucide-react';
 import { SidebarEcommerceWidget } from '@/components/store/sidebar-ecommerce-widget';
@@ -14,7 +15,22 @@ import { BlacklistButton } from '@/components/store/blacklist-button';
 
 export const dynamic = 'force-dynamic';
 
-// No mock data needed anymore, using real API with whitelist.
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const resolvedParams = await params;
+  const isEn = resolvedParams.locale === 'en';
+  const title = isEn ? "Store - Smart Home & EV Chargers | Zirian" : "Tienda de Domótica y Cargadores EV | Zirian";
+  const desc = isEn ? "Buy top-tier smart home, security, and EV charger equipment in Los Cabos." : "Equipamiento de alta gama para hogares inteligentes, seguridad y cargadores de autos eléctricos en Los Cabos.";
+  
+  return {
+    title,
+    description: desc,
+    openGraph: {
+      title,
+      description: desc,
+      url: `https://zirian.com/${resolvedParams.locale}/store`,
+    }
+  };
+}
 
 export default async function StorePage({
   params,
@@ -80,10 +96,13 @@ export default async function StorePage({
         
         <div className="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
           <div className="mx-auto max-w-3xl text-center mt-8">
-            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-5xl font-title uppercase flex items-center justify-center gap-3">
+            <h1 className="sr-only">
+              {isEn ? 'Store for EV Chargers, Smart Home and Enterprise Networks' : 'Tienda de Cargadores EV, Domótica y Redes Empresariales'}
+            </h1>
+            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-5xl font-title uppercase flex items-center justify-center gap-3">
               <ShoppingBag className="h-10 w-10 text-brand-cyan" />
               Zirian <span className="text-brand-cyan">Store</span>
-            </h1>
+            </h2>
             <p className="mt-4 text-base leading-8 text-slate-400">
               {isEn 
                 ? 'Professional equipment catalog. Explore high-end CCTVs, EV Chargers, Solar Panels and Enterprise Networks.'

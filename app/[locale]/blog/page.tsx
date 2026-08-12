@@ -5,9 +5,27 @@ import { HomeHeader } from '@/components/home/home-header'
 import { HomeFooter } from '@/components/home/home-footer'
 import { SidebarEcommerceWidget } from '@/components/store/sidebar-ecommerce-widget'
 import { FeaturedProductWidget } from '@/components/store/featured-product-widget'
+import { Metadata } from 'next'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 60
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const resolvedParams = await params;
+  const isEn = resolvedParams.locale === 'en';
+  const title = isEn ? "Tech Blog & Guides | Zirian" : "Blog de Tecnología y Energía Solar | Zirian";
+  const desc = isEn ? "Read our technical guides on solar panels, CCTV, WiFi networks, and EV chargers." : "Guías técnicas y noticias sobre paneles solares, infraestructura de CCTV, redes y cargadores EV en México.";
+  
+  return {
+    title,
+    description: desc,
+    openGraph: {
+      title,
+      description: desc,
+      url: `https://zirian.com/${resolvedParams.locale}/blog`,
+    }
+  };
+}
 
 export default async function BlogIndexPage({ params, searchParams }: { params: Promise<{ locale: string }>, searchParams: Promise<{ category?: string }> }) {
   const allPosts = await getPublishedPosts()
@@ -43,9 +61,12 @@ export default async function BlogIndexPage({ params, searchParams }: { params: 
         
         <div className="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
           <div className="mx-auto max-w-2xl text-center mt-12">
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl font-title uppercase">
-              Tech <span className="text-brand-cyan">Hub</span>
+            <h1 className="sr-only">
+              {isEn ? 'Technical Blog on EV Chargers, Solar Panels and Smart Home' : 'Blog Técnico sobre Cargadores EV, Paneles Solares y Domótica'}
             </h1>
+            <h2 className="text-4xl font-bold tracking-tight text-white sm:text-6xl font-title uppercase">
+              Tech <span className="text-brand-cyan">Hub</span>
+            </h2>
             <p className="mt-6 text-lg leading-8 text-slate-400">
               {isEn 
                 ? 'Technical guides, best practices, and deep dives into solar panels, CCTV infrastructure, enterprise WiFi networks, and the EV charger revolution.'
@@ -56,9 +77,9 @@ export default async function BlogIndexPage({ params, searchParams }: { params: 
       </section>
 
       {/* GRID DE PUBLICACIONES CON SIDEBAR */}
-      <div className="relative overflow-hidden bg-[#070b14]">
-        {/* Dynamic Grid Background */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:40px_40px] opacity-40"></div>
+      <div className="relative overflow-hidden bg-[#0a0f18]">
+        {/* Dynamic Grid Background with Radial Mask Fade */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:80px_80px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_20%,#000_40%,transparent_100%)]"></div>
         
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
           {/* Subtle radial gradients for depth */}

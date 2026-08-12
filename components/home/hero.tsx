@@ -101,17 +101,17 @@ export function Hero({ locale = 'es' }: { locale?: string }) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative w-full py-20 lg:py-32" style={{ zIndex: 10 }}>
         <div className="max-w-3xl">
-          <span className="inline-block border-l-4 border-brand-green bg-brand-charcoal text-white font-title uppercase tracking-widest text-[10px] sm:text-xs font-bold px-4 py-2 mb-6">
-            {locale === 'en' ? 'Leading Electromobility and Engineering in Los Cabos' : 'Líderes en Electromovilidad e Ingeniería en Los Cabos'}
-          </span>
+          <h1 className="inline-block border-l-4 border-brand-green bg-brand-charcoal text-white font-title uppercase tracking-widest text-[10px] sm:text-xs font-bold px-4 py-2 mb-6">
+            {locale === 'en' ? 'Leading Electromobility and EV Charger Installation in Los Cabos' : 'Líderes en Instalación de Cargadores EV e Ingeniería en Los Cabos'}
+          </h1>
 
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl font-title uppercase">
+          <h2 className="text-4xl font-bold tracking-tight text-white sm:text-6xl font-title uppercase">
             {locale === 'en' ? (
               <>Connecting the <span className="text-brand-cyan">Future</span></>
             ) : (
               <>Conectando el <span className="text-brand-cyan">Futuro</span></>
             )}
-          </h1>
+          </h2>
 
           <p className="mt-6 text-base sm:text-lg text-gray-300 max-w-2xl leading-relaxed">
             {locale === 'en' ? (

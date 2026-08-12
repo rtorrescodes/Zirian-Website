@@ -1,7 +1,7 @@
-import { getPostBySlug } from '@/app/actions/blog'
+import { getPostBySlug, getPublishedPosts } from '@/app/actions/blog'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, Share2, ChevronRight, Zap, Shield, Wifi, ShoppingCart, ArrowRight } from 'lucide-react'
+import { ArrowLeft, Calendar, Share2, ChevronRight, Zap, Shield, ShoppingCart, ArrowRight } from 'lucide-react'
 import { Metadata } from 'next'
 import { HomeHeader } from '@/components/home/home-header'
 import { HomeFooter } from '@/components/home/home-footer'
@@ -44,10 +44,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function BlogPostPage({ params }: Props) {
   const resolvedParams = await params;
   const post = await getPostBySlug(resolvedParams.slug)
+  const allPosts = await getPublishedPosts();
 
   if (!post) {
     notFound()
   }
+
+  const categoriesCount = allPosts.reduce((acc, p) => {
+    const cat = p.category || 'Tech Blog';
+    acc[cat] = (acc[cat] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   const isEn = resolvedParams.locale === 'en';
   const title = isEn && post.title_en ? post.title_en : post.title;
@@ -55,9 +62,10 @@ export default async function BlogPostPage({ params }: Props) {
   const content = isEn && post.content_en ? post.content_en : post.content;
   
   return (
-    <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans selection:bg-brand-blue/30 selection:text-white relative overflow-hidden">
-      {/* Dynamic Grid Background */}
-      <div className="fixed inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:40px_40px] opacity-40 z-0"></div>
+    <div className="min-h-screen bg-[#0a0f18] text-slate-100 font-sans selection:bg-brand-blue/30 selection:text-white relative overflow-hidden">
+      {/* Dynamic Grid Background with Radial Mask Fade */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:80px_80px] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_0%,#000_30%,transparent_100%)] z-0"></div>
+      
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-brand-blue/10 rounded-full blur-[120px] pointer-events-none"></div>
         <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-brand-green/5 rounded-full blur-[150px] pointer-events-none"></div>
@@ -164,16 +172,21 @@ export default async function BlogPostPage({ params }: Props) {
 
               {/* Categories Widget */}
               <div className="bg-[#0B0F19] border border-slate-800 rounded-xl p-6">
-                <h3 className="text-sm font-bold text-slate-200 mb-4 font-tech uppercase tracking-wider flex items-center">
-                  <Shield className="w-4 h-4 mr-2 text-brand-green" />
-                  {isEn ? 'Expertise Areas' : 'Áreas de Experiencia'}
+                <h3 className="text-sm font-bold text-slate-200 mb-4 font-tech uppercase tracking-wider flex items-center border-b border-slate-800 pb-4">
+                  <Tag className="w-4 h-4 mr-2 text-brand-green" />
+                  {isEn ? 'Categories' : 'Categorías'}
                 </h3>
                 <ul className="space-y-3">
-                  {['Energía Solar (Solar Power)', 'Movilidad Eléctrica (EV)', 'Seguridad y CCTV', 'Redes WiFi'].map((cat, i) => (
-                    <li key={i}>
-                      <Link href="/#servicios" className="group flex items-center justify-between text-slate-400 hover:text-brand-green transition-colors text-sm">
-                        <span>{cat}</span>
-                        <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                  {Object.entries(categoriesCount).map(([category, count]) => (
+                    <li key={category}>
+                      <Link href={`/${resolvedParams.locale}/blog?category=${encodeURIComponent(category)}`} className="flex items-center justify-between group">
+                        <span className="transition-colors flex items-center text-sm font-mono text-slate-400 group-hover:text-brand-green">
+                          <ChevronRight className="h-4 w-4 mr-2 transition-colors text-slate-600 group-hover:text-brand-green" />
+                          {category}
+                        </span>
+                        <span className="text-xs px-2 py-1 rounded font-tech bg-slate-800 text-slate-300">
+                          {String(count)}
+                        </span>
                       </Link>
                     </li>
                   ))}
