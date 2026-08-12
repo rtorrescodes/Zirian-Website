@@ -108,8 +108,12 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
   const [demoMode, setDemoMode] = useState(true);
   const [leftPanelTab, setLeftPanelTab] = useState<'cameras' | 'org'>('cameras');
   const [groupBy, setGroupBy] = useState<'layer' | 'section'>('layer');
-  const [mobilePanel, setMobilePanel] = useState<'none' | 'left' | 'right' | 'dori'>('none');
-  
+  const [mobilePanel, setMobilePanel] = useState<'none' | 'left' | 'right' | 'dori' | 'bottom'>('none');
+
+  // GPS Tracking State
+  const [gpsTracking, setGpsTracking] = useState(false);
+  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const watchIdRef = useRef<number | null>(null);
   // Map View State
   const [mapHeading, setMapHeading] = useState(0);
   const [mapType, setMapType] = useState<'satellite' | 'roadmap'>('satellite');
@@ -177,6 +181,48 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
     getClients().then(data => setClients(data));
   }, []);
 
+  const toggleGpsTracking = () => {
+    if (gpsTracking) {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
+      setGpsTracking(false);
+      setUserLocation(null);
+    } else {
+      if ('geolocation' in navigator) {
+        const id = navigator.geolocation.watchPosition(
+          (position) => {
+            const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
+            setUserLocation(loc);
+            if (map) {
+              map.panTo(loc);
+              map.setZoom(20); // Zoom in closely on the user's location
+            }
+          },
+          (error) => {
+            console.error("GPS Error:", error);
+            alert("Error obteniendo ubicación GPS. Verifica los permisos de tu navegador.");
+            setGpsTracking(false);
+          },
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+        );
+        watchIdRef.current = id;
+        setGpsTracking(true);
+      } else {
+        alert("El GPS no está soportado en este navegador.");
+      }
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
+
   // Handle auto-load from URL
   useEffect(() => {
     if (autoLoadId && map && !loadedProjectInfo) {
@@ -219,11 +265,15 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
     return points;
   };
 
-  const handleAddDevice = (type: DeviceType = 'camera') => {
+  const handleAddDevice = (type: DeviceType = 'camera', loc?: google.maps.LatLngLiteral) => {
     if (!map) return;
     
-    const center = map.getCenter();
-    if (!center) return;
+    let center = loc;
+    if (!center) {
+      const mapCenter = map.getCenter();
+      if (!mapCenter) return;
+      center = { lat: mapCenter.lat(), lng: mapCenter.lng() };
+    }
     
     const defaultModel = type === 'wifi' ? GENERIC_WIFI_APS[0] : GENERIC_CAMERAS[0];
     const newCamId = Math.random().toString(36).substring(7);
@@ -248,8 +298,8 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
         id: newCamId,
         name: `${prefix} ${nextNum}`,
         modelId: defaultModel.id,
-        lat: center.lat(),
-        lng: center.lng(),
+        lat: center.lat,
+        lng: center.lng,
         heading: 0,
         fov: defaultModel.fov,
         dori: defaultModel.dori,
@@ -295,24 +345,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
     }
   };
 
-  const handleGPS = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          if (map) {
-            map.panTo({ lat: position.coords.latitude, lng: position.coords.longitude });
-            map.setZoom(19);
-          }
-        },
-        (error) => {
-          console.error("Error obteniendo ubicación GPS", error);
-          alert("No se pudo obtener tu ubicación actual.");
-        }
-      );
-    } else {
-      alert("Tu navegador no soporta geolocalización.");
-    }
-  };
+
   const autoSaveProject = async () => {
     if (!loadedProjectInfo && !shareToken) return;
     
@@ -665,8 +698,33 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
               </React.Fragment>
             );
           })}
+          {userLocation && (
+            <Marker
+              position={userLocation}
+              icon={{
+                path: typeof window !== 'undefined' && window.google ? window.google.maps.SymbolPath.CIRCLE : 0,
+                scale: 8,
+                fillColor: '#3b82f6', // brand-blue
+                fillOpacity: 1,
+                strokeColor: '#ffffff',
+                strokeWeight: 2,
+              }}
+              zIndex={9999}
+            />
+          )}
         </GoogleMap>
       </div>
+
+      {gpsTracking && userLocation && (
+        <div className="absolute bottom-28 md:bottom-12 left-1/2 -translate-x-1/2 z-[60] pointer-events-auto">
+          <Button 
+            onClick={() => handleAddDevice('camera', userLocation)}
+            className="rounded-full shadow-[0_0_30px_rgba(0,163,255,0.6)] bg-brand-blue text-slate-950 hover:bg-brand-blue/90 h-14 px-8 font-tech font-bold uppercase tracking-widest text-sm animate-pulse border-2 border-white/20"
+          >
+            📍 Plantar Cámara Aquí
+          </Button>
+        </div>
+      )}
 
       {/* Top Floating Bar */}
       <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none z-10">
@@ -696,9 +754,9 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
               />
             </Autocomplete>
             <button 
-              onClick={handleGPS} 
-              className="p-2 text-slate-400 hover:text-white border-l border-slate-700 bg-slate-800/50 hover:bg-slate-700 transition-colors"
-              title="Usar mi ubicación GPS"
+              onClick={toggleGpsTracking} 
+              className={`p-2 transition-colors border-l border-slate-700 ${gpsTracking ? 'text-brand-blue bg-brand-blue/10' : 'text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700'}`}
+              title="Modo Sembrado GPS"
             >
               <LocateFixed className="w-4 h-4" />
             </button>
@@ -746,7 +804,8 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       {/* Left Sidebar (Cameras & Organization) */}
       {/* Left Floating Panel (Layers/Organization) */}
       {!clientMode && (
-      <div className={`absolute top-20 left-4 w-72 p-4 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl overflow-hidden pointer-events-auto z-10 flex flex-col max-h-[80vh] transition-transform ${mobilePanel === 'left' ? 'translate-x-0' : '-translate-x-[150%] md:translate-x-0'}`}>
+      <div className={`fixed md:absolute bottom-0 md:bottom-auto md:top-20 left-0 right-0 md:left-4 md:right-auto md:w-72 bg-slate-950/95 backdrop-blur-xl border-t md:border border-slate-800 rounded-t-3xl md:rounded-xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-2xl p-4 md:p-4 pointer-events-auto z-50 md:z-10 flex flex-col max-h-[65vh] md:max-h-[80vh] overflow-hidden transition-transform duration-300 ${mobilePanel === 'left' ? 'translate-y-0 md:translate-y-0 md:translate-x-0' : 'translate-y-[150%] md:translate-y-0 md:-translate-x-[150%]'}`}>
+        <button onClick={() => setMobilePanel('none')} className="md:hidden absolute top-4 right-4 p-2 text-slate-400 bg-slate-900 rounded-full z-10"><X className="w-4 h-4" /></button>
         <div className="flex gap-1 bg-slate-900 p-1 rounded-lg mb-4 shrink-0">
           <button 
             onClick={() => setLeftPanelTab('cameras')} 
@@ -1051,29 +1110,30 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
 
 
       {/* Right Floating Panel (Devices) */}
-      <div className={`absolute top-20 right-4 w-80 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl p-6 pointer-events-auto z-10 max-h-[75vh] overflow-y-auto transition-transform ${mobilePanel === 'right' ? 'translate-x-0' : 'translate-x-[150%] md:translate-x-0'}`}>
+      <div className={`fixed md:absolute bottom-0 md:bottom-auto md:top-20 left-0 right-0 md:left-auto md:right-4 md:w-80 bg-slate-950/95 backdrop-blur-xl border-t md:border border-slate-800 rounded-t-3xl md:rounded-xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-2xl p-6 pointer-events-auto z-50 md:z-10 max-h-[65vh] md:max-h-[75vh] overflow-y-auto transition-transform duration-300 ${mobilePanel === 'right' ? 'translate-y-0 md:translate-y-0 md:translate-x-0' : 'translate-y-[150%] md:translate-y-0 md:translate-x-[150%]'}`}>
+        <button onClick={() => setMobilePanel('none')} className="md:hidden absolute top-4 right-4 p-2 text-slate-400 bg-slate-900 rounded-full"><X className="w-4 h-4" /></button>
         <h2 className="text-white font-tech font-bold uppercase tracking-widest text-sm mb-4">Diseña tu sistema</h2>
-        <p className="text-slate-400 text-xs mb-6 leading-relaxed">
+        <p className="text-slate-400 text-xs mb-6 leading-relaxed hidden md:block">
           Coloca cámaras reales y equipos inalámbricos sobre tu sitio para visualizar su alcance y cobertura.
         </p>
         
         <div className="space-y-3 mb-8">
-          <Button onClick={() => handleAddDevice('camera')} className="w-full bg-brand-blue hover:bg-brand-blue/80 text-slate-950 font-tech uppercase tracking-widest font-bold shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all">
-            <Plus className="w-4 h-4 mr-2" /> Agregar Cámara
+          <Button onClick={() => handleAddDevice('camera')} className="w-full bg-brand-blue hover:bg-brand-blue/80 text-slate-950 font-tech uppercase tracking-widest font-bold shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all h-12 md:h-10">
+            <Plus className="w-5 h-5 md:w-4 md:h-4 mr-2" /> Agregar Cámara
           </Button>
           
           {!clientMode && (
           <div className="border border-slate-800 rounded-lg overflow-hidden bg-slate-900/50">
             <details className="group">
-              <summary className="flex items-center justify-between p-3 cursor-pointer select-none text-xs font-tech font-bold text-slate-300 uppercase tracking-widest hover:bg-slate-800/50 transition-colors">
+              <summary className="flex items-center justify-between p-4 md:p-3 cursor-pointer select-none text-xs font-tech font-bold text-slate-300 uppercase tracking-widest hover:bg-slate-800/50 transition-colors">
                 Redes y Enlaces Inalámbricos
                 <span className="transition group-open:rotate-180">
                   <svg fill="none" height="12" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" viewBox="0 0 24 24" width="12"><path d="M6 9l6 6 6-6"></path></svg>
                 </span>
               </summary>
               <div className="p-3 pt-0 border-t border-slate-800/50">
-                <Button onClick={() => handleAddDevice('wifi')} className="w-full bg-purple-600 hover:bg-purple-500 text-white font-tech uppercase tracking-widest font-bold shadow-[0_0_15px_rgba(147,51,234,0.3)] transition-all text-[10px] h-9">
-                  <Plus className="w-3 h-3 mr-2" /> Agregar Access Point
+                <Button onClick={() => handleAddDevice('wifi')} className="w-full bg-purple-600 hover:bg-purple-500 text-white font-tech uppercase tracking-widest font-bold shadow-[0_0_15px_rgba(147,51,234,0.3)] transition-all text-[10px] h-10 md:h-9">
+                  <Plus className="w-4 h-4 md:w-3 md:h-3 mr-2" /> Agregar Access Point
                 </Button>
               </div>
             </details>
@@ -1251,7 +1311,8 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       </div>
 
       {/* DORI Legend */}
-      <div className={`absolute bottom-24 md:bottom-6 left-4 bg-slate-950/90 backdrop-blur-md border border-slate-800 rounded-xl shadow-2xl p-4 pointer-events-auto z-10 w-64 transition-transform ${mobilePanel === 'dori' ? 'translate-y-0' : 'translate-y-[200%] md:translate-y-0'}`}>
+      <div className={`fixed md:absolute bottom-0 md:bottom-6 left-0 right-0 md:left-4 md:right-auto md:w-64 bg-slate-950/95 backdrop-blur-xl border-t md:border border-slate-800 rounded-t-3xl md:rounded-xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-2xl p-6 md:p-4 pointer-events-auto z-50 md:z-10 transition-transform duration-300 ${mobilePanel === 'dori' ? 'translate-y-0 md:translate-y-0' : 'translate-y-[150%] md:translate-y-0'}`}>
+        <button onClick={() => setMobilePanel('none')} className="md:hidden absolute top-4 right-4 p-2 text-slate-400 bg-slate-900 rounded-full"><X className="w-4 h-4" /></button>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-xs font-bold text-white font-tech uppercase tracking-widest">Zonas DORI (IEC)</h3>
           <button 
@@ -1402,7 +1463,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
         </div>
       )}
       {/* Bottom Mobile Action Bar */}
-      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-center gap-4 z-20 md:hidden pointer-events-none">
+      <div className={`fixed bottom-6 left-4 right-4 flex items-center justify-center gap-4 z-40 md:hidden pointer-events-none transition-opacity duration-300 ${mobilePanel !== 'none' ? 'opacity-0' : 'opacity-100'}`}>
         <Button 
           onClick={() => setMobilePanel(p => p === 'left' ? 'none' : 'left')} 
           className={`pointer-events-auto rounded-full w-12 h-12 shadow-lg transition-colors ${mobilePanel === 'left' ? 'bg-brand-blue text-slate-950' : 'bg-slate-900 text-white border border-slate-700'}`}
