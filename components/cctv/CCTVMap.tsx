@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Polygon, Autocomplete } from '@react-google-maps/api';
 import { Button } from '@/components/ui/button';
-import { Plus, Save, Layers, Map as MapIcon, Crosshair, ChevronLeft, X, LocateFixed, RotateCcw, RotateCw, FolderOpen, FileText, Trash2 } from 'lucide-react';
+import { Plus, Save, Layers, Map as MapIcon, Crosshair, ChevronLeft, X, LocateFixed, RotateCcw, RotateCw, FolderOpen, FileText, Trash2, Search } from 'lucide-react';
 import Link from 'next/link';
 import html2canvas from 'html2canvas';
 import { getClients } from '@/app/actions/clients';
@@ -517,65 +517,70 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
     <div className="relative w-full h-full bg-slate-900">
       
       {/* Top Banner indicating current project */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4 pointer-events-auto">
+      <div className="absolute top-16 md:top-4 left-1/2 -translate-x-1/2 z-20 flex flex-col md:flex-row items-center gap-2 md:gap-4 pointer-events-auto w-[90%] md:w-auto">
         {loadedProjectInfo && (
-          <div className="bg-slate-900/90 backdrop-blur-md border border-brand-blue/30 px-6 py-2 rounded-full shadow-[0_0_15px_rgba(0,163,255,0.15)] flex items-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></div>
-            <span className="text-white text-sm font-bold">{loadedProjectInfo.nombre}</span>
-            <span className="text-slate-500 text-xs px-2 border-l border-slate-700">{loadedProjectInfo.clientName}</span>
-            {!clientMode && loadedProjectInfo.hasClientChanges && (
-              <Button 
-                onClick={async () => {
-                  try {
-                    await fetch('/api/cctv', {
-                      method: 'PUT',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        id: loadedProjectInfo.id,
-                        nombre: loadedProjectInfo.nombre,
-                        mapState: loadedProjectInfo.proposedMapState,
-                        hasClientChanges: false,
-                        proposedMapState: null
-                      })
-                    });
-                    setLoadedProjectInfo({ ...loadedProjectInfo, hasClientChanges: false });
-                    handleLoadProject({ ...loadedProjectInfo, mapState: loadedProjectInfo.proposedMapState });
-                  } catch (e) {
-                    console.error(e);
-                  }
+          <div className="bg-slate-900/90 backdrop-blur-md border border-brand-blue/30 px-4 md:px-6 py-2 rounded-full shadow-[0_0_15px_rgba(0,163,255,0.15)] flex items-center justify-between md:justify-start gap-2 md:gap-3 w-full md:w-auto">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></div>
+              <span className="text-white text-xs md:text-sm font-bold truncate max-w-[100px] md:max-w-none">{loadedProjectInfo.nombre}</span>
+              <span className="text-slate-500 text-[10px] md:text-xs px-2 border-l border-slate-700 truncate hidden md:inline">{loadedProjectInfo.clientName}</span>
+            </div>
+            <div className="flex items-center">
+              {!clientMode && loadedProjectInfo.hasClientChanges && (
+                <Button 
+                  onClick={async () => {
+                    try {
+                      await fetch('/api/cctv', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          id: loadedProjectInfo.id,
+                          nombre: loadedProjectInfo.nombre,
+                          mapState: loadedProjectInfo.proposedMapState,
+                          hasClientChanges: false,
+                          proposedMapState: null
+                        })
+                      });
+                      setLoadedProjectInfo({ ...loadedProjectInfo, hasClientChanges: false });
+                      handleLoadProject({ ...loadedProjectInfo, mapState: loadedProjectInfo.proposedMapState });
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }}
+                  className="bg-orange-500 hover:bg-orange-400 text-white text-[10px] md:text-xs py-1 px-2 md:px-3 ml-2 h-6 md:h-7"
+                >
+                  <span className="hidden md:inline">Aceptar Propuesta</span>
+                  <span className="md:hidden">Aceptar</span>
+                </Button>
+              )}
+              <button 
+                onClick={() => {
+                  setLoadedProjectInfo(null);
+                  setProjectName('');
+                  setCameras([]);
+                  setMapHeading(0);
+                  if (map) map.setHeading(0);
+                  setActiveCamId(null);
                 }}
-                className="bg-orange-500 hover:bg-orange-400 text-white text-xs py-1 px-3 ml-2 h-7"
+                className="ml-2 text-slate-400 hover:text-white"
+                title="Cerrar Proyecto"
               >
-                Aceptar Propuesta
-              </Button>
-            )}
-            <button 
-              onClick={() => {
-                setLoadedProjectInfo(null);
-                setProjectName('');
-                setCameras([]);
-                setMapHeading(0);
-                if (map) map.setHeading(0);
-                setActiveCamId(null);
-              }}
-              className="ml-2 text-slate-400 hover:text-white"
-              title="Cerrar Proyecto"
-            >
-              <X className="w-4 h-4" />
-            </button>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
         
         {/* Demo Mode Toggle */}
-        <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700 px-4 py-2 rounded-full flex items-center gap-2">
+        <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700 px-3 md:px-4 py-1.5 md:py-2 rounded-full flex items-center gap-2 shadow-lg">
           <label className="flex items-center gap-2 cursor-pointer">
             <input 
               type="checkbox" 
               checked={demoMode} 
               onChange={e => setDemoMode(e.target.checked)} 
-              className="accent-brand-blue w-4 h-4 cursor-pointer"
+              className="accent-brand-blue w-3 h-3 md:w-4 md:h-4 cursor-pointer"
             />
-            <span className="text-white text-sm font-bold tracking-wide">Demo Cliente</span>
+            <span className="text-white text-[10px] md:text-sm font-bold tracking-wide">Demo <span className="hidden md:inline">Cliente</span></span>
           </label>
         </div>
       </div>
@@ -728,47 +733,51 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       )}
 
       {/* Top Floating Bar */}
-      <div className="absolute top-4 left-4 right-4 flex items-start md:items-center justify-between pointer-events-none z-10">
-        <div className="flex items-center gap-2 md:gap-4 pointer-events-auto">
+      <div className="absolute top-4 left-2 right-2 md:left-4 md:right-4 flex items-center justify-between pointer-events-none z-10">
+        
+        {/* Left Side: Back, Name, Search, GPS */}
+        <div className="flex items-center gap-1.5 md:gap-4 pointer-events-auto">
           <Link href="/admin/dashboard">
-            <Button variant="outline" size="icon" className="md:w-auto md:px-4 bg-slate-900/80 border-slate-700 text-white backdrop-blur-sm">
+            <Button variant="outline" size="icon" className="w-10 h-10 md:w-auto md:px-4 bg-slate-900/80 border-slate-700 text-white backdrop-blur-sm rounded-lg">
               <ChevronLeft className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">Volver</span>
             </Button>
           </Link>
-          <div className="hidden md:flex bg-slate-900/80 backdrop-blur-sm border border-slate-700 px-4 py-2 rounded-lg items-center gap-3">
+          
+          <div className="hidden md:flex bg-slate-900/80 backdrop-blur-sm border border-slate-700 px-4 py-2 rounded-lg items-center gap-3 h-10">
             <Crosshair className="w-5 h-5 text-brand-blue" />
             <h1 className="font-tech font-bold uppercase tracking-widest text-white text-sm">Proyecto CCTV</h1>
           </div>
           
-          <div className="relative pointer-events-auto flex items-center bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-lg overflow-hidden group">
-            {/* Desktop Search / Mobile Toggle */}
-            <div className="flex items-center">
-              <button 
-                onClick={() => setShowMobileSearch(!showMobileSearch)} 
-                className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+          <div className="relative flex items-center bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-lg overflow-hidden group h-10">
+            {/* Mobile Search Toggle */}
+            <button 
+              onClick={() => setShowMobileSearch(!showMobileSearch)} 
+              className="md:hidden p-2.5 text-slate-400 hover:text-white transition-colors"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+            
+            {/* Desktop Search */}
+            <div className="hidden md:block">
+              <Autocomplete
+                onLoad={(autocomplete) => { searchBoxRef.current = autocomplete; }}
+                onPlaceChanged={onPlaceChanged}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              </button>
-              <div className="hidden md:block">
-                <Autocomplete
-                  onLoad={(autocomplete) => { searchBoxRef.current = autocomplete; }}
-                  onPlaceChanged={onPlaceChanged}
-                >
-                  <input 
-                    type="text" 
-                    placeholder="Buscar lugar..." 
-                    value={searchText}
-                    onChange={e => setSearchText(e.target.value)}
-                    onKeyDown={handleSearchInputKeyDown}
-                    className="bg-transparent border-none outline-none text-white text-sm px-3 py-2 w-72 placeholder:text-slate-500 transition-all focus:w-72"
-                  />
-                </Autocomplete>
-              </div>
+                <input 
+                  type="text" 
+                  placeholder="Buscar lugar..." 
+                  value={searchText}
+                  onChange={e => setSearchText(e.target.value)}
+                  onKeyDown={handleSearchInputKeyDown}
+                  className="bg-transparent border-none outline-none text-white text-sm px-3 py-2.5 w-72 placeholder:text-slate-500 transition-all focus:w-72"
+                />
+              </Autocomplete>
             </div>
             
+            {/* GPS Toggle */}
             <button 
               onClick={toggleGpsTracking} 
-              className={`p-2 transition-colors border-l border-slate-700 ${gpsTracking ? 'text-brand-blue bg-brand-blue/10' : 'text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700'}`}
+              className={`p-2.5 transition-colors border-l border-slate-700 ${gpsTracking ? 'text-brand-blue bg-brand-blue/10' : 'text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700'}`}
               title="Modo Sembrado GPS"
             >
               <LocateFixed className="w-5 h-5 md:w-4 md:h-4" />
@@ -776,12 +785,14 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-end md:items-center gap-2 pointer-events-auto mt-1 md:mt-0">
+        {/* Right Side: MapType, Load, Save, Quote */}
+        <div className="flex items-center gap-1.5 md:gap-2 pointer-events-auto">
           <Button 
             onClick={() => setMapType(t => t === 'satellite' ? 'roadmap' : 'satellite')}
             variant="outline" 
             size="icon"
-            className="md:w-auto md:px-4 bg-slate-900/80 border-slate-700 text-slate-300 hover:text-white backdrop-blur-sm"
+            className="w-10 h-10 md:w-auto md:px-4 bg-slate-900/80 border-slate-700 text-slate-300 hover:text-white backdrop-blur-sm rounded-lg"
+            title="Cambiar Vista"
           >
             <MapIcon className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">{mapType === 'satellite' ? 'Vista Vector' : 'Vista Satélite'}</span>
           </Button>
@@ -793,52 +804,69 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
             }}
             variant="outline" 
             size="icon"
-            className="md:w-auto md:px-4 bg-slate-900/80 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-slate-950 transition-all shadow-lg shadow-brand-blue/10 backdrop-blur-sm"
+            className="w-10 h-10 md:w-auto md:px-4 bg-slate-900/80 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-slate-950 transition-all shadow-lg shadow-brand-blue/10 backdrop-blur-sm rounded-lg"
+            title="Cargar Proyecto"
           >
             <FolderOpen className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">Cargar</span>
           </Button>
-        <div className="flex gap-2 pointer-events-auto">
+
           <Button 
             onClick={autoSaveProject}
             size="icon"
-            className="md:w-auto md:px-4 bg-brand-blue text-slate-950 font-bold hover:bg-brand-blue/90 shadow-lg"
+            className="w-10 h-10 md:w-auto md:px-4 bg-brand-blue text-slate-950 font-bold hover:bg-brand-blue/90 shadow-lg rounded-lg"
+            title={clientMode ? 'Propuesta' : 'Guardar'}
           >
             <Save className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">{clientMode ? 'Propuesta' : 'Guardar'}</span>
           </Button>
+
           {!clientMode && (
             <Button 
               onClick={handleConvertToQuote}
               size="icon"
-              className="md:w-auto md:px-4 bg-emerald-500 text-blue-950 font-bold hover:bg-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.5)] md:ml-4"
+              className="w-10 h-10 md:w-auto md:px-4 bg-emerald-500 text-blue-950 font-bold hover:bg-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.5)] md:ml-4 rounded-lg"
+              title="Cotizar Cámaras"
             >
               <FileText className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">Cotizar Cámaras</span>
             </Button>
           )}
         </div>
       </div>
-      </div>
 
-      {/* Mobile Search Popup */}
+      {/* Mobile Search Popup Overlay */}
       {showMobileSearch && (
-        <div className="absolute top-20 left-4 right-4 z-10 md:hidden pointer-events-auto animate-in slide-in-from-top-4">
-          <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl p-2 shadow-2xl">
+        <div className="absolute top-16 left-2 right-2 z-[60] pointer-events-auto md:hidden animate-in slide-in-from-top-4 fade-in duration-200">
+          <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700 p-2 rounded-xl shadow-2xl flex items-center">
             <Autocomplete
               onLoad={(autocomplete) => { searchBoxRef.current = autocomplete; }}
-              onPlaceChanged={onPlaceChanged}
+              onPlaceChanged={() => {
+                onPlaceChanged();
+                setShowMobileSearch(false);
+              }}
             >
               <input 
                 type="text" 
                 placeholder="Buscar lugar..." 
                 value={searchText}
                 onChange={e => setSearchText(e.target.value)}
-                onKeyDown={handleSearchInputKeyDown}
-                className="bg-slate-800/50 border border-slate-700 rounded-lg outline-none text-white text-sm px-4 py-3 w-full placeholder:text-slate-500 focus:border-brand-blue transition-colors"
+                onKeyDown={e => {
+                  handleSearchInputKeyDown(e);
+                  if (e.key === 'Enter') setShowMobileSearch(false);
+                }}
+                className="bg-transparent border-none outline-none text-white text-base px-3 py-2 w-full placeholder:text-slate-500"
                 autoFocus
               />
             </Autocomplete>
+            <button 
+              onClick={() => setShowMobileSearch(false)}
+              className="p-2 text-slate-400 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
       )}
+
+
 
       {/* Left Sidebar (Cameras & Organization) */}
       {/* Left Floating Panel (Layers/Organization) */}
