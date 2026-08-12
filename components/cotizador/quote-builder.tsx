@@ -447,7 +447,7 @@ export function QuoteBuilder({
       {/* ============ PANEL IZQUIERDO ============ */}
       <div className="flex flex-col gap-4 sm:gap-5">
         {/* Cliente */}
-        <Card className="relative z-50 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5 shadow-xl backdrop-blur-sm">
+        <Card className="relative z-20 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 sm:p-5 shadow-xl backdrop-blur-sm">
           <SectionTitle icon={Building2} step="1" label="Cliente" />
           <div className="relative mt-3">
             <ClientSelector 
