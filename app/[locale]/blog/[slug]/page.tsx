@@ -1,7 +1,7 @@
 import { getPostBySlug, getPublishedPosts } from '@/app/actions/blog'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Calendar, Share2, ChevronRight, Zap, Shield, ShoppingCart, ArrowRight } from 'lucide-react'
+import { ArrowLeft, Calendar, Share2, ChevronRight, Zap, Shield, ShoppingCart, ArrowRight, Tag } from 'lucide-react'
 import { Metadata } from 'next'
 import { HomeHeader } from '@/components/home/home-header'
 import { HomeFooter } from '@/components/home/home-footer'
