@@ -56,11 +56,14 @@ export default async function BlogIndexPage({ params, searchParams }: { params: 
       </section>
 
       {/* GRID DE PUBLICACIONES CON SIDEBAR */}
-      <div className="relative overflow-hidden bg-brand-dark">
+      <div className="relative overflow-hidden bg-[#070b14]">
+        {/* Dynamic Grid Background */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:40px_40px] opacity-40"></div>
+        
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-          {/* Subtle grid background for the main content area */}
-          <div className="absolute inset-0 bg-premium-mesh-dark opacity-10"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] h-[100%] bg-brand-blue/5 rounded-full blur-[120px] pointer-events-none"></div>
+          {/* Subtle radial gradients for depth */}
+          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-brand-blue/10 rounded-full blur-[120px] pointer-events-none"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-brand-green/5 rounded-full blur-[150px] pointer-events-none"></div>
         </div>
         
         <main className="mx-auto max-w-7xl px-6 py-16 lg:px-8 relative z-10">

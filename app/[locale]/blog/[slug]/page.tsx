@@ -55,10 +55,18 @@ export default async function BlogPostPage({ params }: Props) {
   const content = isEn && post.content_en ? post.content_en : post.content;
   
   return (
-    <div className="min-h-screen bg-brand-dark text-slate-100 font-sans selection:bg-brand-blue/30 selection:text-white">
-      <HomeHeader locale={resolvedParams.locale} />
+    <div className="min-h-screen bg-[#070b14] text-slate-100 font-sans selection:bg-brand-blue/30 selection:text-white relative overflow-hidden">
+      {/* Dynamic Grid Background */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:40px_40px] opacity-40 z-0"></div>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-brand-blue/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-brand-green/5 rounded-full blur-[150px] pointer-events-none"></div>
+      </div>
 
-      <main className="pt-24 pb-20">
+      <div className="relative z-10">
+        <HomeHeader locale={resolvedParams.locale} />
+
+        <main className="pt-24 pb-20">
         <div className="container mx-auto px-4 max-w-7xl">
           
           {/* Back button */}
@@ -195,6 +203,7 @@ export default async function BlogPostPage({ params }: Props) {
       </main>
 
       <HomeFooter locale={resolvedParams.locale} />
+      </div>
     </div>
   )
 }
