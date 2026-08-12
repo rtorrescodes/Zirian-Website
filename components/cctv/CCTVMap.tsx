@@ -109,6 +109,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
   const [leftPanelTab, setLeftPanelTab] = useState<'cameras' | 'org'>('cameras');
   const [groupBy, setGroupBy] = useState<'layer' | 'section'>('layer');
   const [mobilePanel, setMobilePanel] = useState<'none' | 'left' | 'right' | 'dori' | 'bottom'>('none');
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   // GPS Tracking State
   const [gpsTracking, setGpsTracking] = useState(false);
@@ -727,49 +728,62 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       )}
 
       {/* Top Floating Bar */}
-      <div className="absolute top-4 left-4 right-4 flex items-center justify-between pointer-events-none z-10">
-        <div className="flex items-center gap-4 pointer-events-auto">
+      <div className="absolute top-4 left-4 right-4 flex items-start md:items-center justify-between pointer-events-none z-10">
+        <div className="flex items-center gap-2 md:gap-4 pointer-events-auto">
           <Link href="/admin/dashboard">
-            <Button variant="outline" className="bg-slate-900/80 border-slate-700 text-white backdrop-blur-sm">
-              <ChevronLeft className="w-4 h-4 mr-2" /> Volver
+            <Button variant="outline" size="icon" className="md:w-auto md:px-4 bg-slate-900/80 border-slate-700 text-white backdrop-blur-sm">
+              <ChevronLeft className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">Volver</span>
             </Button>
           </Link>
-          <div className="bg-slate-900/80 backdrop-blur-sm border border-slate-700 px-4 py-2 rounded-lg flex items-center gap-3">
+          <div className="hidden md:flex bg-slate-900/80 backdrop-blur-sm border border-slate-700 px-4 py-2 rounded-lg items-center gap-3">
             <Crosshair className="w-5 h-5 text-brand-blue" />
             <h1 className="font-tech font-bold uppercase tracking-widest text-white text-sm">Proyecto CCTV</h1>
           </div>
           
-          <div className="relative pointer-events-auto flex items-center bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-lg overflow-hidden">
-            <Autocomplete
-              onLoad={(autocomplete) => { searchBoxRef.current = autocomplete; }}
-              onPlaceChanged={onPlaceChanged}
-            >
-              <input 
-                type="text" 
-                placeholder="Buscar (ej. Zócalo) o lat, lng..." 
-                value={searchText}
-                onChange={e => setSearchText(e.target.value)}
-                onKeyDown={handleSearchInputKeyDown}
-                className="bg-transparent border-none outline-none text-white text-sm px-4 py-2 w-72 placeholder:text-slate-500"
-              />
-            </Autocomplete>
+          <div className="relative pointer-events-auto flex items-center bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-lg overflow-hidden group">
+            {/* Desktop Search / Mobile Toggle */}
+            <div className="flex items-center">
+              <button 
+                onClick={() => setShowMobileSearch(!showMobileSearch)} 
+                className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              </button>
+              <div className="hidden md:block">
+                <Autocomplete
+                  onLoad={(autocomplete) => { searchBoxRef.current = autocomplete; }}
+                  onPlaceChanged={onPlaceChanged}
+                >
+                  <input 
+                    type="text" 
+                    placeholder="Buscar lugar..." 
+                    value={searchText}
+                    onChange={e => setSearchText(e.target.value)}
+                    onKeyDown={handleSearchInputKeyDown}
+                    className="bg-transparent border-none outline-none text-white text-sm px-3 py-2 w-72 placeholder:text-slate-500 transition-all focus:w-72"
+                  />
+                </Autocomplete>
+              </div>
+            </div>
+            
             <button 
               onClick={toggleGpsTracking} 
               className={`p-2 transition-colors border-l border-slate-700 ${gpsTracking ? 'text-brand-blue bg-brand-blue/10' : 'text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700'}`}
               title="Modo Sembrado GPS"
             >
-              <LocateFixed className="w-4 h-4" />
+              <LocateFixed className="w-5 h-5 md:w-4 md:h-4" />
             </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 pointer-events-auto">
+        <div className="flex flex-col md:flex-row items-end md:items-center gap-2 pointer-events-auto mt-1 md:mt-0">
           <Button 
             onClick={() => setMapType(t => t === 'satellite' ? 'roadmap' : 'satellite')}
             variant="outline" 
-            className="bg-slate-900/80 border-slate-700 text-slate-300 hover:text-white backdrop-blur-sm"
+            size="icon"
+            className="md:w-auto md:px-4 bg-slate-900/80 border-slate-700 text-slate-300 hover:text-white backdrop-blur-sm"
           >
-            <MapIcon className="w-4 h-4 mr-2" /> {mapType === 'satellite' ? 'Vista Vector' : 'Vista Satélite'}
+            <MapIcon className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">{mapType === 'satellite' ? 'Vista Vector' : 'Vista Satélite'}</span>
           </Button>
 
           <Button 
@@ -778,28 +792,53 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
               fetchSavedProjects();
             }}
             variant="outline" 
-            className="bg-slate-900/80 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-slate-950 transition-all shadow-lg shadow-brand-blue/10 backdrop-blur-sm"
+            size="icon"
+            className="md:w-auto md:px-4 bg-slate-900/80 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-slate-950 transition-all shadow-lg shadow-brand-blue/10 backdrop-blur-sm"
           >
-            <FolderOpen className="w-4 h-4 mr-2" /> Cargar Proyecto
+            <FolderOpen className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">Cargar</span>
           </Button>
         <div className="flex gap-2 pointer-events-auto">
           <Button 
             onClick={autoSaveProject}
-            className="bg-brand-blue text-slate-950 font-bold hover:bg-brand-blue/90 shadow-lg"
+            size="icon"
+            className="md:w-auto md:px-4 bg-brand-blue text-slate-950 font-bold hover:bg-brand-blue/90 shadow-lg"
           >
-            <Save className="w-4 h-4 mr-2" /> {clientMode ? 'Guardar Propuesta' : 'Guardar'}
+            <Save className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">{clientMode ? 'Propuesta' : 'Guardar'}</span>
           </Button>
           {!clientMode && (
             <Button 
               onClick={handleConvertToQuote}
-              className="bg-emerald-500 text-blue-950 font-bold hover:bg-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.5)] ml-4"
+              size="icon"
+              className="md:w-auto md:px-4 bg-emerald-500 text-blue-950 font-bold hover:bg-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.5)] md:ml-4"
             >
-              <FileText className="w-4 h-4 mr-2" /> Cotizar Cámaras
+              <FileText className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">Cotizar Cámaras</span>
             </Button>
           )}
         </div>
       </div>
       </div>
+
+      {/* Mobile Search Popup */}
+      {showMobileSearch && (
+        <div className="absolute top-20 left-4 right-4 z-10 md:hidden pointer-events-auto animate-in slide-in-from-top-4">
+          <div className="bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl p-2 shadow-2xl">
+            <Autocomplete
+              onLoad={(autocomplete) => { searchBoxRef.current = autocomplete; }}
+              onPlaceChanged={onPlaceChanged}
+            >
+              <input 
+                type="text" 
+                placeholder="Buscar lugar..." 
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                onKeyDown={handleSearchInputKeyDown}
+                className="bg-slate-800/50 border border-slate-700 rounded-lg outline-none text-white text-sm px-4 py-3 w-full placeholder:text-slate-500 focus:border-brand-blue transition-colors"
+                autoFocus
+              />
+            </Autocomplete>
+          </div>
+        </div>
+      )}
 
       {/* Left Sidebar (Cameras & Organization) */}
       {/* Left Floating Panel (Layers/Organization) */}
