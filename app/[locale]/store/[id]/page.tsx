@@ -37,6 +37,11 @@ export default async function ProductPage({
         "Protección IP67 contra agua y polvo",
         "Inteligencia Artificial integrada",
         "Compresión H.265+"
+      ],
+      categorias: [
+        { id: "1", nombre: "Seguridad", nivel: 1 },
+        { id: "2", nombre: "Video Vigilancia", nivel: 2 },
+        { id: "3", nombre: "Cámaras IP", nivel: 3 }
       ]
     };
   } else {
@@ -59,11 +64,26 @@ export default async function ProductPage({
 
       <main className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
         {/* Breadcrumbs */}
-        <div className="mb-8">
-          <Link href={`/${locale}/store`} className="inline-flex items-center text-sm text-slate-400 hover:text-brand-cyan transition-colors">
+        <div className="mb-8 flex flex-wrap items-center text-sm text-slate-400 gap-2 font-mono">
+          <Link href={`/${locale}/store`} className="inline-flex items-center hover:text-brand-cyan transition-colors">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            {isEn ? 'Back to Store' : 'Volver a la Tienda'}
+            {isEn ? 'Store' : 'Tienda'}
           </Link>
+          
+          {product.categorias && product.categorias.length > 0 && (
+            <>
+              {product.categorias
+                .sort((a, b) => (a.nivel || 0) - (b.nivel || 0))
+                .map((cat, idx) => (
+                  <div key={cat.id || idx} className="flex items-center gap-2">
+                    <span className="text-slate-600">/</span>
+                    <span className="text-slate-300 capitalize">
+                      {cat.nombre.toLowerCase()}
+                    </span>
+                  </div>
+              ))}
+            </>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12">
