@@ -11,5 +11,5 @@ export default createMiddleware({
 export const config = {
   // Match only internationalized pathnames
   // Excludes /api, /admin, /_next, /assets, etc.
-  matcher: ['/((?!api|admin|_next|_vercel|assets|favicon.ico|.*\\..*).*)']
+  matcher: ['/((?!api|admin|_next|assets|favicon.ico|.*\\..*).*)']
 };
