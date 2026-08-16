@@ -347,6 +347,15 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
     const groups: Record<string, any> = {};
     const groupPrices = quote.group_prices || {};
     
+    // Find cable meters for Instalación de Cargador EV
+    let cableMetros = 0;
+    quote.items.forEach((i: any) => {
+      const name = (i.product?.nombre || i.descripcion || '').toLowerCase();
+      if (name.includes('cable')) {
+        cableMetros = Math.max(cableMetros, Number(i.cantidad));
+      }
+    });
+    
     quote.items.forEach((i: any) => {
       const groupName = i.product?.grupo_impresion || 'Concepto General';
       
@@ -362,11 +371,15 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
         };
       }
       
-      const pDesc = i.product?.descripcion || '';
-      if (i.descripcion && !groups[groupName].desc.includes(i.descripcion)) {
-        groups[groupName].desc += (groups[groupName].desc ? ' • ' : '') + i.descripcion;
-      } else if (pDesc && !groups[groupName].desc.includes(pDesc)) {
-        groups[groupName].desc += (groups[groupName].desc ? ' • ' : '') + pDesc;
+      if (groupName === 'Instalación de Cargador EV') {
+        groups[groupName].desc = `(Incluye materiales, instalación a ${cableMetros} metros)`;
+      } else {
+        const pDesc = i.product?.descripcion || '';
+        if (i.descripcion && !groups[groupName].desc.includes(i.descripcion)) {
+          groups[groupName].desc += (groups[groupName].desc ? ' • ' : '') + i.descripcion;
+        } else if (pDesc && !groups[groupName].desc.includes(pDesc)) {
+          groups[groupName].desc += (groups[groupName].desc ? ' • ' : '') + pDesc;
+        }
       }
       
       // If there is NO custom price, we sum the actual items. Otherwise, we ignore individual item totals!

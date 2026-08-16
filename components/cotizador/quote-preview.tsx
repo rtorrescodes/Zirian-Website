@@ -41,6 +41,16 @@ export function QuotePreview({
     displayItems = items;
   } else {
     const groups: Record<string, any> = {};
+    
+    // Find cable meters for Instalación de Cargador EV
+    let cableMetros = 0;
+    items.forEach((i: any) => {
+      const name = (i.product?.nombre || i.detalles || '').toLowerCase();
+      if (name.includes('cable')) {
+        cableMetros = Math.max(cableMetros, Number(i.qty));
+      }
+    });
+
     items.forEach((i: any) => {
       const groupName = i.product?.grupo_impresion || 'Concepto General';
       
@@ -58,10 +68,14 @@ export function QuotePreview({
       }
       
       // Concatenate descriptions
-      if (i.detalles && !groups[groupName].detalles.includes(i.detalles)) {
-        groups[groupName].detalles += (groups[groupName].detalles ? ' • ' : '') + i.detalles;
-      } else if (i.product?.descripcion && !groups[groupName].detalles.includes(i.product.descripcion)) {
-        groups[groupName].detalles += (groups[groupName].detalles ? ' • ' : '') + i.product.descripcion;
+      if (groupName === 'Instalación de Cargador EV') {
+        groups[groupName].detalles = `(Incluye materiales, instalación a ${cableMetros} metros)`;
+      } else {
+        if (i.detalles && !groups[groupName].detalles.includes(i.detalles)) {
+          groups[groupName].detalles += (groups[groupName].detalles ? ' • ' : '') + i.detalles;
+        } else if (i.product?.descripcion && !groups[groupName].detalles.includes(i.product.descripcion)) {
+          groups[groupName].detalles += (groups[groupName].detalles ? ' • ' : '') + i.product.descripcion;
+        }
       }
       
       // Sum prices ONLY IF there is no custom groupPrice override for this group
