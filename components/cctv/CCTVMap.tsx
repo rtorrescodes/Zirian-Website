@@ -871,7 +871,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       {/* Left Sidebar (Cameras & Organization) */}
       {/* Left Floating Panel (Layers/Organization) */}
       {!clientMode && (
-      <div className={`fixed md:absolute bottom-0 md:bottom-auto md:top-20 left-0 right-0 md:left-4 md:right-auto md:w-72 bg-slate-950/95 backdrop-blur-xl border-t md:border border-slate-800 rounded-t-3xl md:rounded-xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-2xl p-4 md:p-4 pointer-events-auto z-50 md:z-10 flex flex-col max-h-[65vh] md:max-h-[80vh] overflow-hidden transition-transform duration-300 ${mobilePanel === 'left' ? 'translate-y-0 md:translate-y-0 md:translate-x-0' : 'translate-y-[150%] md:translate-y-0 md:-translate-x-[150%]'}`}>
+      <div className={`fixed md:absolute bottom-0 md:bottom-auto md:top-20 left-0 right-0 md:left-4 md:right-auto md:w-72 bg-slate-950/95 backdrop-blur-xl border-t md:border border-slate-800 rounded-t-3xl md:rounded-xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-2xl p-4 md:p-4 pointer-events-auto z-50 md:z-10 flex flex-col max-h-[65vh] md:max-h-[80vh] overflow-hidden transition-transform duration-300 ${mobilePanel === 'left' ? 'translate-y-0 md:translate-y-0 md:translate-x-0' : 'translate-y-[150%] md:translate-y-0 md:translate-x-0'}`}>
         <button onClick={() => setMobilePanel('none')} className="md:hidden absolute top-4 right-4 p-2 text-slate-400 bg-slate-900 rounded-full z-10"><X className="w-4 h-4" /></button>
         <div className="flex gap-1 bg-slate-900 p-1 rounded-lg mb-4 shrink-0">
           <button 
@@ -1177,7 +1177,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
 
 
       {/* Right Floating Panel (Devices) */}
-      <div className={`fixed md:absolute bottom-0 md:bottom-auto md:top-20 left-0 right-0 md:left-auto md:right-4 md:w-80 bg-slate-950/95 backdrop-blur-xl border-t md:border border-slate-800 rounded-t-3xl md:rounded-xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-2xl p-6 pointer-events-auto z-50 md:z-10 max-h-[65vh] md:max-h-[75vh] overflow-y-auto transition-transform duration-300 ${mobilePanel === 'right' ? 'translate-y-0 md:translate-y-0 md:translate-x-0' : 'translate-y-[150%] md:translate-y-0 md:translate-x-[150%]'}`}>
+      <div className={`fixed md:absolute bottom-0 md:bottom-auto md:top-20 left-0 right-0 md:left-auto md:right-4 md:w-80 bg-slate-950/95 backdrop-blur-xl border-t md:border border-slate-800 rounded-t-3xl md:rounded-xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] md:shadow-2xl p-6 pointer-events-auto z-50 md:z-10 max-h-[65vh] md:max-h-[75vh] overflow-y-auto transition-transform duration-300 ${mobilePanel === 'right' ? 'translate-y-0 md:translate-y-0 md:translate-x-0' : 'translate-y-[150%] md:translate-y-0 md:translate-x-0'}`}>
         <button onClick={() => setMobilePanel('none')} className="md:hidden absolute top-4 right-4 p-2 text-slate-400 bg-slate-900 rounded-full"><X className="w-4 h-4" /></button>
         <h2 className="text-white font-tech font-bold uppercase tracking-widest text-sm mb-4">Diseña tu sistema</h2>
         <p className="text-slate-400 text-xs mb-6 leading-relaxed hidden md:block">
