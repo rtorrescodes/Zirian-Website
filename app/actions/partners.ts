@@ -130,7 +130,10 @@ export async function createPartner(data: { nombre: string; marca?: string; comi
     }
   });
   revalidatePath('/admin/partners');
-  return partner;
+  return {
+    ...partner,
+    comision_base: partner.comision_base ? Number(partner.comision_base) : null
+  };
 }
 
 export async function updatePartner(id: number, data: { nombre?: string; marca?: string; comision_base?: number; telefono?: string; email?: string; activo?: boolean }) {
@@ -140,5 +143,8 @@ export async function updatePartner(id: number, data: { nombre?: string; marca?:
   });
   revalidatePath('/admin/partners');
   revalidatePath(`/admin/partners/${id}`);
-  return partner;
+  return {
+    ...partner,
+    comision_base: partner.comision_base ? Number(partner.comision_base) : null
+  };
 }

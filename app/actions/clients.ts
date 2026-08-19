@@ -44,6 +44,10 @@ export async function getClients(query?: string, statusFilter?: string, origenFi
 
   return clients.map(client => ({
     ...client,
+    partner: client.partner ? {
+      ...client.partner,
+      comision_base: client.partner.comision_base ? Number(client.partner.comision_base) : null
+    } : null,
     quotes: client.quotes.map(q => ({
       ...q,
       total: q.total ? Number(q.total) : 0
