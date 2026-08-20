@@ -21,7 +21,11 @@ export async function createQuoteFromCctv(clientId: number, cameras: { modelId: 
     'cam-2.8mm': 'Domo 2MP Lente 2.8mm',
     'cam-4mm': 'Bala 4MP Lente 4mm',
     'cam-ptz': 'PTZ 25x (Zoom Máximo)',
-    'cam-ezviz-cscb54k': 'EZVIZ Solar 4K Wi-Fi 6'
+    'cam-ezviz-cscb54k': 'EZVIZ Solar 4K Wi-Fi 6',
+    'wifi-ubiquiti-u6': 'Ubiquiti U6-Mesh (360°)',
+    'wifi-ruijie-rgrap': 'Ruijie RGRAP52ODSEC (90°)',
+    'wifi-ruijie-rgrap6260g': 'Ruijie RGRAP6260(G) (360°)',
+    'wifi-tplink-bridge': 'TP-Link Bridge 5km'
   };
 
   // Buscar productos reales en la BD para asignar precios correctos
@@ -31,7 +35,11 @@ export async function createQuoteFromCctv(clientId: number, cameras: { modelId: 
     'cam-2.8mm': '2.8mm',
     'cam-4mm': '4mm',
     'cam-ptz': 'PTZ',
-    'cam-ezviz-cscb54k': '4K Wi-Fi' // Hace match con la cámara EZVIZ 4K
+    'cam-ezviz-cscb54k': '4K Wi-Fi',
+    'wifi-ubiquiti-u6': 'U6-Mesh',
+    'wifi-ruijie-rgrap': 'RGRAP52ODSEC',
+    'wifi-ruijie-rgrap6260g': 'RGRAP6260',
+    'wifi-tplink-bridge': 'EAP215'
   };
 
   let subtotal = 0;
