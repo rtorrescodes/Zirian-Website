@@ -51,6 +51,7 @@ const GENERIC_CAMERAS: CameraModel[] = [
 const GENERIC_WIFI_APS: CameraModel[] = [
   { id: 'wifi-ubiquiti-u6', name: 'Ubiquiti U6-Mesh (Omni 360°)', friendlyName: 'Ubiquiti U6-Mesh (360°)', fov: 360, dori: { identify: 0, recognize: 0, observe: 0, detect: 50 }, type: 'wifi' },
   { id: 'wifi-ruijie-rgrap', name: 'Ruijie RGRAP52ODSEC (Sectorial 90°)', friendlyName: 'Ruijie RGRAP (90°)', fov: 90, dori: { identify: 0, recognize: 0, observe: 0, detect: 150 }, type: 'wifi' },
+  { id: 'wifi-ruijie-rgrap6260g', name: 'Ruijie RGRAP6260(G) (Omni 360°)', friendlyName: 'Ruijie Wi-Fi 6 (360°)', fov: 360, dori: { identify: 0, recognize: 0, observe: 0, detect: 100 }, type: 'wifi' },
   { id: 'wifi-tplink-bridge', name: 'TP-Link EAP215-Bridge (Direccional 5°)', friendlyName: 'TP-Link Bridge 5km', fov: 5, dori: { identify: 0, recognize: 0, observe: 0, detect: 5000 }, type: 'wifi' }
 ];
 
