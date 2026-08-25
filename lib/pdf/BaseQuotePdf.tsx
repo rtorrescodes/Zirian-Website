@@ -580,10 +580,12 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
         </View>
 
         {/* Image Strip Section Full Width */}
-        <View style={styles.stripContainer}>
-          <Text style={styles.graciasText}>{isEn ? 'Thank you for your trust' : 'Gracias por su confianza'}</Text>
-          <Image src={stripPath} style={styles.instalacionesStrip} />
-        </View>
+        {!isGeneral && (
+          <View style={styles.stripContainer}>
+            <Text style={styles.graciasText}>{isEn ? 'Thank you for your trust' : 'Gracias por su confianza'}</Text>
+            <Image src={stripPath} style={styles.instalacionesStrip} />
+          </View>
+        )}
 
         {/* Footer Banner */}
         {!isGeneral ? (
@@ -600,27 +602,51 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
         <View style={styles.termsWrapper}>
           <View style={styles.termItem}>
             <Text style={styles.termsTitle}>{isEn ? '1. SCOPE OF OFFER' : '1. ALCANCE DE LA OFERTA'}</Text>
-            <Text style={styles.termsText}>{isEn ? 'This proposal includes exclusively the described items. Any additional requirement, material, or work not included will be quoted separately.' : 'Esta propuesta incluye exclusivamente los conceptos descritos. Cualquier requerimiento, material o trabajo adicional no contemplado será cotizado por separado.'}</Text>
+            <Text style={styles.termsText}>
+              {isGeneral
+                ? (isEn ? 'This proposal includes exclusively the described items. Any additional equipment or work not included will be quoted separately.' : 'Esta propuesta incluye exclusivamente los conceptos descritos. Cualquier requerimiento, equipo o trabajo adicional no contemplado será cotizado por separado.')
+                : (isEn ? 'This proposal includes exclusively the described items. Any additional requirement, material, or work not included will be quoted separately.' : 'Esta propuesta incluye exclusivamente los conceptos descritos. Cualquier requerimiento, material o trabajo adicional no contemplado será cotizado por separado.')}
+            </Text>
           </View>
           <View style={styles.termItem}>
             <Text style={styles.termsTitle}>{isEn ? '3. CLIENT RESPONSIBILITY' : '3. RESPONSABILIDAD DEL CLIENTE'}</Text>
-            <Text style={styles.termsText}>{isEn ? 'The client must guarantee free access to the site and is responsible for processing any necessary permits (CFE/municipality) unless otherwise agreed.' : 'El cliente deberá garantizar el libre acceso al sitio y será responsable de tramitar los permisos necesarios (CFE/municipio) salvo acuerdo previo.'}</Text>
+            <Text style={styles.termsText}>
+              {isGeneral
+                ? (isEn ? 'The client must provide site access and have the necessary prior conditions for the correct execution of the project.' : 'El cliente deberá proporcionar las facilidades de acceso al sitio y contar con las adecuaciones previas necesarias para la correcta ejecución del proyecto.')
+                : (isEn ? 'The client must guarantee free access to the site and is responsible for processing any necessary permits (CFE/municipality) unless otherwise agreed.' : 'El cliente deberá garantizar el libre acceso al sitio y será responsable de tramitar los permisos necesarios (CFE/municipio) salvo acuerdo previo.')}
+            </Text>
           </View>
           <View style={styles.termItem}>
             <Text style={styles.termsTitle}>{isEn ? '5. VALIDITY & PAYMENT TERMS' : '5. VALIDEZ Y CONDICIONES DE PAGO'}</Text>
-            <Text style={styles.termsText}>{isEn ? 'Quote valid for 30 days. Requires an advance payment to start and balance against delivery. Payment delays will pause installation times.' : 'Cotización válida por 30 días. Requiere anticipo para inicio y saldo contra entrega. Retrasos en los pagos pausarán los tiempos de instalación.'}</Text>
+            <Text style={styles.termsText}>
+              {isGeneral
+                ? (isEn ? 'Quote valid for 15 days (subject to inventory). Requires advance payment for order processing and balance against delivery.' : 'Cotización válida por 15 días (o sujeto a disponibilidad de inventario). Requiere anticipo para procesar pedido y saldo contra entrega.')
+                : (isEn ? 'Quote valid for 30 days. Requires an advance payment to start and balance against delivery. Payment delays will pause installation times.' : 'Cotización válida por 30 días. Requiere anticipo para inicio y saldo contra entrega. Retrasos en los pagos pausarán los tiempos de instalación.')}
+            </Text>
           </View>
           <View style={styles.termItem}>
             <Text style={styles.termsTitle}>{isEn ? '2. WARRANTY & COVERAGE' : '2. GARANTÍA Y COBERTURA'}</Text>
-            <Text style={styles.termsText}>{isEn ? 'Warranty applies to equipment installed by Zirian. Excludes damage caused by misuse, voltage fluctuations, third parties, or natural phenomena.' : 'Garantía sobre equipos instalados por Zirian. Quedan excluidos daños por uso indebido, variaciones de voltaje, terceros o fenómenos naturales.'}</Text>
+            <Text style={styles.termsText}>
+              {isGeneral
+                ? (isEn ? 'Warranty applies to equipment supplied/installed by Zirian. Excludes damage caused by misuse, third parties, voltage fluctuations or natural disasters.' : 'Garantía sobre equipos suministrados y/o instalados por Zirian. Quedan excluidos daños por uso indebido, terceros, variaciones de voltaje o desastres naturales.')
+                : (isEn ? 'Warranty applies to equipment installed by Zirian. Excludes damage caused by misuse, voltage fluctuations, third parties, or natural phenomena.' : 'Garantía sobre equipos instalados por Zirian. Quedan excluidos daños por uso indebido, variaciones de voltaje, terceros o fenómenos naturales.')}
+            </Text>
           </View>
           <View style={styles.termItem}>
             <Text style={styles.termsTitle}>{isEn ? '4. TECHNICAL SUPPORT' : '4. SOPORTE TÉCNICO'}</Text>
-            <Text style={styles.termsText}>{isEn ? 'Remote assistance for troubleshooting. On-site visits are subject to availability (travel expenses apply outside BCS).' : 'Asistencia remota para diagnóstico de fallas. Las visitas presenciales están sujetas a disponibilidad (viáticos aplicables fuera de BCS).'}</Text>
+            <Text style={styles.termsText}>
+              {isGeneral
+                ? (isEn ? 'Remote technical assistance. On-site diagnostic visits are subject to availability and may generate travel expenses outside the local area.' : 'Asistencia técnica remota. Las visitas presenciales de diagnóstico están sujetas a disponibilidad y podrán generar costos de viáticos fuera del área local.')
+                : (isEn ? 'Remote assistance for troubleshooting. On-site visits are subject to availability (travel expenses apply outside BCS).' : 'Asistencia remota para diagnóstico de fallas. Las visitas presenciales están sujetas a disponibilidad (viáticos aplicables fuera de BCS).')}
+            </Text>
           </View>
           <View style={styles.termItem}>
-            <Text style={styles.termsTitle}>{isEn ? '6. INTELLECTUAL PROPERTY' : '6. PROPIEDAD INTELECTUAL'}</Text>
-            <Text style={styles.termsText}>{isEn ? 'Engineering and designs provided are the intellectual property of Zirian. Reproduction or distribution without authorization is prohibited.' : 'La ingeniería y diseños proporcionados son propiedad intelectual de Zirian. Queda prohibida su reproducción o distribución sin autorización.'}</Text>
+            <Text style={styles.termsTitle}>{isGeneral ? (isEn ? '6. CONFIDENTIALITY' : '6. CONFIDENCIALIDAD') : (isEn ? '6. INTELLECTUAL PROPERTY' : '6. PROPIEDAD INTELECTUAL')}</Text>
+            <Text style={styles.termsText}>
+              {isGeneral
+                ? (isEn ? 'The commercial information and prices contained in this document are confidential and property of Zirian. Distribution is prohibited.' : 'La información comercial y precios contenidos en este documento son confidenciales y propiedad de Zirian, prohibida su distribución sin autorización.')
+                : (isEn ? 'Engineering and designs provided are the intellectual property of Zirian. Reproduction or distribution without authorization is prohibited.' : 'La ingeniería y diseños proporcionados son propiedad intelectual de Zirian. Queda prohibida su reproducción o distribución sin autorización.')}
+            </Text>
           </View>
         </View>
 
