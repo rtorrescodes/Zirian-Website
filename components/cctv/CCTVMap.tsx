@@ -7,7 +7,7 @@ import { Plus, Save, Layers, Map as MapIcon, Crosshair, ChevronLeft, X, LocateFi
 import Link from 'next/link';
 import html2canvas from 'html2canvas';
 import { getClients } from '@/app/actions/clients';
-import { createQuoteFromCctv, getPendingQuotesForClient } from '@/app/actions/cctvToQuote';
+import { createQuoteFromCctv, getPendingQuotesForClient, getQuotesLinkedToCctv, syncCctvToQuote } from '@/app/actions/cctvToQuote';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ['places', 'geometry'];
@@ -469,11 +469,34 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
         setLoadedProjectInfo(prev => prev ? { ...prev, nombre: projectName } : null);
       }
 
-      alert("Proyecto guardado exitosamente!");
       setShowSaveModal(false);
+
+      if (savedData.id) {
+        const linkedQuotes = await getQuotesLinkedToCctv(savedData.id);
+        if (linkedQuotes.length > 0) {
+          const q = linkedQuotes[0];
+          const quoteName = `COT-${new Date(q.fecha_creacion).getFullYear()}-${q.id.toString().padStart(4, '0')}`;
+          if (window.confirm(`Este diseño ya está asociado a la cotización en borrador ${quoteName}. ¿Deseas actualizar la cotización con los equipos que están actualmente en el mapa? (Se removerán equipos de CCTV que hayas borrado y se añadirán los nuevos).`)) {
+            try {
+              await syncCctvToQuote(q.id, parseInt(selectedClientId), cameras.map(c => ({ modelId: c.modelId, name: c.name, section: c.section })));
+              alert("¡Cotización actualizada exitosamente!");
+            } catch(e) {
+              console.error(e);
+              alert("Error al sincronizar cotización.");
+            }
+          } else {
+            alert("Proyecto guardado exitosamente!");
+          }
+        } else {
+          alert("Proyecto guardado exitosamente!");
+        }
+      } else {
+        alert("Proyecto guardado exitosamente!");
+      }
+      
     } catch (err) {
       console.error(err);
-      alert("Error al generar vista previa. Intenta nuevamente.");
+      alert("Error al guardar el proyecto. Intenta nuevamente.");
     } finally {
       setIsSaving(false);
     }
@@ -512,7 +535,8 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       const quoteId = await createQuoteFromCctv(
         parseInt(selectedClientId),
         cameras.map(c => ({ modelId: c.modelId, name: c.name, section: c.section })),
-        existingQuoteId
+        existingQuoteId,
+        loadedProjectInfo?.id
       );
       router.push(`/admin/cotizador?editId=${quoteId}`);
     } catch (error: any) {
@@ -521,6 +545,14 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
     } finally {
       setIsConvertingToQuote(false);
       setShowQuoteModal(false);
+    }
+  };
+
+  const handleUserClickSave = async () => {
+    if (!loadedProjectInfo) {
+      setShowSaveModal(true);
+    } else {
+      await handleSave(true);
     }
   };
 
@@ -838,7 +870,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
           </Button>
 
           <Button 
-            onClick={autoSaveProject}
+            onClick={handleUserClickSave}
             size="icon"
             className="w-10 h-10 md:w-auto md:px-4 bg-brand-blue text-slate-950 font-bold hover:bg-brand-blue/90 shadow-lg rounded-lg"
             title={clientMode ? 'Propuesta' : 'Guardar'}
