@@ -1486,8 +1486,9 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
                     <FileText className="w-5 h-5" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-white text-sm truncate">
-                      COT-{new Date(q.fecha_creacion).getFullYear()}-{q.id.toString().padStart(4, '0')}
+                    <h3 className="font-bold text-white text-sm truncate flex items-center justify-between">
+                      <span>COT-{new Date(q.fecha_creacion).getFullYear()}-{q.id.toString().padStart(4, '0')}</span>
+                      <span className="text-xs text-brand-cyan font-normal ml-2 truncate max-w-[120px]">{q.client?.nombre}</span>
                     </h3>
                     <p className="text-xs text-slate-400 truncate">
                       Subtotal actual: ${Number(q.total).toLocaleString('es-MX')} ({q.template === 'ev_charger' ? 'Cargadores EV' : 'General'})

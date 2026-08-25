@@ -7,7 +7,7 @@ export async function getPendingQuotesForClient(clientId: number) {
   return await prisma.quote.findMany({
     where: { clientId, status: "Borrador" },
     orderBy: { fecha_creacion: 'desc' },
-    select: { id: true, total: true, fecha_creacion: true, template: true }
+    select: { id: true, total: true, fecha_creacion: true, template: true, client: { select: { nombre: true } } }
   });
 }
 
