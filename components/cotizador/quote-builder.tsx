@@ -93,6 +93,7 @@ interface QuoteBuilderProps {
   initialClients: any[]
   initialProducts: any[]
   initialCategories: any[]
+  initialBrochures?: any[]
   initialClientId?: number
   initialQuote?: any
 }
@@ -109,6 +110,7 @@ export function QuoteBuilder({
   initialCategories,
   initialClientId,
   initialQuote,
+  initialBrochures = [],
 }: QuoteBuilderProps) {
   const getInitialClient = () => {
     if (initialQuote?.clientId) return initialClients.find(c => c.id === initialQuote.clientId) || null
@@ -177,9 +179,7 @@ export function QuoteBuilder({
   const [secciones, setSecciones] = useState<string[]>(
     Array.from(new Set(getInitialItems().map((i: any) => i.seccion).filter(Boolean) as string[]))
   )
-  const [attachments, setAttachments] = useState<Attachment[]>([
-    { id: 'a1', name: 'Catálogo_Cargadores_2026.pdf', size: '2.4 MB' },
-  ])
+  const [attachments, setAttachments] = useState<Attachment[]>(initialQuote?.brochures?.map((b: any) => ({ id: String(b.brochure.id), name: b.brochure.nombre, size: 'PDF' })) || [])
   const fileRef = useRef<HTMLInputElement>(null)
   const [saved, setSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -555,6 +555,8 @@ export function QuoteBuilder({
             }
           }}
           removeFile={(id) => setAttachments(prev => prev.filter(a => a.id !== id))}
+            availableBrochures={initialBrochures}
+            onAddBrochure={(b) => setAttachments(prev => [...prev, { id: String(b.id), name: b.nombre, size: 'PDF' }])}
           attachments={attachments}
           addDirectItem={addDirectItem}
           secciones={secciones}
@@ -622,6 +624,7 @@ export function QuoteBuilder({
         total={total}
         moneda={initialQuote?.moneda}
         impuestosIniciales={initialQuote?.impuestos}
+          attachments={attachments}
       />
     </>
   )

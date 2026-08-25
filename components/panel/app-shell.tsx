@@ -132,7 +132,15 @@ function SidebarContent({ onNavigate, user }: { onNavigate?: () => void, user?: 
             >
               <Database className="h-[18px] w-[18px] text-slate-500" />
               Catálogo Syscom
-            </Link>
+              </Link>
+              <Link
+                href="/admin/configuracion/documentos"
+                onClick={onNavigate}
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-tech uppercase tracking-widest text-slate-400 transition-colors hover:bg-slate-800/60 hover:text-white"
+              >
+                <FileText className="h-[18px] w-[18px] text-slate-500" />
+                Biblioteca Docs
+              </Link>
             <Link
               href="/admin/ajustes"
               onClick={onNavigate}

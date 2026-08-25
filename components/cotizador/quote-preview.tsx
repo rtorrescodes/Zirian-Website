@@ -14,6 +14,7 @@ interface QuotePreviewProps {
   total: number;
   moneda?: string;
   impuestosIniciales?: number;
+  attachments?: any[];
   mostrarDesglose?: boolean;
   groupPrices?: Record<string, number>;
   secciones?: string[];
@@ -33,6 +34,7 @@ export function QuotePreview({
   impuestosIniciales = 0,
   mostrarDesglose = false,
   groupPrices = {},
+  attachments = [],
 }: QuotePreviewProps) {
   const isEn = template === 'ev_charger_en';
   const isGeneral = template === 'general';
@@ -389,7 +391,18 @@ export function QuotePreview({
             })()}
             </div>
           </div>
-      </Card>
+            {attachments && attachments.length > 0 && (
+              <div className="mt-8 border-t border-slate-200 pt-4 px-12 pb-8">
+                <h4 className="text-[#1C497B] font-bold text-sm mb-2">Documentos Anexos a la Cotización:</h4>
+                <ul className="list-disc list-inside text-xs text-slate-600">
+                  {attachments.map((a: any) => (
+                    <li key={a.id}>{a.name} (Se adjuntará en el PDF final)</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            </Card>
     </div>
   );
 }

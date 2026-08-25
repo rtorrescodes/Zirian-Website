@@ -84,6 +84,11 @@ export default async function CotizadorPage({ searchParams }: { searchParams: Pr
     }
   }
 
+  
+  const brochures = await prisma.brochure.findMany({
+    orderBy: { fecha_creacion: 'desc' }
+  });
+  
   return (
     <AppShell
       title="Cotizador"
@@ -93,6 +98,7 @@ export default async function CotizadorPage({ searchParams }: { searchParams: Pr
         initialClients={clients} 
         initialProducts={plainProducts} 
         initialCategories={categories} 
+        initialBrochures={brochures}
         initialClientId={resolvedParams.clientId ? parseInt(resolvedParams.clientId) : undefined}
         initialQuote={editQuote}
       />
