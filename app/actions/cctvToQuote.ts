@@ -3,7 +3,15 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function createQuoteFromCctv(clientId: number, cameras: { modelId: string; name?: string; section?: string }[]) {
+export async function getPendingQuotesForClient(clientId: number) {
+  return await prisma.quote.findMany({
+    where: { clientId, status: "Borrador" },
+    orderBy: { fecha_creacion: 'desc' },
+    select: { id: true, total: true, fecha_creacion: true, template: true }
+  });
+}
+
+export async function createQuoteFromCctv(clientId: number, cameras: { modelId: string; name?: string; section?: string }[], existingQuoteId?: number) {
   if (!clientId || cameras.length === 0) {
     throw new Error("Cliente inválido o no hay cámaras para presupuestar.");
   }
@@ -42,7 +50,7 @@ export async function createQuoteFromCctv(clientId: number, cameras: { modelId: 
     'wifi-tplink-bridge': 'EAP215'
   };
 
-  let subtotal = 0;
+  let newSubtotal = 0;
 
   const itemsData = Object.entries(cameraCounts).map(([key, count]) => {
     const [modelId, section] = key.split('|');
@@ -52,7 +60,7 @@ export async function createQuoteFromCctv(clientId: number, cameras: { modelId: 
 
     if (realProduct) {
       const lineTotal = Number(realProduct.precio_base) * count;
-      subtotal += lineTotal;
+      newSubtotal += lineTotal;
       return {
         productId: realProduct.id,
         descripcion: `${sectionPrefix}${realProduct.nombre}`,
@@ -74,31 +82,64 @@ export async function createQuoteFromCctv(clientId: number, cameras: { modelId: 
     }
   });
 
-  const impuestos = subtotal * 0.16;
-  const totalQuote = subtotal + impuestos;
+  if (existingQuoteId) {
+    const existingQuote = await prisma.quote.findUnique({ where: { id: existingQuoteId } });
+    if (!existingQuote) throw new Error("La cotización no existe.");
 
-  const quote = await prisma.quote.create({
-    data: {
-      clientId,
-      status: "Borrador",
-      subtotal: subtotal,
-      impuestos: impuestos,
-      total: totalQuote,
-      items: {
-        create: itemsData
+    const finalSubtotal = Number(existingQuote.subtotal) + newSubtotal;
+    const finalImpuestos = existingQuote.requiere_factura ? (finalSubtotal * 0.16) : 0;
+    const finalTotal = finalSubtotal + finalImpuestos;
+
+    await prisma.quote.update({
+      where: { id: existingQuoteId },
+      data: {
+        subtotal: finalSubtotal,
+        impuestos: finalImpuestos,
+        total: finalTotal,
+        items: {
+          create: itemsData
+        }
       }
-    }
-  });
+    });
 
-  await prisma.clientActivity.create({
-    data: {
-      clientId,
-      tipo: 'Presupuesto Creado',
-      descripcion: `Se creó un borrador de presupuesto a partir de un diseño CCTV.`,
-      url: `/admin/cotizador?editId=${quote.id}`
-    }
-  });
+    await prisma.clientActivity.create({
+      data: {
+        clientId,
+        tipo: 'Presupuesto Actualizado',
+        descripcion: `Se agregaron equipos desde un diseño de CCTV a la cotización #${existingQuoteId}.`,
+        url: `/admin/cotizador?editId=${existingQuoteId}`
+      }
+    });
 
-  revalidatePath("/admin/cotizador");
-  return quote.id;
+    revalidatePath("/admin/cotizador");
+    return existingQuoteId;
+  } else {
+    const impuestos = newSubtotal * 0.16;
+    const totalQuote = newSubtotal + impuestos;
+
+    const quote = await prisma.quote.create({
+      data: {
+        clientId,
+        status: "Borrador",
+        subtotal: newSubtotal,
+        impuestos: impuestos,
+        total: totalQuote,
+        items: {
+          create: itemsData
+        }
+      }
+    });
+
+    await prisma.clientActivity.create({
+      data: {
+        clientId,
+        tipo: 'Presupuesto Creado',
+        descripcion: `Se creó un borrador de presupuesto a partir de un diseño CCTV.`,
+        url: `/admin/cotizador?editId=${quote.id}`
+      }
+    });
+
+    revalidatePath("/admin/cotizador");
+    return quote.id;
+  }
 }

@@ -7,7 +7,7 @@ import { Plus, Save, Layers, Map as MapIcon, Crosshair, ChevronLeft, X, LocateFi
 import Link from 'next/link';
 import html2canvas from 'html2canvas';
 import { getClients } from '@/app/actions/clients';
-import { createQuoteFromCctv } from '@/app/actions/cctvToQuote';
+import { createQuoteFromCctv, getPendingQuotesForClient } from '@/app/actions/cctvToQuote';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ['places', 'geometry'];
@@ -130,6 +130,9 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
   const [projectName, setProjectName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [loadedProjectInfo, setLoadedProjectInfo] = useState<{id: number, nombre: string, clientName: string, hasClientChanges?: boolean, proposedMapState?: any} | null>(null);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
+  const [pendingQuotes, setPendingQuotes] = useState<any[]>([]);
+  const [isConvertingToQuote, setIsConvertingToQuote] = useState(false);
 
   const fetchSavedProjects = async () => {
     setIsLoadingProjects(true);
@@ -487,14 +490,37 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
     }
 
     try {
+      setIsConvertingToQuote(true);
+      const quotes = await getPendingQuotesForClient(parseInt(selectedClientId));
+      if (quotes.length > 0) {
+        setPendingQuotes(quotes);
+        setShowQuoteModal(true);
+      } else {
+        await executeQuoteCreation();
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error al verificar cotizaciones: " + err);
+    } finally {
+      setIsConvertingToQuote(false);
+    }
+  };
+
+  const executeQuoteCreation = async (existingQuoteId?: number) => {
+    try {
+      setIsConvertingToQuote(true);
       const quoteId = await createQuoteFromCctv(
         parseInt(selectedClientId),
-        cameras.map(c => ({ modelId: c.modelId, name: c.name, section: c.section }))
+        cameras.map(c => ({ modelId: c.modelId, name: c.name, section: c.section })),
+        existingQuoteId
       );
       router.push(`/admin/cotizador?editId=${quoteId}`);
     } catch (error: any) {
       console.error(error);
-      alert("Error al crear presupuesto: " + error.message);
+      alert("Error al crear/actualizar presupuesto: " + error.message);
+    } finally {
+      setIsConvertingToQuote(false);
+      setShowQuoteModal(false);
     }
   };
 
@@ -1421,6 +1447,68 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       </div>
 
       {/* Save Modal */}
+      {showQuoteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-md p-6 shadow-2xl relative">
+            <button onClick={() => setShowQuoteModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X className="w-5 h-5"/></button>
+            <h2 className="text-xl font-tech font-bold uppercase tracking-widest text-brand-cyan mb-2">Generar Presupuesto</h2>
+            <p className="text-sm text-slate-400 mb-6">Este cliente tiene cotizaciones en estado de "Borrador". ¿Deseas agregar estos equipos a una cotización existente o crear una nueva?</p>
+            
+            <div className="space-y-3 max-h-[40vh] overflow-y-auto mb-6 pr-2">
+              <button
+                onClick={() => executeQuoteCreation()}
+                disabled={isConvertingToQuote}
+                className="w-full flex items-center gap-3 p-4 rounded-lg border border-emerald-500/50 hover:bg-emerald-500/10 transition-colors text-left group"
+              >
+                <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform shrink-0">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-sm">Crear Nueva Cotización</h3>
+                  <p className="text-xs text-slate-400">Empezar un presupuesto desde cero</p>
+                </div>
+              </button>
+
+              <div className="flex items-center gap-2 my-2">
+                <div className="h-px bg-slate-800 flex-1"></div>
+                <span className="text-xs font-bold text-slate-500 uppercase">o Agregar a Existente</span>
+                <div className="h-px bg-slate-800 flex-1"></div>
+              </div>
+
+              {pendingQuotes.map(q => (
+                <button
+                  key={q.id}
+                  onClick={() => executeQuoteCreation(q.id)}
+                  disabled={isConvertingToQuote}
+                  className="w-full flex items-center gap-3 p-3 rounded-lg border border-slate-700 hover:border-brand-blue hover:bg-slate-800/50 transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-brand-blue shrink-0">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-white text-sm truncate">
+                      COT-{new Date(q.fecha_creacion).getFullYear()}-{q.id.toString().padStart(4, '0')}
+                    </h3>
+                    <p className="text-xs text-slate-400 truncate">
+                      Subtotal actual: ${Number(q.total).toLocaleString('es-MX')} ({q.template === 'ev_charger' ? 'Cargadores EV' : 'General'})
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            {isConvertingToQuote && (
+              <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center rounded-xl z-10">
+                <div className="text-center">
+                  <div className="w-8 h-8 border-4 border-brand-cyan border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                  <p className="text-brand-cyan font-bold text-sm">Procesando...</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {showSaveModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="bg-slate-900 border border-slate-700 rounded-xl w-[400px] p-6 shadow-2xl relative">
