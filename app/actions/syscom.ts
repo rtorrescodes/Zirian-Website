@@ -11,18 +11,8 @@ export async function searchSyscomForQuote(query: string) {
   
   let filteredOut = 0;
 
-  // Aplicamos Filtros (Whitelist)
-  const settings = await getSyscomSettings();
-  if (settings.brands.length > 0 || settings.models.length > 0) {
-    const totalBefore = products.length;
-    products = products.filter(p => {
-      const brandAllowed = settings.brands.includes(p.marca.toUpperCase());
-      // Permitimos buscar por ID (producto_id numérico de syscom convertido a string) o Modelo exacto
-      const modelAllowed = settings.models.includes(p.modelo.toUpperCase()) || settings.models.includes(String(p.producto_id));
-      return brandAllowed || modelAllowed;
-    });
-    filteredOut = totalBefore - products.length;
-  }
+  // Ya no filtramos por Whitelist en el Cotizador (CRM) para permitir buscar cualquier producto.
+  // El whitelist debe ser solo para la tienda pública.
 
   // Obtenemos el tipo de cambio
   const tc = await getSyscomExchangeRate();
