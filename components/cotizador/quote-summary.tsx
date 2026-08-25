@@ -74,39 +74,63 @@ export function QuoteSummary({
     <div className="bg-slate-950 p-4 shadow-[0_-10px_30px_rgba(0,0,0,0.5)] md:p-6 rounded-b-2xl border-t border-slate-800">
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
         <div className="flex-1 max-w-sm">
-          <div className="flex items-center space-x-2">
-            <Switch
-              id="mostrar-desglose"
-              checked={mostrarDesglose}
-              onCheckedChange={setMostrarDesglose}
-              className="data-[state=checked]:bg-brand-cyan"
-            />
-            <Label htmlFor="mostrar-desglose" className="font-tech text-xs font-bold uppercase tracking-widest text-slate-400">
-              Desglosar Precios en PDF
-            </Label>
+          <div className="mb-4 space-y-2">
+            <label className="text-[11px] font-tech font-bold uppercase tracking-wider text-slate-400">Tipo de Proyecto / Plantilla PDF</label>
+            <select
+              value={template}
+              onChange={(e) => setTemplate(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 text-white rounded p-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-brand-blue"
+            >
+              <option value="ev_charger">Cargadores EV</option>
+              <option value="ev_charger_en">Cargadores EV (Inglés)</option>
+              <option value="general">Cotización General (CCTV, Redes, etc)</option>
+            </select>
           </div>
-          
-          {!mostrarDesglose && Object.keys(groupPrices).length > 0 && (
-            <div className="mt-4 p-3 bg-slate-900 rounded-lg border border-slate-800 space-y-3">
-              <Label className="font-tech text-[10px] font-bold uppercase tracking-widest text-brand-blue block mb-2">
-                Ajustar Precios por Grupo
-              </Label>
-              {Object.entries(groupPrices).map(([gName, val]) => (
-                <div key={gName} className="flex flex-col gap-1">
-                  <span className="text-[10px] text-slate-400 truncate pr-2">{gName}</span>
-                  <div className="relative">
-                    <span className="absolute left-2 top-1.5 text-xs text-slate-500">$</span>
-                    <input
-                      type="number"
-                      value={val === 0 ? '' : val}
-                      onChange={(e) => onGroupPriceChange(gName, Number(e.target.value))}
-                      className="w-full bg-slate-950 border border-slate-700 text-white rounded p-1 pl-5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan"
-                    />
-                  </div>
+
+          <details 
+            className="group" 
+            open={template.includes('ev_charger')}
+          >
+            <summary className="cursor-pointer font-tech text-[10px] font-bold uppercase tracking-widest text-brand-cyan hover:text-white transition-colors list-none flex items-center gap-2 select-none mb-3">
+              <span className="transform transition-transform group-open:rotate-90">▶</span>
+              Ajustes Avanzados de Precios
+            </summary>
+            <div className="pl-4 border-l border-slate-800 space-y-4 mb-4">
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="mostrar-desglose"
+                  checked={mostrarDesglose}
+                  onCheckedChange={setMostrarDesglose}
+                  className="data-[state=checked]:bg-brand-cyan"
+                />
+                <Label htmlFor="mostrar-desglose" className="font-tech text-xs font-bold uppercase tracking-widest text-slate-400">
+                  Desglosar Precios en PDF
+                </Label>
+              </div>
+              
+              {!mostrarDesglose && Object.keys(groupPrices).length > 0 && (
+                <div className="p-3 bg-slate-900 rounded-lg border border-slate-800 space-y-3">
+                  <Label className="font-tech text-[10px] font-bold uppercase tracking-widest text-brand-blue block mb-2">
+                    Ajustar Precios por Grupo
+                  </Label>
+                  {Object.entries(groupPrices).map(([gName, val]) => (
+                    <div key={gName} className="flex flex-col gap-1">
+                      <span className="text-[10px] text-slate-400 truncate pr-2">{gName}</span>
+                      <div className="relative">
+                        <span className="absolute left-2 top-1.5 text-xs text-slate-500">$</span>
+                        <input
+                          type="number"
+                          value={val === 0 ? '' : val}
+                          onChange={(e) => onGroupPriceChange(gName, Number(e.target.value))}
+                          className="w-full bg-slate-950 border border-slate-700 text-white rounded p-1 pl-5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-brand-cyan"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+          </details>
           
           <div className="mt-4 flex items-center space-x-2">
             <Switch
@@ -144,19 +168,6 @@ export function QuoteSummary({
 
           <div className="mt-4 pt-4 border-t border-slate-800/50 space-y-4">
             <div className="flex flex-col gap-2">
-              <label className="text-[11px] font-tech font-bold uppercase tracking-wider text-slate-400">Plantilla PDF</label>
-              <select
-                value={template}
-                onChange={(e) => setTemplate(e.target.value)}
-                className="bg-slate-900 border border-slate-700 text-white rounded p-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-brand-blue"
-              >
-                <option value="ev_charger">Cargadores EV</option>
-                <option value="ev_charger_en">Cargadores EV (Inglés)</option>
-                <option value="general">Cotización General (CCTV, etc)</option>
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-slate-800">
               <label className="text-[11px] font-tech font-bold uppercase tracking-wider text-slate-400">Nota Técnica (Opcional)</label>
               <textarea
                 value={notasCliente}
