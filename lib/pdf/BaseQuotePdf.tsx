@@ -329,20 +329,52 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
   let displayItems: any[] = [];
   
   if (quote.mostrar_desglose) {
-    displayItems = quote.items.map((i: any) => {
-      let unit = (i.product?.unidad_medida || 'PZA').substring(0, 3).toUpperCase();
-      if ((i.product?.nombre || '').toLowerCase().includes('cable')) unit = 'MTS';
+    const hasSections = quote.items.some((i: any) => i.seccion);
+    
+    if (hasSections) {
+      const sectionMap: Record<string, any[]> = {};
+      quote.items.forEach((i: any) => {
+        const sec = i.seccion || 'General';
+        if (!sectionMap[sec]) sectionMap[sec] = [];
+        
+        let unit = (i.product?.unidad_medida || 'PZA').substring(0, 3).toUpperCase();
+        if ((i.product?.nombre || '').toLowerCase().includes('cable')) unit = 'MTS';
+        
+        sectionMap[sec].push({
+          qty: `${Number(i.cantidad)} ${unit}`,
+          name: i.product?.nombre || i.descripcion || 'Producto/Servicio',
+          desc: i.descripcion || '',
+          price: Number(i.precio_unitario),
+          total: Number(i.total),
+          iva: (quote.requiere_factura || quote.impuestos > 0) ? Number(i.total) * 0.16 : 0,
+          isGroup: false
+        });
+      });
       
-      return {
-        qty: `${Number(i.cantidad)} ${unit}`,
-        name: i.product?.nombre || i.descripcion || 'Producto/Servicio',
-        desc: i.descripcion || '',
-        price: Number(i.precio_unitario),
-        total: Number(i.total),
-        iva: (quote.requiere_factura || quote.impuestos > 0) ? Number(i.total) * 0.16 : 0,
-        isGroup: false
-      };
-    });
+      Object.keys(sectionMap).forEach(sec => {
+        displayItems.push({
+          isSectionHeader: true,
+          name: sec,
+          qty: '', desc: '', price: 0, total: 0, iva: 0
+        });
+        displayItems.push(...sectionMap[sec]);
+      });
+    } else {
+      displayItems = quote.items.map((i: any) => {
+        let unit = (i.product?.unidad_medida || 'PZA').substring(0, 3).toUpperCase();
+        if ((i.product?.nombre || '').toLowerCase().includes('cable')) unit = 'MTS';
+        
+        return {
+          qty: `${Number(i.cantidad)} ${unit}`,
+          name: i.product?.nombre || i.descripcion || 'Producto/Servicio',
+          desc: i.descripcion || '',
+          price: Number(i.precio_unitario),
+          total: Number(i.total),
+          iva: (quote.requiere_factura || quote.impuestos > 0) ? Number(i.total) * 0.16 : 0,
+          isGroup: false
+        };
+      });
+    }
   } else {
     const groups: Record<string, any> = {};
     const groupPrices = quote.group_prices || {};
@@ -482,18 +514,24 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
             </View>
           ) : (
             displayItems.map((item: any, idx: number) => (
-              <View key={idx} style={[styles.tableRow, idx % 2 === 0 ? styles.tableRowAlt : {}]}>
-                <Text style={styles.tdQty}>{item.qty}</Text>
-                <View style={styles.tdProduct}>
-                  <Text style={styles.productName}>{item.name}</Text>
+              item.isSectionHeader ? (
+                <View key={`sec-${idx}`} style={{ backgroundColor: '#e2e8f0', padding: '6px 12px', borderBottom: '1px solid #cbd5e1' }}>
+                  <Text style={{ fontSize: 9, color: '#0f172a', fontWeight: 'bold', textTransform: 'uppercase' }}>{item.name}</Text>
                 </View>
-                <View style={styles.tdDesc}>
-                  <Text style={styles.productDesc}>{item.desc}</Text>
+              ) : (
+                <View key={idx} style={[styles.tableRow, idx % 2 === 0 ? styles.tableRowAlt : {}]}>
+                  <Text style={styles.tdQty}>{item.qty}</Text>
+                  <View style={styles.tdProduct}>
+                    <Text style={styles.productName}>{item.name}</Text>
+                  </View>
+                  <View style={styles.tdDesc}>
+                    <Text style={styles.productDesc}>{item.desc}</Text>
+                  </View>
+                  <Text style={styles.tdPrice}>{formatCurrency(item.price)}</Text>
+                  <Text style={styles.tdIVA}>{(quote.requiere_factura || quote.impuestos > 0) ? '16%' : '0%'}</Text>
+                  <Text style={styles.tdTotal}>{formatCurrency(item.total + item.iva)}</Text>
                 </View>
-                <Text style={styles.tdPrice}>{formatCurrency(item.price)}</Text>
-                <Text style={styles.tdIVA}>{(quote.requiere_factura || quote.impuestos > 0) ? '16%' : '0%'}</Text>
-                <Text style={styles.tdTotal}>{formatCurrency(item.total + item.iva)}</Text>
-              </View>
+              )
             ))
           )}
         </View>

@@ -165,13 +165,17 @@ export function QuoteBuilder({
 
       return {
         product: itemProduct,
-        qty: i.cantidad,
-        detalles: details
+        qty: Number(i.cantidad),
+        detalles: details,
+        seccion: i.seccion || undefined
       }
     })
   }
 
   const [items, setItems] = useState<LineItem[]>(getInitialItems())
+  const [secciones, setSecciones] = useState<string[]>(
+    Array.from(new Set(getInitialItems().map((i: any) => i.seccion).filter(Boolean) as string[]))
+  )
   const [attachments, setAttachments] = useState<Attachment[]>([
     { id: 'a1', name: 'Catálogo_Cargadores_2026.pdf', size: '2.4 MB' },
   ])
@@ -388,7 +392,7 @@ export function QuoteBuilder({
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
           cantidad: i.qty,
           precio_unitario: Number(i.product.precio_base),
-          total: Number(i.product.precio_base) * i.qty
+          total: Number(i.product.precio_base) * i.qty, seccion: i.seccion || null
         }))
       }
       
@@ -432,7 +436,7 @@ export function QuoteBuilder({
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
           cantidad: i.qty,
           precio_unitario: Number(i.product.precio_base),
-          total: Number(i.product.precio_base) * i.qty
+          total: Number(i.product.precio_base) * i.qty, seccion: i.seccion || null
         }))
       }
       
@@ -506,9 +510,26 @@ export function QuoteBuilder({
       {/* ============ PANEL DERECHO ============ */}
       <div className="flex h-[calc(100vh-140px)] flex-col rounded-2xl border border-brand-cyan/20 bg-slate-900/40 shadow-[0_0_40px_rgba(0,255,255,0.05)] backdrop-blur-sm overflow-hidden sticky top-24">
         {/* Cabecera Carrito */}
-        <div className="flex items-center gap-2 border-b border-brand-cyan/20 bg-slate-950 p-4 md:px-6">
-          <ShoppingCart className="h-5 w-5 text-brand-cyan drop-shadow-[0_0_8px_rgba(0,255,255,0.5)]" />
-          <h2 className="font-tech text-base font-bold uppercase tracking-widest text-white">Carrito de Cotización</h2>
+        <div className="flex items-center justify-between rounded-t-2xl border-b border-slate-800 bg-slate-900 p-4 shadow-[0_10px_30px_rgba(0,0,0,0.5)] z-10 relative md:p-6">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-blue/20">
+              <ShoppingCart className="h-5 w-5 text-brand-blue drop-shadow-[0_0_8px_rgba(0,163,255,0.8)]" />
+            </div>
+            <h2 className="font-tech text-base font-bold uppercase tracking-widest text-white">Carrito de Cotización</h2>
+          </div>
+          <Button 
+            onClick={() => {
+              const name = window.prompt("Nombre del nuevo apartado (ej. Planta Baja, Site CCTV):");
+              if (name && !secciones.includes(name.trim())) {
+                setSecciones(prev => [...prev, name.trim()]);
+              }
+            }}
+            variant="outline" 
+            size="sm"
+            className="border-brand-blue/50 text-brand-blue hover:bg-brand-blue/10 font-tech text-xs uppercase"
+          >
+            + Añadir Apartado
+          </Button>
         </div>
 
         <QuoteCart 
@@ -529,6 +550,14 @@ export function QuoteBuilder({
           removeFile={(id) => setAttachments(prev => prev.filter(a => a.id !== id))}
           attachments={attachments}
           addDirectItem={addDirectItem}
+          secciones={secciones}
+          onRemoveSeccion={(nombre) => {
+            setSecciones(prev => prev.filter(s => s !== nombre));
+            setItems(prev => prev.map(item => item.seccion === nombre ? { ...item, seccion: undefined } : item));
+          }}
+          onUpdateItemSeccion={(itemId, seccion) => {
+            setItems(prev => prev.map(item => item.product.id === itemId ? { ...item, seccion } : item));
+          }}
         />
 
         <QuoteSummary 
