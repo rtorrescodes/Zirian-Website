@@ -300,6 +300,12 @@ export function QuoteBuilder({
     )
   }
 
+  const updatePrice = (id: number, newPrice: number) => {
+    setItems((prev) =>
+      prev.map((i) => (i.product.id === id ? { ...i, product: { ...i.product, precio_base: newPrice } } : i))
+    )
+  }
+
   const removeItem = (id: number) =>
     setItems((prev) => prev.filter((i) => i.product.id !== id))
 
@@ -508,6 +514,7 @@ export function QuoteBuilder({
         <QuoteCart 
           items={items}
           updateQty={updateQty}
+          updatePrice={updatePrice}
           removeItem={removeItem}
           onFiles={(files) => {
             if (files) {

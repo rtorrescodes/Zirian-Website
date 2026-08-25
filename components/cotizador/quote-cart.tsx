@@ -7,6 +7,7 @@ import { useRef } from 'react';
 interface QuoteCartProps {
   items: any[];
   updateQty: (id: number, delta: number) => void;
+  updatePrice?: (id: number, price: number) => void;
   removeItem: (id: number) => void;
   onFiles: (files: FileList | null) => void;
   removeFile: (id: string) => void;
@@ -26,7 +27,7 @@ const getCategoryIcon = (categoryId: number) => {
   }
 };
 
-export function QuoteCart({ items, updateQty, removeItem, onFiles, removeFile, attachments, addDirectItem }: QuoteCartProps) {
+export function QuoteCart({ items, updateQty, updatePrice, removeItem, onFiles, removeFile, attachments, addDirectItem }: QuoteCartProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currencyExact = (value: number) => {
@@ -127,9 +128,41 @@ export function QuoteCart({ items, updateQty, removeItem, onFiles, removeFile, a
                             {currencyExact(Number(i.product.precio_base))} c/u
                           </span>
                         )}
-                        <p className="font-mono text-sm font-bold text-brand-cyan">
-                          {currencyExact(Number(i.product.precio_base) * i.qty)}
-                        </p>
+                        
+                        {Number(i.product.precio_base) === 0 ? (
+                          <div className="flex items-center group relative">
+                            <span className="text-brand-cyan font-bold mr-1">$</span>
+                            <input
+                              type="number"
+                              className="w-20 bg-slate-800 text-brand-cyan font-mono text-sm font-bold rounded px-1 py-0.5 outline-none border border-brand-cyan/50 focus:border-brand-cyan text-right placeholder:text-brand-cyan/50"
+                              placeholder="Sin precio"
+                              defaultValue=""
+                              onBlur={(e) => {
+                                if (e.target.value && updatePrice) updatePrice(i.product.id, Number(e.target.value));
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  if (e.currentTarget.value && updatePrice) updatePrice(i.product.id, Number(e.currentTarget.value));
+                                  e.currentTarget.blur();
+                                }
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <p 
+                            className="font-mono text-sm font-bold text-brand-cyan cursor-pointer hover:bg-slate-800 px-2 py-1 rounded transition-colors"
+                            onClick={() => {
+                              const newPrice = window.prompt("Modificar precio unitario:", Number(i.product.precio_base).toString());
+                              if (newPrice !== null && !isNaN(Number(newPrice)) && updatePrice) {
+                                updatePrice(i.product.id, Number(newPrice));
+                              }
+                            }}
+                            title="Click para editar precio"
+                          >
+                            {currencyExact(Number(i.product.precio_base) * i.qty)}
+                          </p>
+                        )}
+                        
                         <button
                           type="button"
                           onClick={() => removeItem(i.product.id)}
