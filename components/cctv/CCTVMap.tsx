@@ -134,11 +134,13 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
   const [pendingQuotes, setPendingQuotes] = useState<any[]>([]);
   const [isConvertingToQuote, setIsConvertingToQuote] = useState(false);
   const [syncWarnings, setSyncWarnings] = useState<string[]>([]);
+  const [unplacedCameras, setUnplacedCameras] = useState<{modelId: string, name: string, qty: number}[]>([]);
 
   const verifyQuoteSync = async (projectId: number, currentCameras: any[]) => {
     try {
-      const warnings = await checkQuoteMismatch(projectId, currentCameras.map(c => ({ modelId: c.modelId })));
+      const { warnings, unplaced } = await checkQuoteMismatch(projectId, currentCameras.map(c => ({ modelId: c.modelId })));
       setSyncWarnings(warnings);
+      setUnplacedCameras(unplaced);
     } catch (e) {
       console.error("Error verifying quote sync:", e);
     }
@@ -283,7 +285,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
     return points;
   };
 
-  const handleAddDevice = (type: DeviceType = 'camera', loc?: google.maps.LatLngLiteral) => {
+  const handleAddDevice = (type: DeviceType = 'camera', loc?: google.maps.LatLngLiteral, initialModelId?: string) => {
     if (!map) return;
     
     let center = loc;
@@ -293,7 +295,15 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       center = { lat: mapCenter.lat(), lng: mapCenter.lng() };
     }
     
-    const defaultModel = type === 'wifi' ? GENERIC_WIFI_APS[0] : GENERIC_CAMERAS[0];
+    let defaultModel;
+    if (initialModelId) {
+       defaultModel = [...GENERIC_CAMERAS, ...GENERIC_WIFI_APS].find(m => m.id === initialModelId) || (type === 'wifi' ? GENERIC_WIFI_APS[0] : GENERIC_CAMERAS[0]);
+       
+       // Optimistically update unplacedCameras so the UI reacts instantly
+       setUnplacedCameras(prev => prev.map(u => u.modelId === initialModelId ? { ...u, qty: u.qty - 1 } : u).filter(u => u.qty > 0));
+    } else {
+       defaultModel = type === 'wifi' ? GENERIC_WIFI_APS[0] : GENERIC_CAMERAS[0];
+    }
     const newCamId = Math.random().toString(36).substring(7);
     const prefix = type === 'wifi' ? 'AP' : 'Cámara';
     
@@ -1273,6 +1283,36 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
         </p>
         
         <div className="space-y-3 mb-8">
+          {unplacedCameras.length > 0 && !clientMode && (
+            <div className="border border-amber-500/50 rounded-lg bg-amber-950/20 p-3 shadow-lg">
+              <h3 className="text-amber-500 font-bold text-[10px] uppercase mb-2 flex items-center gap-1.5 font-tech tracking-widest">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Equipos por Colocar
+              </h3>
+              <p className="text-[10px] text-amber-200/70 mb-3 leading-tight">
+                Hay equipos en la cotización comercial que no han sido colocados en el diseño.
+              </p>
+              <div className="space-y-2">
+                {unplacedCameras.map((unplaced, idx) => {
+                  const type = unplaced.modelId.startsWith('wifi') ? 'wifi' : 'camera';
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => handleAddDevice(type, undefined, unplaced.modelId)}
+                      className="w-full text-left bg-slate-900 border border-slate-700 p-2 rounded hover:border-amber-500/50 transition-colors group"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-slate-300 font-medium truncate pr-2 group-hover:text-amber-400 transition-colors">{unplaced.name}</span>
+                        <span className="bg-amber-500 text-slate-900 text-[9px] font-black px-1.5 py-0.5 rounded shrink-0 flex items-center gap-1">
+                          <Plus className="w-2 h-2" /> {unplaced.qty}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <Button onClick={() => handleAddDevice('camera')} className="w-full bg-brand-blue hover:bg-brand-blue/80 text-slate-950 font-tech uppercase tracking-widest font-bold shadow-[0_0_15px_rgba(0,163,255,0.4)] transition-all h-12 md:h-10">
             <Plus className="w-5 h-5 md:w-4 md:h-4 mr-2" /> Agregar Cámara
           </Button>

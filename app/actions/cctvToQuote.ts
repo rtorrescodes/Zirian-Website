@@ -293,7 +293,7 @@ export async function checkQuoteMismatch(cctvProjectId: number, mapCameras: { mo
     include: { items: true }
   });
   
-  if (quotes.length === 0) return [];
+  if (quotes.length === 0) return { warnings: [], unplaced: [] };
   
   const quote = quotes[0]; // just check the first active linked quote
   
@@ -363,15 +363,23 @@ export async function checkQuoteMismatch(cctvProjectId: number, mapCameras: { mo
   
   // 3. Compare Map vs Quote
   const warnings: string[] = [];
+  const unplaced: { modelId: string, name: string, qty: number }[] = [];
   
-  for (const [modelId, mapQty] of Object.entries(mapCounts)) {
+  const allModelIds = new Set([...Object.keys(mapCounts), ...Object.keys(quoteCounts)]);
+  
+  for (const modelId of allModelIds) {
+    const mapQty = mapCounts[modelId] || 0;
     const quoteQty = quoteCounts[modelId] || 0;
+    const name = modelNames[modelId] || modelId;
+    
     if (quoteQty < mapQty) {
-      const name = modelNames[modelId] || modelId;
       const missing = mapQty - quoteQty;
       warnings.push(`Hay ${missing}x "${name}" menos en la cotización que en el diseño.`);
+    } else if (quoteQty > mapQty) {
+      const surplus = quoteQty - mapQty;
+      unplaced.push({ modelId, name, qty: surplus });
     }
   }
   
-  return warnings;
+  return { warnings, unplaced };
 }
