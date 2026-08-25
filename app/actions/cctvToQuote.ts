@@ -31,7 +31,7 @@ export async function createQuoteFromCctv(
   const cameraCounts: Record<string, number> = {};
   cameras.forEach(cam => {
     const sec = cam.section && cam.section !== 'General' ? cam.section : '';
-    const key = \\|\\;
+    const key = `${cam.modelId}|${sec}`;
     cameraCounts[key] = (cameraCounts[key] || 0) + 1;
   });
 
@@ -65,14 +65,14 @@ export async function createQuoteFromCctv(
     const [modelId, section] = key.split('|');
     const keyword = searchKeywords[modelId] || '';
     const realProduct = keyword ? allProducts.find(p => p.nombre.toLowerCase().includes(keyword.toLowerCase())) : null;
-    const sectionPrefix = section ? \[\] \ : '';
+    const sectionPrefix = section ? `[${section}] ` : '';
 
     if (realProduct) {
       const lineTotal = Number(realProduct.precio_base) * count;
       newSubtotal += lineTotal;
       return {
         productId: realProduct.id,
-        descripcion: \\\\,
+        descripcion: `${sectionPrefix}Cámara CCTV: ${modelNames[modelId] || modelId}`,
         cantidad: count,
         precio_unitario: realProduct.precio_base,
         total: lineTotal,
@@ -81,7 +81,7 @@ export async function createQuoteFromCctv(
       };
     } else {
       return {
-        descripcion: \\Cámara CCTV: \\,
+        descripcion: `${sectionPrefix}Cámara CCTV: ${modelNames[modelId] || modelId}`,
         cantidad: count,
         precio_unitario: 0,
         total: 0,
@@ -116,8 +116,8 @@ export async function createQuoteFromCctv(
       data: {
         clientId,
         tipo: 'Presupuesto Actualizado',
-        descripcion: \Se agregaron equipos desde un diseño de CCTV a la cotización #\.\,
-        url: \/admin/cotizador?editId=\\
+        descripcion: `Se agregaron equipos desde un diseño de CCTV a la cotización #${existingQuoteId}.`,
+        url: `/admin/cotizador?editId=${existingQuoteId}`
       }
     });
 
@@ -145,8 +145,8 @@ export async function createQuoteFromCctv(
       data: {
         clientId,
         tipo: 'Presupuesto Creado',
-        descripcion: \Se creó un borrador de presupuesto a partir de un diseño CCTV.\,
-        url: \/admin/cotizador?editId=\\
+        descripcion: `Se creó un borrador de presupuesto a partir de un diseño CCTV.`,
+        url: `/admin/cotizador?editId=${quote.id}`
       }
     });
 
@@ -215,7 +215,7 @@ export async function syncCctvToQuote(quoteId: number, clientId: number, cameras
   const cameraCounts: Record<string, number> = {};
   cameras.forEach(cam => {
     const sec = cam.section && cam.section !== 'General' ? cam.section : '';
-    const key = \\|\\;
+    const key = `${cam.modelId}|${sec}`;
     cameraCounts[key] = (cameraCounts[key] || 0) + 1;
   });
 
@@ -235,7 +235,7 @@ export async function syncCctvToQuote(quoteId: number, clientId: number, cameras
     const [modelId, section] = key.split('|');
     const keyword = searchKeywords[modelId] || '';
     const realProduct = keyword ? allProducts.find(p => p.nombre.toLowerCase().includes(keyword.toLowerCase())) : null;
-    const sectionPrefix = section ? \[\] \ : '';
+    const sectionPrefix = section ? `[${section}] ` : '';
 
     if (realProduct) {
       const lineTotal = Number(realProduct.precio_base) * count;
@@ -243,7 +243,7 @@ export async function syncCctvToQuote(quoteId: number, clientId: number, cameras
       return {
         quoteId,
         productId: realProduct.id,
-        descripcion: \\\\,
+        descripcion: `${sectionPrefix}Cámara CCTV: ${modelNames[modelId] || modelId}`,
         cantidad: count,
         precio_unitario: realProduct.precio_base,
         total: lineTotal,
@@ -253,7 +253,7 @@ export async function syncCctvToQuote(quoteId: number, clientId: number, cameras
     } else {
       return {
         quoteId,
-        descripcion: \\Cámara CCTV: \\,
+        descripcion: `${sectionPrefix}Cámara CCTV: ${modelNames[modelId] || modelId}`,
         cantidad: count,
         precio_unitario: 0,
         total: 0,
@@ -280,8 +280,8 @@ export async function syncCctvToQuote(quoteId: number, clientId: number, cameras
     data: {
       clientId,
       tipo: 'Presupuesto Actualizado',
-      descripcion: \Se sincronizó el diseño CCTV a la cotización #\.\,
-      url: \/admin/cotizador?editId=\\
+      descripcion: `Se sincronizó el diseño CCTV a la cotización #${quoteId}.`,
+      url: `/admin/cotizador?editId=${quoteId}`
     }
   });
 
@@ -369,7 +369,7 @@ export async function checkQuoteMismatch(cctvProjectId: number, mapCameras: { mo
     if (quoteQty < mapQty) {
       const name = modelNames[modelId] || modelId;
       const missing = mapQty - quoteQty;
-      warnings.push(Hay x "\" menos en la cotización que en el diseño.);
+      warnings.push(`Hay ${missing}x "${name}" menos en la cotización que en el diseño.`);
     }
   }
   
