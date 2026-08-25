@@ -1,24 +1,7 @@
-"use server";
+const fs = require('fs');
+let c = fs.readFileSync('app/actions/syscom.ts', 'utf-8');
 
-import { searchSyscomProducts, getSyscomExchangeRate } from "@/lib/syscom";
-import { getSyscomSettings } from "./syscom-settings";
-
-export async function searchSyscomForQuote(query: string) {
-  if (!query || query.length < 3) return { items: [], filteredOut: 0 };
-  
-  // Obtenemos los productos
-  let products = await searchSyscomProducts(query);
-  
-  let filteredOut = 0;
-
-  // Ya no filtramos por Whitelist en el Cotizador (CRM) para permitir buscar cualquier producto.
-  // El whitelist debe ser solo para la tienda pública.
-
-  // Obtenemos el tipo de cambio
-  const tc = await getSyscomExchangeRate();
-  
-  // Transformamos los productos para que el cliente los reciba fácilmente
-      const items = products.map(p => {
+const transform = `    const items = products.map(p => {
       let nombre = p.titulo;
       let descripcion = '';
       if (nombre.includes('/')) {
@@ -28,7 +11,7 @@ export async function searchSyscomForQuote(query: string) {
       }
 
       return {
-        id: `syscom-${p.producto_id}`,
+        id: \`syscom-\${p.producto_id}\`,
         syscomId: p.producto_id,
         nombre: nombre,
         descripcion: descripcion,
@@ -42,7 +25,8 @@ export async function searchSyscomForQuote(query: string) {
         stock: p.existencia?.nuevo || p.total_existencia || 0,
         categorias: p.categorias || []
       };
-    });
+    });`;
 
-  return { items, filteredOut };
-}
+c = c.replace(/const items = products\.map\([\s\S]*?categorias: p\.categorias \|\| \[\]\n  \}\)\);/, transform);
+
+fs.writeFileSync('app/actions/syscom.ts', c, 'utf-8');

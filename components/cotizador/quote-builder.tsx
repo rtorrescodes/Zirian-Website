@@ -240,7 +240,7 @@ export function QuoteBuilder({
       return {
         id: -Math.floor(Math.random() * 100000),
         nombre: sp.nombre,
-        descripcion: `Modelo: ${sp.modelo} | Marca: ${sp.marca}`,
+        descripcion: sp.descripcion ? `${sp.descripcion}\nModelo: ${sp.modelo} | Marca: ${sp.marca}` : `Modelo: ${sp.modelo} | Marca: ${sp.marca}`,
         codigo: sp.modelo,
         precio_base: sp.precioListaMXN,
         costo_estimado: sp.precioEspecialMXN,
@@ -272,14 +272,14 @@ export function QuoteBuilder({
   }
 
   const addDirectItem = (product: Product, quantity = 1) => {
-    let finalProduct = { ...product };
-    let finalDetails = '';
+      let finalProduct = { ...product };
+      let finalDetails = finalProduct.descripcion || '';
     if (finalProduct.nombre.length > 100) {
       const cutoff = finalProduct.nombre.lastIndexOf(' ', 100);
       if (cutoff > 50) {
         const excess = finalProduct.nombre.substring(cutoff).trim();
         finalProduct.nombre = finalProduct.nombre.substring(0, cutoff) + '...';
-        finalDetails = excess;
+        finalDetails = finalDetails ? `${finalDetails}\n\n${excess}` : excess;
       }
     }
     setItems((prev) => {
