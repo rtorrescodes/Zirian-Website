@@ -5,7 +5,9 @@ import { Page, Text, View, Document, StyleSheet, Image, Font } from '@react-pdf/
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('es-MX', {
     style: 'currency',
-    currency: 'MXN'
+    currency: 'MXN',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
   }).format(value);
 };
 
@@ -152,7 +154,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderBottomWidth: 1,
     borderBottomColor: '#cbd5e1',
-    paddingVertical: 6,
+    paddingVertical: 3,
   },
   tableRowAlt: {
     backgroundColor: '#f8fafc',
@@ -515,7 +517,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
           ) : (
             displayItems.map((item: any, idx: number) => (
               item.isSectionHeader ? (
-                <View key={`sec-${idx}`} style={{ backgroundColor: '#e2e8f0', padding: '6px 12px', borderBottom: '1px solid #cbd5e1' }}>
+                <View key={`sec-${idx}`} style={{ backgroundColor: '#e2e8f0', padding: '3px 12px', borderBottom: '1px solid #cbd5e1' }}>
                   <Text style={{ fontSize: 9, color: '#0f172a', fontWeight: 'bold', textTransform: 'uppercase' }}>{item.name}</Text>
                 </View>
               ) : (
@@ -562,20 +564,24 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
         <View style={{ flexGrow: 1, minHeight: 20 }} />
 
         {/* Compromiso Zirian Section */}
-        <View style={{ marginHorizontal: 40, marginBottom: 5 }}>
-          <Text style={styles.compromisoTitle}>{isEn ? 'ZIRIAN COMMITMENT' : 'COMPROMISO ZIRIAN'}</Text>
-        </View>
+        {!isGeneral && (
+          <View style={{ marginHorizontal: 40, marginBottom: 5 }}>
+            <Text style={styles.compromisoTitle}>{isEn ? 'ZIRIAN COMMITMENT' : 'COMPROMISO ZIRIAN'}</Text>
+          </View>
+        )}
         <View style={styles.compromisoWrapper}>
           <View style={styles.compromisoLeft}>
-            <Text style={styles.compromisoTextItalic}>
-              {isGeneral
-                ? '"Diseñamos e integramos soluciones tecnológicas de alta ingeniería, garantizando eficiencia, seguridad y calidad superior en BCS."'
-                : isEn
-                  ? '"We guarantee leading infrastructure compatible with BYD, operating under the strictest safety and regulatory standards in BCS."'
-                  : '"Garantizamos infraestructura líder y compatible con BYD, operando bajo los más estrictos estándares normativos de seguridad en BCS."'
-              }
-            </Text>
-            <Text style={styles.compromisoAuthor}>{isEn ? 'Zirian México Team' : 'Equipo Zirian México'}</Text>
+            {!isGeneral && (
+              <>
+                <Text style={styles.compromisoTextItalic}>
+                  {isEn
+                    ? '"We guarantee leading infrastructure compatible with BYD, operating under the strictest safety and regulatory standards in BCS."'
+                    : '"Garantizamos infraestructura l\u00edder y compatible con BYD, operando bajo los m\u00e1s estrictos est\u00e1ndares normativos de seguridad en BCS."'
+                  }
+                </Text>
+                <Text style={styles.compromisoAuthor}>{isEn ? 'Zirian M\u00e9xico Team' : 'Equipo Zirian M\u00e9xico'}</Text>
+              </>
+            )}
           </View>
         </View>
 
