@@ -287,3 +287,91 @@ export async function syncCctvToQuote(quoteId: number, clientId: number, cameras
 
   revalidatePath("/admin/cotizador");
 }
+export async function checkQuoteMismatch(cctvProjectId: number, mapCameras: { modelId: string }[]) {
+  const quotes = await prisma.quote.findMany({
+    where: { cctvProjectId, status: "Borrador" },
+    include: { items: true }
+  });
+  
+  if (quotes.length === 0) return [];
+  
+  const quote = quotes[0]; // just check the first active linked quote
+  
+  const allProducts = await prisma.product.findMany();
+  const searchKeywords: Record<string, string> = {
+    'cam-2.8mm': '2.8mm',
+    'cam-4mm': '4mm',
+    'cam-ptz': 'PTZ',
+    'cam-ezviz-cscb54k': '4K Wi-Fi',
+    'wifi-ubiquiti-u6': 'U6-Mesh',
+    'wifi-ruijie-rgrap': 'RGRAP52ODSEC',
+    'wifi-ruijie-rgrap6260g': 'RGRAP6260',
+    'wifi-tplink-bridge': 'EAP215'
+  };
+  
+  const modelNames: Record<string, string> = {
+    'cam-2.8mm': 'Domo 2MP Lente 2.8mm',
+    'cam-4mm': 'Bala 4MP Lente 4mm',
+    'cam-ptz': 'PTZ 25x',
+    'cam-ezviz-cscb54k': 'EZVIZ Solar 4K',
+    'wifi-ubiquiti-u6': 'Ubiquiti U6-Mesh',
+    'wifi-ruijie-rgrap': 'Ruijie RGRAP52ODSEC',
+    'wifi-ruijie-rgrap6260g': 'Ruijie RGRAP6260(G)',
+    'wifi-tplink-bridge': 'TP-Link Bridge 5km'
+  };
+
+  // 1. Count what's in the Map
+  const mapCounts: Record<string, number> = {};
+  for (const cam of mapCameras) {
+    mapCounts[cam.modelId] = (mapCounts[cam.modelId] || 0) + 1;
+  }
+  
+  // 2. Count what's in the Quote
+  const quoteCounts: Record<string, number> = {};
+  
+  for (const item of quote.items) {
+    // try to map this item back to a modelId
+    let foundModelId = null;
+    
+    // First, check by productId via keywords
+    if (item.productId) {
+      const product = allProducts.find(p => p.id === item.productId);
+      if (product) {
+        for (const [mId, kw] of Object.entries(searchKeywords)) {
+          if (product.nombre.toLowerCase().includes(kw.toLowerCase())) {
+            foundModelId = mId;
+            break;
+          }
+        }
+      }
+    }
+    
+    // If not found by product ID, check description for generic fallback
+    if (!foundModelId && item.descripcion.includes('Cámara CCTV:')) {
+      for (const [mId, mName] of Object.entries(modelNames)) {
+        if (item.descripcion.includes(mName) || item.descripcion.includes(mId)) {
+          foundModelId = mId;
+          break;
+        }
+      }
+    }
+    
+    if (foundModelId) {
+      quoteCounts[foundModelId] = (quoteCounts[foundModelId] || 0) + item.cantidad;
+    }
+  }
+  
+  // 3. Compare Map vs Quote
+  const warnings: string[] = [];
+  
+  for (const [modelId, mapQty] of Object.entries(mapCounts)) {
+    const quoteQty = quoteCounts[modelId] || 0;
+    if (quoteQty < mapQty) {
+      const name = modelNames[modelId] || modelId;
+      const missing = mapQty - quoteQty;
+      warnings.push(Hay x "\" menos en la cotización que en el diseño.);
+    }
+  }
+  
+  return warnings;
+}

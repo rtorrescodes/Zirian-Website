@@ -7,7 +7,7 @@ import { Plus, Save, Layers, Map as MapIcon, Crosshair, ChevronLeft, X, LocateFi
 import Link from 'next/link';
 import html2canvas from 'html2canvas';
 import { getClients } from '@/app/actions/clients';
-import { createQuoteFromCctv, getPendingQuotesForClient, getQuotesLinkedToCctv, syncCctvToQuote } from '@/app/actions/cctvToQuote';
+import { createQuoteFromCctv, getPendingQuotesForClient, getQuotesLinkedToCctv, syncCctvToQuote, checkQuoteMismatch } from '@/app/actions/cctvToQuote';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ['places', 'geometry'];
@@ -133,6 +133,16 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
   const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [pendingQuotes, setPendingQuotes] = useState<any[]>([]);
   const [isConvertingToQuote, setIsConvertingToQuote] = useState(false);
+  const [syncWarnings, setSyncWarnings] = useState<string[]>([]);
+
+  const verifyQuoteSync = async (projectId: number, currentCameras: any[]) => {
+    try {
+      const warnings = await checkQuoteMismatch(projectId, currentCameras.map(c => ({ modelId: c.modelId })));
+      setSyncWarnings(warnings);
+    } catch (e) {
+      console.error("Error verifying quote sync:", e);
+    }
+  };
 
   const fetchSavedProjects = async () => {
     setIsLoadingProjects(true);
@@ -180,6 +190,9 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       if (state.mapType) map.setMapTypeId(state.mapType);
     }
     setShowLoadModal(false);
+    
+    // Verify sync with commercial quote
+    verifyQuoteSync(project.id, state.cameras || []);
   };
 
   useEffect(() => {
@@ -630,6 +643,22 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
           </div>
         )}
         
+        {syncWarnings.length > 0 && !clientMode && (
+          <div className="bg-red-950/90 backdrop-blur-md border border-red-500/50 px-4 py-2 rounded-full shadow-lg flex items-center gap-2 max-w-lg cursor-help group relative">
+            <span className="text-red-400 font-bold text-xs whitespace-nowrap">⚠️ Equipos removidos en Cotizador</span>
+            
+            {/* Tooltip con los detalles */}
+            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 p-3 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[250px]">
+              <p className="text-[10px] text-slate-400 mb-2 border-b border-slate-800 pb-1">Detectamos que se borraron cámaras en el cotizador comercial. Revisa tu diseño y actualiza los cambios (Botón azul de Guardar).</p>
+              <ul className="text-xs text-red-300 space-y-1">
+                {syncWarnings.map((warn, i) => (
+                  <li key={i}>• {warn}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
         {/* Demo Mode Toggle */}
         <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700 px-3 md:px-4 py-1.5 md:py-2 rounded-full flex items-center gap-2 shadow-lg">
           <label className="flex items-center gap-2 cursor-pointer">
