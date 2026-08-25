@@ -14,6 +14,7 @@ interface QuoteCartProps {
   onAddSeccion?: (nombre: string) => void;
   onRemoveSeccion?: (nombre: string) => void;
   onUpdateItemSeccion?: (itemId: number, seccion?: string) => void;
+  onReorderSecciones?: (sourceIdx: number, destIdx: number) => void;
 }
 
 const getCategoryIcon = (categoryId: number) => {
@@ -30,9 +31,13 @@ const getCategoryIcon = (categoryId: number) => {
 
 export function QuoteCart({ 
   items, updateQty, updatePrice, removeItem, onFiles, removeFile, attachments, addDirectItem,
-  secciones = [], onAddSeccion, onRemoveSeccion, onUpdateItemSeccion
+  secciones = [], onAddSeccion, onRemoveSeccion, onUpdateItemSeccion, onReorderSecciones
 }: QuoteCartProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [dragType, setDragType] = React.useState<'item' | 'section' | null>(null);
+  const [draggedSectionIdx, setDraggedSectionIdx] = React.useState<number | null>(null);
+  const [dragOverSectionIdx, setDragOverSectionIdx] = React.useState<number | null>(null);
 
   const currencyExact = (value: number) => {
     return new Intl.NumberFormat('es-MX', {
@@ -41,25 +46,90 @@ export function QuoteCart({
     }).format(value);
   };
 
-  const renderSection = (seccionName: string | undefined, list: any[]) => {
+  const renderSection = (seccionName: string | undefined, list: any[], index: number) => {
     if (list.length === 0 && seccionName === undefined) return null;
-    if (list.length === 0 && seccionName !== undefined) {
-      // Still render empty custom sections so they can be seen/deleted
-    }
+
+    const isSectionDraggable = seccionName !== undefined;
+    const isDraggingThis = dragType === 'section' && draggedSectionIdx === index;
+    const isDragOver = dragType === 'section' && dragOverSectionIdx === index;
+    const dropClasses = isDragOver ? 'border-t-2 border-brand-cyan shadow-[0_-5px_15px_rgba(0,163,255,0.3)]' : '';
 
     return (
-      <div key={seccionName || 'default'} className="mb-6">
+      <div 
+        key={seccionName || 'default'} 
+        className={`mb-6 transition-all duration-200 ${isDraggingThis ? 'opacity-30' : ''} ${dropClasses}`}
+        draggable={isSectionDraggable}
+        onDragStart={(e) => {
+          if (!isSectionDraggable) {
+            e.preventDefault();
+            return;
+          }
+          e.dataTransfer.setData('text/plain', `section-${index}`);
+          e.dataTransfer.effectAllowed = 'move';
+          setDragType('section');
+          setDraggedSectionIdx(index);
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          if (dragType === 'section' && draggedSectionIdx !== null && draggedSectionIdx !== index && isSectionDraggable) {
+            setDragOverSectionIdx(index);
+          }
+        }}
+        onDragLeave={() => {
+          if (dragType === 'section') setDragOverSectionIdx(null);
+        }}
+        onDrop={(e) => {
+          e.preventDefault();
+          const data = e.dataTransfer.getData('text/plain');
+          
+          if (data.startsWith('item-')) {
+            const itemId = parseInt(data.replace('item-', ''));
+            if (!isNaN(itemId) && onUpdateItemSeccion) {
+               onUpdateItemSeccion(itemId, seccionName);
+            }
+          } else if (data.startsWith('section-')) {
+            const sourceIndex = parseInt(data.replace('section-', ''));
+            if (!isNaN(sourceIndex) && onReorderSecciones && sourceIndex !== index && isSectionDraggable) {
+              onReorderSecciones(sourceIndex, index);
+            }
+          }
+          
+          setDragType(null);
+          setDraggedSectionIdx(null);
+          setDragOverSectionIdx(null);
+        }}
+        onDragEnd={() => {
+          setDragType(null);
+          setDraggedSectionIdx(null);
+          setDragOverSectionIdx(null);
+        }}
+      >
         {seccionName && (
-          <div className="flex items-center justify-between bg-brand-blue/10 border border-brand-blue/30 p-2 rounded-t text-brand-cyan font-tech text-xs uppercase shadow-sm">
+          <div className="flex items-center justify-between bg-brand-blue/10 border border-brand-blue/30 p-2 rounded-t text-brand-cyan font-tech text-xs uppercase shadow-sm cursor-grab active:cursor-grabbing">
             <span>{seccionName}</span>
             <button onClick={() => onRemoveSeccion?.(seccionName)} className="text-brand-cyan hover:text-red-400">
               <X className="h-4 w-4" />
             </button>
           </div>
         )}
-        <ul className="divide-y divide-slate-800 border-b border-slate-800">
+        <ul className={`divide-y divide-slate-800 border-b border-slate-800 ${dragType === 'item' ? 'min-h-[60px] bg-slate-900/20 rounded-b' : ''}`}>
           {list.map((i) => (
-            <li key={i.product.id} className="flex items-start gap-3 py-4">
+            <li 
+              key={i.product.id} 
+              className="flex items-start gap-3 py-4 cursor-grab active:cursor-grabbing hover:bg-slate-900/30 px-2 rounded transition-colors"
+              draggable
+              onDragStart={(e) => {
+                e.stopPropagation();
+                e.dataTransfer.setData('text/plain', `item-${i.product.id}`);
+                e.dataTransfer.effectAllowed = 'move';
+                setDragType('item');
+              }}
+              onDragEnd={(e) => {
+                e.stopPropagation();
+                setDragType(null);
+              }}
+            >
               <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-900 border border-slate-800 shadow-[0_0_10px_rgba(0,0,0,0.5)]">
                 {getCategoryIcon(i.product.categoryId)}
               </div>
@@ -214,10 +284,10 @@ export function QuoteCart({
         ) : (
           <div className="space-y-2">
             {/* Render the default general section if there are unassigned items */}
-            {renderSection(undefined, items.filter(i => !i.seccion))}
+            {renderSection(undefined, items.filter(i => !i.seccion), -1)}
             
             {/* Render custom sections */}
-            {secciones.map(s => renderSection(s, items.filter(i => i.seccion === s)))}
+            {secciones.map((s, idx) => renderSection(s, items.filter(i => i.seccion === s), idx))}
           </div>
         )}
       </div>

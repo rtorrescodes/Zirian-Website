@@ -387,7 +387,10 @@ export function QuoteBuilder({
         requiere_factura: requiereFactura,
         status: status,
         motivo_rechazo: (status === 'Rechazada' || status === 'Cancelada') ? motivoRechazo : null,
-        items: items.map(i => ({
+        items: [
+          ...items.filter(i => !i.seccion || !secciones.includes(i.seccion)),
+          ...secciones.flatMap(s => items.filter(i => i.seccion === s))
+        ].map(i => ({
           productId: i.product.id < 0 ? null : i.product.id,
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
           cantidad: i.qty,
@@ -431,7 +434,10 @@ export function QuoteBuilder({
         group_prices: groupPrices,
         template: template,
         requiere_factura: requiereFactura,
-        items: items.map(i => ({
+        items: [
+          ...items.filter(i => !i.seccion || !secciones.includes(i.seccion)),
+          ...secciones.flatMap(s => items.filter(i => i.seccion === s))
+        ].map(i => ({
           productId: i.product.id < 0 ? null : i.product.id,
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
           cantidad: i.qty,
@@ -557,6 +563,14 @@ export function QuoteBuilder({
           }}
           onUpdateItemSeccion={(itemId, seccion) => {
             setItems(prev => prev.map(item => item.product.id === itemId ? { ...item, seccion } : item));
+          }}
+          onReorderSecciones={(sourceIdx, destIdx) => {
+            setSecciones(prev => {
+              const newSecs = [...prev];
+              const [removed] = newSecs.splice(sourceIdx, 1);
+              newSecs.splice(destIdx, 0, removed);
+              return newSecs;
+            });
           }}
         />
 
