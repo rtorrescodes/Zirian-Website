@@ -16,12 +16,14 @@ interface QuotePreviewProps {
   impuestosIniciales?: number;
   mostrarDesglose?: boolean;
   groupPrices?: Record<string, number>;
+  secciones?: string[];
 }
 
 export function QuotePreview({
   template,
   selectedClient,
   items,
+  secciones = [],
   requiereFactura,
   notasCliente,
   subtotal,
@@ -38,7 +40,47 @@ export function QuotePreview({
   // Group items logic
   let displayItems: any[] = [];
   if (mostrarDesglose) {
-    displayItems = items;
+    const hasSections = items.some((i: any) => i.seccion);
+    
+    if (hasSections) {
+      const sectionMap: Record<string, any[]> = {};
+      items.forEach((i: any) => {
+        const sec = i.seccion || 'General';
+        if (!sectionMap[sec]) sectionMap[sec] = [];
+        sectionMap[sec].push(i);
+      });
+      
+      const orderedSections = [...secciones, 'General'];
+      const processedSections = new Set<string>();
+      
+      orderedSections.forEach(sec => {
+        if (sectionMap[sec] && sectionMap[sec].length > 0 && !processedSections.has(sec)) {
+          processedSections.add(sec);
+          displayItems.push({
+            isSectionHeader: true,
+            product: { nombre: sec },
+            qty: '',
+            detalles: ''
+          });
+          displayItems.push(...sectionMap[sec]);
+        }
+      });
+      
+      // Añadir cualquier sección que no estuviera en la lista `secciones` por alguna razón
+      Object.keys(sectionMap).forEach(sec => {
+        if (!processedSections.has(sec)) {
+          displayItems.push({
+            isSectionHeader: true,
+            product: { nombre: sec },
+            qty: '',
+            detalles: ''
+          });
+          displayItems.push(...sectionMap[sec]);
+        }
+      });
+    } else {
+      displayItems = items;
+    }
   } else {
     const groups: Record<string, any> = {};
     
@@ -179,20 +221,32 @@ export function QuotePreview({
                     <tbody className="align-top">
                       {displayItems.length === 0 ? (
                         <tr><td colSpan={8} className="py-8 text-center text-slate-400 italic">Agrega conceptos a la cotización</td></tr>
-                      ) : displayItems.map((item, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? 'bg-slate-50' : 'bg-white'}>
-                          <td className="py-2 px-2 border border-slate-300 text-center font-bold">{item.qty}</td>
-                          <td className="py-2 px-2 border border-slate-300">
-                             <div className="font-bold text-slate-900">{item.product.nombre}</div>
-                          </td>
-                          <td className="py-2 px-2 border border-slate-300 text-slate-600 text-[10px] whitespace-pre-wrap leading-tight">
-                             {item.detalles || (!item.isGroup && item.product?.descripcion) || ''}
-                          </td>
-                          <td className="py-2 px-2 border border-slate-300 text-right">${Number(item.product.precio_base).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
-                          <td className="py-2 px-2 border border-slate-300 text-center">{(requiereFactura || impuestosIniciales > 0) ? '16%' : '0%'}</td>
-                          <td className="py-2 px-2 border border-slate-300 text-right font-bold bg-slate-100">${(Number(item.product.precio_base) * item.qty * ((requiereFactura || impuestosIniciales > 0) ? 1.16 : 1)).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
-                        </tr>
-                      ))}
+                      ) : displayItems.map((item, idx) => {
+                        if (item.isSectionHeader) {
+                          return (
+                            <tr key={`sec-${idx}`}>
+                              <td colSpan={6} className="py-1 px-2 border border-slate-300 bg-slate-200 font-bold text-slate-900 text-[10px] uppercase tracking-wider">
+                                {item.product.nombre}
+                              </td>
+                            </tr>
+                          );
+                        }
+                        
+                        return (
+                          <tr key={idx} className={idx % 2 === 0 ? 'bg-slate-50' : 'bg-white'}>
+                            <td className="py-2 px-2 border border-slate-300 text-center font-bold">{item.qty}</td>
+                            <td className="py-2 px-2 border border-slate-300">
+                               <div className="font-bold text-slate-900">{item.product.nombre}</div>
+                            </td>
+                            <td className="py-2 px-2 border border-slate-300 text-slate-600 text-[10px] whitespace-pre-wrap leading-tight">
+                               {item.detalles || (!item.isGroup && item.product?.descripcion) || ''}
+                            </td>
+                            <td className="py-2 px-2 border border-slate-300 text-right">${Number(item.product.precio_base).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
+                            <td className="py-2 px-2 border border-slate-300 text-center">{(requiereFactura || impuestosIniciales > 0) ? '16%' : '0%'}</td>
+                            <td className="py-2 px-2 border border-slate-300 text-right font-bold bg-slate-100">${(Number(item.product.precio_base) * item.qty * ((requiereFactura || impuestosIniciales > 0) ? 1.16 : 1)).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
 

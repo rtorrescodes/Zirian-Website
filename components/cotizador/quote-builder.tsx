@@ -611,6 +611,7 @@ export function QuoteBuilder({
         template={template}
         selectedClient={selectedClient}
         items={items}
+        secciones={secciones}
         requiereFactura={requiereFactura}
         notasCliente={notasCliente}
         mostrarDesglose={mostrarDesglose}
