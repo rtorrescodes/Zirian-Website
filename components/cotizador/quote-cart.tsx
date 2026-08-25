@@ -121,7 +121,12 @@ export function QuoteCart({ items, updateQty, removeItem, onFiles, removeFile, a
                         </div>
                       )}
 
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-3">
+                        {i.qty > 1 && (
+                          <span className="text-[10px] text-slate-500 font-mono hidden sm:inline-block mt-1">
+                            {currencyExact(Number(i.product.precio_base))} c/u
+                          </span>
+                        )}
                         <p className="font-mono text-sm font-bold text-brand-cyan">
                           {currencyExact(Number(i.product.precio_base) * i.qty)}
                         </p>
