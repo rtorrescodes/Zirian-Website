@@ -149,12 +149,13 @@ export function QuoteBuilder({
   const getInitialItems = () => {
     if (!initialQuote?.items) return []
     return initialQuote.items.map((i: any) => {
-      // Si el ítem no tiene un producto en base de datos, creamos uno virtual temporal
-      const itemProduct = i.product || {
+      // Si el ítem no tiene un producto en base de datos, creamos uno virtual temporal,
+      // y si sí tiene, preservamos el precio_unitario guardado (por si el usuario lo editó).
+      const itemProduct = i.product ? { ...i.product, precio_base: Number(i.precio_unitario || 0) } : {
         id: -Math.floor(Math.random() * 1000000), // ID negativo para identificar que es virtual
         nombre: i.descripcion || 'Artículo sin nombre',
         codigo: null,
-        precio_base: i.precio_unitario || 0,
+        precio_base: Number(i.precio_unitario || 0),
         unidad_medida: 'Pieza',
         categoryId: 0,
       }
