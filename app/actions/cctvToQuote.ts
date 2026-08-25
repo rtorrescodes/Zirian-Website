@@ -3,6 +3,30 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+
+const modelNames: Record<string, string> = {
+  'cam-2.8mm': 'Domo 2MP Lente 2.8mm',
+  'cam-4mm': 'Bala 4MP Lente 4mm',
+  'cam-ptz': 'PTZ 25x',
+  'cam-ezviz-cscb54k': 'EZVIZ Solar 4K',
+  'wifi-ubiquiti-u6': 'Ubiquiti U6-Mesh',
+  'wifi-ruijie-rgrap': 'Ruijie RGRAP52ODSEC',
+  'wifi-ruijie-rgrap6260g': 'Ruijie RGRAP6260(G)',
+  'wifi-tplink-bridge': 'TP-Link Bridge 5km'
+};
+
+
+const searchKeywords: Record<string, string> = {
+  'cam-2.8mm': '2.8mm',
+  'cam-4mm': '4mm',
+  'cam-ptz': 'PTZ',
+  'cam-ezviz-cscb54k': '4K Wi-Fi',
+  'wifi-ubiquiti-u6': 'U6-Mesh',
+  'wifi-ruijie-rgrap': 'RGRAP52ODSEC',
+  'wifi-ruijie-rgrap6260g': 'RGRAP6260',
+  'wifi-tplink-bridge': 'EAP215'
+};
+
 export async function getPendingQuotesForClient(clientId: number) {
   return await prisma.quote.findMany({
     where: { clientId, status: "Borrador" },
@@ -35,30 +59,11 @@ export async function createQuoteFromCctv(
     cameraCounts[key] = (cameraCounts[key] || 0) + 1;
   });
 
-  const modelNames: Record<string, string> = {
-    'cam-2.8mm': 'Domo 2MP Lente 2.8mm',
-    'cam-4mm': 'Bala 4MP Lente 4mm',
-    'cam-ptz': 'PTZ 25x (Zoom Máximo)',
-    'cam-ezviz-cscb54k': 'EZVIZ Solar 4K Wi-Fi 6',
-    'wifi-ubiquiti-u6': 'Ubiquiti U6-Mesh (360°)',
-    'wifi-ruijie-rgrap': 'Ruijie RGRAP52ODSEC (90°)',
-    'wifi-ruijie-rgrap6260g': 'Ruijie RGRAP6260(G) (360°)',
-    'wifi-tplink-bridge': 'TP-Link Bridge 5km'
-  };
+  
 
   const allProducts = await prisma.product.findMany();
   
-  const searchKeywords: Record<string, string> = {
-    'cam-2.8mm': '2.8mm',
-    'cam-4mm': '4mm',
-    'cam-ptz': 'PTZ',
-    'cam-ezviz-cscb54k': '4K Wi-Fi',
-    'wifi-ubiquiti-u6': 'U6-Mesh',
-    'wifi-ruijie-rgrap': 'RGRAP52ODSEC',
-    'wifi-ruijie-rgrap6260g': 'RGRAP6260',
-    'wifi-tplink-bridge': 'EAP215'
-  };
-
+  
   let newSubtotal = 0;
 
   const itemsData = Object.entries(cameraCounts).map(([key, count]) => {
@@ -72,7 +77,7 @@ export async function createQuoteFromCctv(
       newSubtotal += lineTotal;
       return {
         productId: realProduct.id,
-        descripcion: `${sectionPrefix}Cámara CCTV: ${modelNames[modelId] || modelId}`,
+        descripcion: `${sectionPrefix}${modelNames[modelId] || modelId}`,
         cantidad: count,
         precio_unitario: realProduct.precio_base,
         total: lineTotal,
@@ -81,7 +86,7 @@ export async function createQuoteFromCctv(
       };
     } else {
       return {
-        descripcion: `${sectionPrefix}Cámara CCTV: ${modelNames[modelId] || modelId}`,
+        descripcion: `${sectionPrefix}${modelNames[modelId] || modelId}`,
         cantidad: count,
         precio_unitario: 0,
         total: 0,
@@ -164,17 +169,7 @@ export async function syncCctvToQuote(quoteId: number, clientId: number, cameras
   if (!quote) throw new Error("Quote not found");
 
   const allProducts = await prisma.product.findMany();
-  const searchKeywords: Record<string, string> = {
-    'cam-2.8mm': '2.8mm',
-    'cam-4mm': '4mm',
-    'cam-ptz': 'PTZ',
-    'cam-ezviz-cscb54k': '4K Wi-Fi',
-    'wifi-ubiquiti-u6': 'U6-Mesh',
-    'wifi-ruijie-rgrap': 'RGRAP52ODSEC',
-    'wifi-ruijie-rgrap6260g': 'RGRAP6260',
-    'wifi-tplink-bridge': 'EAP215'
-  };
-
+  
   // Identificar qué items borrar: aquellos cuyo productId corresponde a una de las searchKeywords o la desc dice 'Cámara CCTV:'
   const cameraProductIds = allProducts
     .filter(p => Object.values(searchKeywords).some(kw => p.nombre.toLowerCase().includes(kw.toLowerCase())))
@@ -182,7 +177,7 @@ export async function syncCctvToQuote(quoteId: number, clientId: number, cameras
 
   const itemsToDelete = quote.items.filter(item => {
     if (item.productId && cameraProductIds.includes(item.productId)) return true;
-    if (item.descripcion.includes('Cámara CCTV:')) return true;
+    if (Object.values(modelNames).some(mName => item.descripcion.includes(mName))) return true;
     return false;
   });
 
@@ -219,16 +214,7 @@ export async function syncCctvToQuote(quoteId: number, clientId: number, cameras
     cameraCounts[key] = (cameraCounts[key] || 0) + 1;
   });
 
-  const modelNames: Record<string, string> = {
-    'cam-2.8mm': 'Domo 2MP Lente 2.8mm',
-    'cam-4mm': 'Bala 4MP Lente 4mm',
-    'cam-ptz': 'PTZ 25x (Zoom Máximo)',
-    'cam-ezviz-cscb54k': 'EZVIZ Solar 4K Wi-Fi 6',
-    'wifi-ubiquiti-u6': 'Ubiquiti U6-Mesh (360°)',
-    'wifi-ruijie-rgrap': 'Ruijie RGRAP52ODSEC (90°)',
-    'wifi-ruijie-rgrap6260g': 'Ruijie RGRAP6260(G) (360°)',
-    'wifi-tplink-bridge': 'TP-Link Bridge 5km'
-  };
+  
 
   let newSubtotal = 0;
   const itemsData = Object.entries(cameraCounts).map(([key, count]) => {
@@ -243,7 +229,7 @@ export async function syncCctvToQuote(quoteId: number, clientId: number, cameras
       return {
         quoteId,
         productId: realProduct.id,
-        descripcion: `${sectionPrefix}Cámara CCTV: ${modelNames[modelId] || modelId}`,
+        descripcion: `${sectionPrefix}${modelNames[modelId] || modelId}`,
         cantidad: count,
         precio_unitario: realProduct.precio_base,
         total: lineTotal,
@@ -253,7 +239,7 @@ export async function syncCctvToQuote(quoteId: number, clientId: number, cameras
     } else {
       return {
         quoteId,
-        descripcion: `${sectionPrefix}Cámara CCTV: ${modelNames[modelId] || modelId}`,
+        descripcion: `${sectionPrefix}${modelNames[modelId] || modelId}`,
         cantidad: count,
         precio_unitario: 0,
         total: 0,
@@ -298,27 +284,8 @@ export async function checkQuoteMismatch(cctvProjectId: number, mapCameras: { mo
   const quote = quotes[0]; // just check the first active linked quote
   
   const allProducts = await prisma.product.findMany();
-  const searchKeywords: Record<string, string> = {
-    'cam-2.8mm': '2.8mm',
-    'cam-4mm': '4mm',
-    'cam-ptz': 'PTZ',
-    'cam-ezviz-cscb54k': '4K Wi-Fi',
-    'wifi-ubiquiti-u6': 'U6-Mesh',
-    'wifi-ruijie-rgrap': 'RGRAP52ODSEC',
-    'wifi-ruijie-rgrap6260g': 'RGRAP6260',
-    'wifi-tplink-bridge': 'EAP215'
-  };
+    
   
-  const modelNames: Record<string, string> = {
-    'cam-2.8mm': 'Domo 2MP Lente 2.8mm',
-    'cam-4mm': 'Bala 4MP Lente 4mm',
-    'cam-ptz': 'PTZ 25x',
-    'cam-ezviz-cscb54k': 'EZVIZ Solar 4K',
-    'wifi-ubiquiti-u6': 'Ubiquiti U6-Mesh',
-    'wifi-ruijie-rgrap': 'Ruijie RGRAP52ODSEC',
-    'wifi-ruijie-rgrap6260g': 'Ruijie RGRAP6260(G)',
-    'wifi-tplink-bridge': 'TP-Link Bridge 5km'
-  };
 
   // 1. Count what's in the Map
   const mapCounts: Record<string, number> = {};
@@ -347,7 +314,7 @@ export async function checkQuoteMismatch(cctvProjectId: number, mapCameras: { mo
     }
     
     // If not found by product ID, check description for generic fallback
-    if (!foundModelId && item.descripcion.includes('Cámara CCTV:')) {
+    if (!foundModelId) {
       for (const [mId, mName] of Object.entries(modelNames)) {
         if (item.descripcion.includes(mName) || item.descripcion.includes(mId)) {
           foundModelId = mId;
