@@ -17,7 +17,7 @@ export default async function PublicQuotePage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 font-sans text-slate-200 selection:bg-brand-blue/30 selection:text-slate-950 hover:bg-brand-cyan">
+    <div className="min-h-screen bg-slate-950 font-sans text-slate-200 selection:bg-brand-blue/30 selection:text-slate-950">
       <QuoteView quote={quote} token={token} />
     </div>
   );
