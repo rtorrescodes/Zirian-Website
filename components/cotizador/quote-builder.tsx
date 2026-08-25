@@ -122,9 +122,7 @@ export function QuoteBuilder({
   const [clientOpen, setClientOpen] = useState(false)
   const [clientQuery, setClientQuery] = useState('')
 
-  const [activeCategory, setActiveCategory] = useState<number | null>(
-    initialCategories.length > 0 ? initialCategories[0].id : null
-  )
+  const [activeCategory, setActiveCategory] = useState<number | null>(null)
   const [productQuery, setProductQuery] = useState('')
   const [searchMode, setSearchMode] = useState<'local' | 'syscom'>('local')
   const [syscomResults, setSyscomResults] = useState<{items: any[], filteredOut: number}>({ items: [], filteredOut: 0 })
@@ -211,7 +209,7 @@ export function QuoteBuilder({
     () =>
       initialProducts.filter(
         (p) =>
-          p.categoryId === activeCategory &&
+          (!activeCategory || p.categoryId === activeCategory) &&
           `${p.nombre} ${p.codigo ?? ''}`
             .toLowerCase()
             .includes(productQuery.toLowerCase()),

@@ -122,12 +122,13 @@ export function ProductSearch({
           <select
             value={activeCategory ?? ''}
             onChange={(e) => {
-              setActiveCategory(Number(e.target.value))
+              setActiveCategory(e.target.value ? Number(e.target.value) : null)
               setProductQuery('')
               setPickedProductId(null)
             }}
             className="w-full h-10 rounded-md border border-slate-700 bg-slate-950 px-3 text-sm text-white focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none"
           >
+            <option value="">Todos los productos</option>
             {initialCategories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.nombre}
