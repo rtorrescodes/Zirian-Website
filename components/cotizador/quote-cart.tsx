@@ -48,7 +48,7 @@ function PriceEditor({
   
   const costo = Number(product.costo_estimado || 0);
   const basePrice = Number(product.precio_base || 0);
-  const baseForMargin = costo > 0 ? costo : (basePrice > 0 ? basePrice : 0);
+  const baseForMargin = costo > 0 ? (costo * 1.16) : (basePrice > 0 ? basePrice : 0);
 
   return (
     <div className="absolute right-0 top-8 z-50 bg-slate-900 border border-brand-cyan/50 rounded shadow-[0_0_15px_rgba(0,163,255,0.2)] p-3 w-64 text-left">

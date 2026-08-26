@@ -229,7 +229,7 @@ export function QuoteSummary({
           className="w-full sm:w-auto h-12 bg-brand-blue text-slate-950 hover:bg-brand-cyan hover:shadow-[0_0_20px_rgba(0,255,255,0.4)] transition-all font-tech font-bold uppercase tracking-widest text-sm px-8"
         >
           <FileText className="mr-2 h-5 w-5" />
-          Generar PDF Comercial
+          Generar PDF
         </Button>
       </div>
     </div>

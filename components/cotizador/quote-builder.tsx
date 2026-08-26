@@ -367,7 +367,7 @@ export function QuoteBuilder({
   const customSubtotal = Object.values(groupPrices).reduce((s, val) => s + (Number(val) || 0), 0);
   const subtotal = mostrarDesglose ? baseSubtotal : (Object.keys(groupPrices).length > 0 ? customSubtotal : baseSubtotal);
   
-  const ganancia = subtotal - subtotalCost
+  const ganancia = subtotal - (subtotalCost * 1.16)
   const iva = requiereFactura ? subtotal * 0.16 : 0
   const total = subtotal + iva
 
