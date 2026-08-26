@@ -251,7 +251,7 @@ export function QuoteBuilder({
         descripcion: sp.descripcion ? `${sp.descripcion}\nModelo: ${sp.modelo} | Marca: ${sp.marca}` : `Modelo: ${sp.modelo} | Marca: ${sp.marca}`,
         codigo: sp.modelo,
         precio_base: sp.precioListaMXN,
-        costo_estimado: sp.precioEspecialMXN,
+        costo_estimado: sp.precioDescuentoMXN,
         syscom_precio_lista: sp.precioListaMXN,
         syscom_precio_especial: sp.precioEspecialMXN,
         unidad_medida: 'Pieza',
