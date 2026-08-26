@@ -21,11 +21,6 @@ export async function searchSyscomForQuote(query: string) {
       const items = products.map(p => {
       let nombre = p.titulo;
       let descripcion = '';
-      if (nombre.includes('/')) {
-        const parts = nombre.split('/');
-        nombre = parts[0].trim();
-        descripcion = parts.slice(1).join(' / ').trim();
-      }
 
       return {
         id: `syscom-${p.producto_id}`,
