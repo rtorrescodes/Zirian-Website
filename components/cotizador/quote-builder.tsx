@@ -329,6 +329,8 @@ export function QuoteBuilder({
   const baseSubtotal = items.reduce((s, i) => s + (Number(i.product.precio_base) * i.qty), 0)
   const subtotalCost = items.reduce((s, i) => s + (Number(i.product.costo_estimado || 0) * i.qty), 0)
 
+  const prevCalculatedGroupsRef = useRef<Record<string, number>>({});
+
   // Use an effect to auto-populate groupPrices with the base calculated values when items change
   // so the user can then override them.
   useEffect(() => {
@@ -355,13 +357,16 @@ export function QuoteBuilder({
           }
         }
 
-        // Only set the default value if the user hasn't overridden it
+        // Update if the underlying items cost changed for this group, OR if it's new
         for (const [gName, val] of Object.entries(calculatedGroups)) {
-          if (next[gName] === undefined) {
+          const prevCalc = prevCalculatedGroupsRef.current[gName];
+          if (next[gName] === undefined || prevCalc !== val) {
             next[gName] = val;
             changed = true;
           }
         }
+        
+        prevCalculatedGroupsRef.current = calculatedGroups;
         return changed ? next : prev;
       });
     }

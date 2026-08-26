@@ -2,8 +2,8 @@ const fs = require('fs');
 let c = fs.readFileSync('app/actions/quotes.ts', 'utf-8');
 
 c = c.replace(
-  /precio_unitario: number;\s*total: number;/g,
-  "precio_unitario: number;\n    costo_unitario?: number;\n    total: number;"
+  /revalidatePath\("\/admin\/cotizaciones"\);/g,
+  "revalidatePath(\"/admin/cotizaciones\");\n  revalidatePath(\"/admin/dashboard\");\n  revalidatePath(\"/admin\");"
 );
 
 fs.writeFileSync('app/actions/quotes.ts', c, 'utf-8');

@@ -197,6 +197,8 @@ export async function deleteQuote(id: number) {
   });
 
   revalidatePath("/admin/cotizaciones");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin");
 }
 
 export async function updateQuote(id: number, data: any) {
@@ -252,6 +254,8 @@ export async function updateQuote(id: number, data: any) {
   }
 
   revalidatePath("/admin/cotizaciones");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin");
   revalidatePath(`/admin/cotizaciones/${id}`);
   revalidatePath("/admin/clientes");
   revalidatePath(`/admin/clientes/${quote.clientId}`);
@@ -307,6 +311,8 @@ export async function acceptQuote(token: string) {
   }
 
   revalidatePath("/admin/cotizaciones");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin");
   revalidatePath(`/presupuesto/${token}`);
   return serializeQuote(quote);
 }
@@ -346,6 +352,8 @@ export async function adminAcceptQuote(id: number) {
   }
 
   revalidatePath("/admin/cotizaciones");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin");
   if (quote.token) revalidatePath(`/presupuesto/${quote.token}`);
   return serializeQuote(quote);
 }
