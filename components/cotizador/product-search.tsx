@@ -62,15 +62,19 @@ export function ProductSearch({
   finishAddItem,
 }: ProductSearchProps) {
   const filteredProducts = useMemo(() => {
-    if (!productQuery) return initialProducts;
-    const q = productQuery.toLowerCase();
-    return initialProducts.filter(
-      (p) =>
-        p.nombre.toLowerCase().includes(q) ||
-        (p.codigo && p.codigo.toLowerCase().includes(q)) ||
-        (p.marca && p.marca.toLowerCase().includes(q)),
-    );
-  }, [initialProducts, productQuery]);
+      let result = initialProducts;
+      if (activeCategory) {
+        result = result.filter(p => p.categoryId === activeCategory);
+      }
+      if (!productQuery) return result;
+      const q = productQuery.toLowerCase();
+      return result.filter(
+        (p) =>
+          p.nombre.toLowerCase().includes(q) ||
+          (p.codigo && p.codigo.toLowerCase().includes(q)) ||
+          (p.marca && p.marca.toLowerCase().includes(q)),
+      );
+    }, [initialProducts, productQuery, activeCategory]);
 
   // Debounce for Syscom Search (4+ characters)
   useEffect(() => {

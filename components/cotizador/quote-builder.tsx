@@ -153,18 +153,24 @@ export function QuoteBuilder({
     return initialQuote.items.map((i: any) => {
       // Si el ítem no tiene un producto en base de datos, creamos uno virtual temporal,
       // y si sí tiene, preservamos el precio_unitario guardado (por si el usuario lo editó).
-      const itemProduct = i.product ? { ...i.product, precio_base: Number(i.precio_unitario || 0) } : {
-        id: -Math.floor(Math.random() * 1000000), // ID negativo para identificar que es virtual
-        nombre: i.descripcion || 'Artículo sin nombre',
-        codigo: null,
-        precio_base: Number(i.precio_unitario || 0),
-        unidad_medida: 'Pieza',
-        categoryId: 0,
-      }
-      
-      const details = i.product 
-        ? i.descripcion.replace(i.product.nombre, '').trim()
-        : ''
+      let vName = i.descripcion || 'Artículo sin nombre';
+        let vDetails = '';
+        if (!i.product && i.descripcion?.includes('\n')) {
+          const parts = i.descripcion.split('\n');
+          vName = parts[0];
+          vDetails = parts.slice(1).join('\n').trim();
+        }
+        const details = i.product ? i.descripcion.replace(i.product.nombre, '').trim() : vDetails;
+
+        const itemProduct = i.product ? { ...i.product, precio_base: Number(i.precio_unitario || 0) } : {
+          id: -Math.floor(Math.random() * 1000000), // ID negativo para identificar que es virtual
+          nombre: vName,
+          codigo: null,
+          precio_base: Number(i.precio_unitario || 0),
+          costo_estimado: Number(i.costo_unitario || 0),
+          unidad_medida: 'Pieza',
+          categoryId: 0,
+        }
 
       return {
         product: itemProduct,
@@ -258,7 +264,7 @@ export function QuoteBuilder({
   const addItem = () => {
     if (!pickedProduct) return
     let finalProduct = { ...pickedProduct };
-    let finalDetails = itemDetails;
+    let finalDetails = itemDetails || finalProduct.descripcion || '';
     if (finalProduct.nombre.length > 100) {
       const cutoff = finalProduct.nombre.lastIndexOf(' ', 100);
       if (cutoff > 50) {
