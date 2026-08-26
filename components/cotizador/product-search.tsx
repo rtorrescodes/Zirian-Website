@@ -203,8 +203,13 @@ export function ProductSearch({
                         {p.nombre}
                       </span>
                       <span className={cn("block line-clamp-2 text-[10px] font-tech font-bold uppercase tracking-wider mt-0.5", pickedProductId === p.id ? "text-brand-blue/70" : "text-slate-400")}>
-                        {p.codigo && `SKU: ${p.codigo} | `}{p.marca && `Marca: ${p.marca}`}
-                      </span>
+                          {p.codigo && `SKU: ${p.codigo} | `}{p.marca && `Marca: ${p.marca}`}
+                        </span>
+                        {p.descripcion && (
+                          <span className={cn("block line-clamp-2 text-[11px] mt-1 whitespace-pre-wrap leading-tight", pickedProductId === p.id ? "text-brand-blue/80" : "text-slate-400")}>
+                            {p.descripcion}
+                          </span>
+                        )}
                     </div>
                   </div>
                   <div className="text-right shrink-0">
@@ -255,8 +260,13 @@ export function ProductSearch({
                         {p.nombre}
                       </span>
                       <span className={cn("block line-clamp-2 text-[10px] font-tech font-bold uppercase tracking-wider mt-0.5", pickedProductId === p.id ? "text-brand-cyan/70" : "text-slate-400")}>
-                        Mod: {p.modelo} | {p.marca}
-                      </span>
+                          Mod: {p.modelo} | {p.marca}
+                        </span>
+                        {p.descripcion && (
+                          <span className={cn("block line-clamp-2 text-[11px] mt-1 whitespace-pre-wrap leading-tight", pickedProductId === p.id ? "text-brand-cyan/80" : "text-slate-400")}>
+                            {p.descripcion}
+                          </span>
+                        )}
                     </div>
                   </div>
                   <div className="text-right shrink-0 flex flex-col items-end">
