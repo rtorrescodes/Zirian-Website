@@ -147,17 +147,17 @@ export function ClientEditor({ initialData, partners, initialActivities = [] }: 
                 </div>
               </div>
 
+              <div className="space-y-2">
+                <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Ubicación / Dirección *</label>
+                {isLoaded ? (
+                  <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
+                    <Input name="ubicacion" value={formData.ubicacion} onChange={handleChange} required className="" placeholder="Buscar dirección..." />
+                  </Autocomplete>
+                ) : (
+                  <Input name="ubicacion" value={formData.ubicacion} onChange={handleChange} required className="" />
+                )}
+              </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Ubicación / Dirección *</label>
-                  {isLoaded ? (
-                    <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-                      <Input name="ubicacion" value={formData.ubicacion} onChange={handleChange} required className="" placeholder="Buscar dirección..." />
-                    </Autocomplete>
-                  ) : (
-                    <Input name="ubicacion" value={formData.ubicacion} onChange={handleChange} required className="" />
-                  )}
-                </div>
                 <div className="space-y-2">
                   <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Ciudad / Municipio</label>
                   <Input name="ciudad" value={formData.ciudad} onChange={handleChange} placeholder="Ej. Cabo San Lucas" className="" />
