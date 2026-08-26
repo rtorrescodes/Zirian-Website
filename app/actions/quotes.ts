@@ -48,6 +48,7 @@ export async function createQuote(data: {
     descripcion: string;
     cantidad: number;
     precio_unitario: number;
+    costo_unitario?: number;
     total: number;
   }[];
   brochures?: number[];

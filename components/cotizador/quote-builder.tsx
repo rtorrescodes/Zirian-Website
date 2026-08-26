@@ -66,6 +66,8 @@ interface Product {
   categoryId: number
   category?: Category
   recommendations?: { recommended: Product }[]
+  syscom_precio_lista?: any
+  syscom_precio_especial?: any
 }
 
 export const currencyExact = (value: number) => {
@@ -244,6 +246,8 @@ export function QuoteBuilder({
         codigo: sp.modelo,
         precio_base: sp.precioListaMXN,
         costo_estimado: sp.precioEspecialMXN,
+        syscom_precio_lista: sp.precioListaMXN,
+        syscom_precio_especial: sp.precioEspecialMXN,
         unidad_medida: 'Pieza',
         categoryId: catId,
       } as Product
@@ -394,7 +398,8 @@ export function QuoteBuilder({
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
           cantidad: i.qty,
           precio_unitario: Number(i.product.precio_base),
-          total: Number(i.product.precio_base) * i.qty, seccion: i.seccion || null
+            costo_unitario: Number(i.product.costo_estimado || 0),
+            total: Number(i.product.precio_base) * i.qty, seccion: i.seccion || null
         }))
       }
       
