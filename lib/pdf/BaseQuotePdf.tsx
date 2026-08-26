@@ -395,7 +395,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
       
       if (!groups[groupName]) {
         groups[groupName] = {
-          qty: "1 LOTE",
+          qty: 1,
           name: groupName,
           desc: '',
           price: groupPrices[groupName] !== undefined ? groupPrices[groupName] : 0,
@@ -517,11 +517,11 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
           ) : (
             displayItems.map((item: any, idx: number) => (
               item.isSectionHeader ? (
-                <View key={`sec-${idx}`} style={{ backgroundColor: '#e2e8f0', padding: '3px 12px', borderBottom: '1px solid #cbd5e1' }}>
+                <View key={`sec-${idx}`} style={{ backgroundColor: '#e2e8f0', padding: '3px 12px', borderBottom: '1px solid #cbd5e1' }} wrap={false}>
                   <Text style={{ fontSize: 9, color: '#0f172a', fontWeight: 'bold', textTransform: 'uppercase' }}>{item.name}</Text>
                 </View>
               ) : (
-                <View key={idx} style={[styles.tableRow, idx % 2 === 0 ? styles.tableRowAlt : {}]}>
+                <View key={idx} style={[styles.tableRow, idx % 2 === 0 ? styles.tableRowAlt : {}]} wrap={false}>
                   <Text style={styles.tdQty}>{item.qty}</Text>
                   <View style={styles.tdProduct}>
                     <Text style={styles.productName}>{item.name}</Text>
@@ -539,7 +539,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
         </View>
 
         {/* Totals */}
-        <View style={styles.totalsWrapper}>
+        <View style={styles.totalsWrapper} wrap={false}>
           <View style={styles.totalsLeft}>
             <Text style={styles.totalsNoteText}>{isEn ? 'Technical Note:' : 'Nota Técnica:'}</Text>
             {quote.notas_cliente ? <Text style={{ fontSize: 8, color: '#475569', marginTop: 3 }}>{quote.notas_cliente}</Text> : null}

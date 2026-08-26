@@ -150,7 +150,7 @@ export const BomPdf: React.FC<BomPdfProps> = ({ quote, logoData }) => {
     if ((item.product?.nombre || '').toLowerCase().includes('cable')) unit = 'MTS';
 
     return (
-      <View key={idx} style={styles.tableRow}>
+      <View key={idx} style={styles.tableRow} wrap={false}>
         <View style={styles.tdCheck}>
           <View style={styles.checkbox}></View>
         </View>
