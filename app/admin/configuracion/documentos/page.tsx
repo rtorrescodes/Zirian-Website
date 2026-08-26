@@ -68,7 +68,7 @@ export default function DocumentosPage() {
   }
 
   return (
-    <AppShell>
+    <AppShell title="Biblioteca de Documentos">
       <div className="p-8 max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>

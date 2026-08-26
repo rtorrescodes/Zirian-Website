@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   }
 
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.Checkout.Session;
+    const session = event.data.object as Stripe.Checkout.Session & { shipping_details?: any, customer_details?: any };
 
     const cartId = session.metadata?.cartId;
     const userId = session.metadata?.userId;

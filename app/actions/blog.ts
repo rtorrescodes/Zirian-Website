@@ -62,7 +62,7 @@ export async function getPostById(id: number) {
   });
 }
 
-export async function createPost(data: { title: string; title_en?: string | null; content: string; content_en?: string | null; excerpt?: string | null; excerpt_en?: string | null; featured_image?: string | null; status: string; category?: string | null; template?: string | null; }) {
+export async function createPost(data: { title: string; title_en?: string | null; content: string; content_en?: string | null; excerpt?: string | null; excerpt_en?: string | null; featured_image?: string | null; status: string; category?: string | null; template?: string; }) {
   const baseSlug = generateSlug(data.title);
   const slug = await ensureUniqueSlug(baseSlug);
 
@@ -79,7 +79,7 @@ export async function createPost(data: { title: string; title_en?: string | null
   return post;
 }
 
-export async function updatePost(id: number, data: { title: string; title_en?: string | null; content: string; content_en?: string | null; excerpt?: string | null; excerpt_en?: string | null; featured_image?: string | null; status: string; category?: string | null; template?: string | null; }) {
+export async function updatePost(id: number, data: { title: string; title_en?: string | null; content: string; content_en?: string | null; excerpt?: string | null; excerpt_en?: string | null; featured_image?: string | null; status: string; category?: string | null; template?: string; }) {
   const postBefore = await prisma.post.findUnique({ where: { id } });
   
   let slug = postBefore?.slug || generateSlug(data.title);

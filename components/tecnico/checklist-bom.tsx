@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, Package, ArchiveBox } from 'lucide-react'
+import { Check, Package, ArchiveX } from 'lucide-react'
 import { toggleBOMItem } from '@/app/actions/field'
 
 interface BOMItem {

@@ -24,7 +24,7 @@ export default async function ProductPage({
   const isEn = locale === 'en';
   
   const session = await auth();
-  const isAdmin = session?.user?.role?.toLowerCase() === 'admin' || session?.user?.role?.toLowerCase() === 'superadmin';
+  const isAdmin = (session?.user as any)?.role?.toLowerCase() === 'admin' || (session?.user as any)?.role?.toLowerCase() === 'superadmin';
   
   let product: SyscomProduct | null = null;
   

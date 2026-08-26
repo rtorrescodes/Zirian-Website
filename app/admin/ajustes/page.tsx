@@ -23,7 +23,7 @@ export default async function AjustesPage() {
   }
 
   return (
-    <AppShell>
+    <AppShell title="Ajustes">
       <div className="p-8 max-w-4xl mx-auto">
       <div className="flex items-center gap-3 mb-8">
         <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center border border-brand-blue/30 shadow-[0_0_20px_rgba(0,163,255,0.2)]">
@@ -90,7 +90,8 @@ export default async function AjustesPage() {
             )}
           </div>
         </div>
-            </div>
+      </div>
+    </div>
     </AppShell>
   );
 }

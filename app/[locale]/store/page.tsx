@@ -46,7 +46,7 @@ export default async function StorePage({
   const query = resolvedSearch.q || "cctv"; // Default search
   
   const session = await auth();
-  const isAdmin = session?.user?.role?.toLowerCase() === 'admin' || session?.user?.role?.toLowerCase() === 'superadmin';
+  const isAdmin = (session?.user as any)?.role?.toLowerCase() === 'admin' || (session?.user as any)?.role?.toLowerCase() === 'superadmin';
   
   const config = await getSyscomSettings();
   

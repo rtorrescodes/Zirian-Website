@@ -298,7 +298,7 @@ export async function checkQuoteMismatch(cctvProjectId: number, mapCameras: { mo
   
   for (const item of quote.items) {
     // try to map this item back to a modelId
-    let foundModelId = null;
+    let foundModelId: string | null = null;
     
     // First, check by productId via keywords
     if (item.productId) {
@@ -324,7 +324,7 @@ export async function checkQuoteMismatch(cctvProjectId: number, mapCameras: { mo
     }
     
     if (foundModelId) {
-      quoteCounts[foundModelId] = (quoteCounts[foundModelId] || 0) + item.cantidad;
+      quoteCounts[foundModelId] = (quoteCounts[foundModelId] || 0) + Number(item.cantidad);
     }
   }
   
