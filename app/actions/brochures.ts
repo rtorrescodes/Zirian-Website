@@ -9,11 +9,12 @@ export async function getBrochures() {
   })
 }
 
-export async function createBrochure(data: { nombre: string, file_url: string }) {
+export async function createBrochure(data: { nombre: string, file_url: string, file_base64?: string }) {
   const brochure = await prisma.brochure.create({
     data: {
       nombre: data.nombre,
       file_url: data.file_url,
+      file_base64: data.file_base64,
       activo: true
     }
   })

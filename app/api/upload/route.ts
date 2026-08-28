@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     // Return the relative URL
     const fileUrl = `/uploads/${folder}/${finalName}`;
     
-    return NextResponse.json({ url: fileUrl });
+    return NextResponse.json({ url: fileUrl, base64: buffer.toString('base64') });
   } catch (error: any) {
     console.error('Upload Error:', error);
     return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });

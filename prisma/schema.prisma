@@ -224,6 +224,7 @@ model Brochure {
   id             Int      @id @default(autoincrement())
   nombre         String   @db.VarChar(150)
   file_url       String   @db.VarChar(255)
+  file_base64    String?  @db.Text
   activo         Boolean  @default(true)
   fecha_creacion DateTime @default(now())
 

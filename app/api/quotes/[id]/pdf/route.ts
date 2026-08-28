@@ -103,11 +103,13 @@ export async function GET(
     // Fetch and merge brochures
     for (const quoteBrochure of quote.brochures) {
       const brochureUrl = quoteBrochure.brochure.file_url;
+      const brochureBase64 = quoteBrochure.brochure.file_base64;
       try {
         let brochureBuffer: Buffer | null = null;
         
-        // If it's a URL, fetch it. Otherwise assume local public path (for testing/legacy)
-        if (brochureUrl.startsWith('http')) {
+        if (brochureBase64) {
+          brochureBuffer = Buffer.from(brochureBase64, 'base64');
+        } else if (brochureUrl.startsWith('http')) {
           const response = await fetch(brochureUrl);
           if (response.ok) {
             brochureBuffer = Buffer.from(await response.arrayBuffer());

@@ -46,7 +46,7 @@ export default function DocumentosPage() {
       
       if (data.url) {
         let name = prompt("Nombre del documento:", file.name.replace('.pdf', '')) || file.name.replace('.pdf', '');
-        await createBrochure({ nombre: name, file_url: data.url });
+        await createBrochure({ nombre: name, file_url: data.url, file_base64: data.base64 });
         await load();
       } else {
         alert("Error al subir archivo: " + data.error);
