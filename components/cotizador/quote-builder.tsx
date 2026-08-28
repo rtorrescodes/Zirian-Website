@@ -400,6 +400,7 @@ export function QuoteBuilder({
         template: template,
         requiere_factura: requiereFactura,
         status: status,
+        brochures: attachments.map(a => parseInt(a.id)),
         motivo_rechazo: (status === 'Rechazada' || status === 'Cancelada') ? motivoRechazo : null,
         items: [
           ...items.filter(i => !i.seccion || !secciones.includes(i.seccion)),
@@ -449,6 +450,7 @@ export function QuoteBuilder({
         group_prices: groupPrices,
         template: template,
         requiere_factura: requiereFactura,
+        brochures: attachments.map(a => parseInt(a.id)),
         items: [
           ...items.filter(i => !i.seccion || !secciones.includes(i.seccion)),
           ...secciones.flatMap(s => items.filter(i => i.seccion === s))

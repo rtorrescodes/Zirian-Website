@@ -17,6 +17,12 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
     where: { id: quoteId },
     include: {
       client: true,
+      brochures: {
+        include: {
+          brochure: true
+        }
+      },
+      cctvProject: true,
       items: {
         include: {
           product: true
