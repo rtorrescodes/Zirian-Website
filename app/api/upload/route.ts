@@ -15,23 +15,22 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder);
-    
-    // Ensure directory exists
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
     // Clean filename
     const cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
     const timestamp = Date.now();
     const finalName = `${timestamp}-${cleanName}`;
-    const filePath = path.join(uploadDir, finalName);
-
-    fs.writeFileSync(filePath, buffer);
-
-    // Return the relative URL
     const fileUrl = `/uploads/${folder}/${finalName}`;
+
+    try {
+      const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder);
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const filePath = path.join(uploadDir, finalName);
+      fs.writeFileSync(filePath, buffer);
+    } catch(e) {
+      console.warn('Could not write to local FS (Vercel), continuing for base64');
+    }
     
     return NextResponse.json({ url: fileUrl, base64: buffer.toString('base64') });
   } catch (error: any) {
