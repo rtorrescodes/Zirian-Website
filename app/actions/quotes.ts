@@ -348,6 +348,201 @@ export async function adminAcceptQuote(id: number) {
         categoria: "Inventario",
         url: `/admin/cotizaciones/${quote.id}`
       });
+    console.error("Error auto-expiring quotes", e);
+  }
+
+  const quotes = await prisma.quote.findMany({
+    include: {
+      client: true,
+      items: {
+        include: {
+          product: true
+        }
+      }
+    },
+    orderBy: { fecha_creacion: 'desc' }
+  });
+  return quotes.map(serializeQuote);
+}
+
+export async function deleteQuote(id: number) {
+  const quote = await prisma.quote.findUnique({ where: { id } });
+
+  if (quote) {
+    await prisma.clientActivity.create({
+      data: {
+        clientId: quote.clientId,
+        tipo: 'Nota General',
+        descripcion: `Cotización eliminada: COT-${new Date(quote.fecha_creacion).getFullYear()}-${String(quote.id).padStart(4, '0')} (Monto: $${Number(quote.total).toLocaleString('es-MX')})`,
+      }
+    });
+  }
+
+  // Prisma will cascade delete items if configured, but let's delete items first to be safe
+  await prisma.quoteItem.deleteMany({
+    where: { quoteId: id }
+  });
+  
+  await prisma.quoteBrochure.deleteMany({
+    where: { quoteId: id }
+  });
+
+  await prisma.quote.delete({
+    where: { id }
+  });
+
+  revalidatePath("/admin/cotizaciones");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin");
+}
+
+export async function updateQuote(id: number, data: any) {
+  const { items, brochures, requiere_factura, ...quoteData } = data;
+
+  // Delete existing items
+  await prisma.quoteItem.deleteMany({
+    where: { quoteId: id }
+  });
+
+  await prisma.quoteBrochure.deleteMany({
+    where: { quoteId: id }
+  });
+
+  const quote = await prisma.quote.update({
+    where: { id },
+    data: {
+      ...quoteData,
+      requiere_factura: requiere_factura,
+      items: {
+        create: items,
+      },
+      brochures: brochures ? {
+        create: brochures.map((bId: number) => ({ brochureId: bId }))
+      } : undefined
+    }
+  });
+
+  if (quote.status === 'Rechazada' || quote.status === 'Cancelada') {
+    await prisma.client.update({
+      where: { id: quote.clientId },
+      data: { status: 'Prospecto (perdido)' }
+    });
+
+    await prisma.clientActivity.create({
+      data: {
+        clientId: quote.clientId,
+        tipo: 'Nota General',
+        descripcion: `La cotización COT-${new Date(quote.fecha_creacion).getFullYear()}-${String(quote.id).padStart(4, '0')} ha sido marcada como perdida.\nMotivo: ${quote.motivo_rechazo || 'No especificado'}`,
+        url: `/admin/cotizaciones/${quote.id}`
+      }
+    });
+  } else {
+    // Log general update
+    await prisma.clientActivity.create({
+      data: {
+        clientId: quote.clientId,
+        tipo: 'Presupuesto',
+        descripcion: `Cotización actualizada: COT-${new Date(quote.fecha_creacion).getFullYear()}-${String(quote.id).padStart(4, '0')} (Estatus: ${quote.status})`,
+        url: `/admin/cotizaciones/${quote.id}`
+      }
+    });
+  }
+
+  revalidatePath("/admin/cotizaciones");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin");
+  revalidatePath(`/admin/cotizaciones/${id}`);
+  revalidatePath("/admin/clientes");
+  revalidatePath(`/admin/clientes/${quote.clientId}`);
+  return serializeQuote(quote);
+}
+
+export async function getQuoteByToken(token: string) {
+  const quote = await prisma.quote.findUnique({
+    where: { token },
+    include: {
+      client: true,
+      items: {
+        include: { product: true }
+      },
+      cctvProject: true
+    }
+  });
+  return serializeQuote(quote);
+}
+
+export async function acceptQuote(token: string) {
+  const quote = await prisma.quote.update({
+    where: { token },
+    data: { status: 'Aprobado' },
+    include: { items: { include: { product: true } } }
+  });
+  
+  // Create blank ServiceOrder
+  await prisma.serviceOrder.upsert({
+    where: { quoteId: quote.id },
+    create: { quoteId: quote.id, status: 'Pendiente' },
+    update: {}
+  });
+
+  // Notifications
+  await createNotification({
+    title: "¡Cotización Aprobada!",
+    message: `El cliente ha aprobado la cotización #${quote.id} por $${quote.total}.`,
+    categoria: "CRM",
+    url: `/admin/cotizaciones/${quote.id}`
+  });
+
+  // Check Inventory
+  for (const item of quote.items) {
+    if (item.product && Number(item.cantidad) > Number(item.product.stock_general)) {
+      await createNotification({
+        title: "Alerta de Inventario",
+        message: `La cotización #${quote.id} recién aprobada requiere ${item.cantidad}x ${item.product.nombre}, pero solo hay ${item.product.stock_general} en stock.`,
+        categoria: "Inventario",
+        url: `/admin/cotizaciones/${quote.id}`
+      });
+    }
+  }
+
+  revalidatePath("/admin/cotizaciones");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin");
+  revalidatePath(`/presupuesto/${token}`);
+  return serializeQuote(quote);
+}
+
+export async function adminAcceptQuote(id: number) {
+  const quote = await prisma.quote.update({
+    where: { id },
+    data: { status: 'Aprobado' },
+    include: { items: { include: { product: true } } }
+  });
+  
+  // Create blank ServiceOrder
+  await prisma.serviceOrder.upsert({
+    where: { quoteId: quote.id },
+    create: { quoteId: quote.id, status: 'Pendiente' },
+    update: {}
+  });
+
+  // Notifications
+  await createNotification({
+    title: "¡Venta Cerrada Manualmente!",
+    message: `Has marcado la cotización #${quote.id} como Aprobada.`,
+    categoria: "CRM",
+    url: `/admin/cotizaciones/${quote.id}`
+  });
+
+  // Check Inventory
+  for (const item of quote.items) {
+    if (item.product && Number(item.cantidad) > Number(item.product.stock_general)) {
+      await createNotification({
+        title: "Alerta de Inventario",
+        message: `La cotización #${quote.id} recién aprobada requiere ${item.cantidad}x ${item.product.nombre}, pero solo hay ${item.product.stock_general} en stock.`,
+        categoria: "Inventario",
+        url: `/admin/cotizaciones/${quote.id}`
+      });
     }
   }
 
@@ -358,3 +553,28 @@ export async function adminAcceptQuote(id: number) {
   return serializeQuote(quote);
 }
 
+export async function adminCompleteQuote(id: number) {
+  const quote = await prisma.quote.findUnique({ where: { id } });
+  if (!quote) throw new Error('Cotización no encontrada');
+  
+  await prisma.quote.update({
+    where: { id },
+    data: {
+      status: 'Cobrada',
+      status_pago: 'Pagado',
+      monto_pagado: quote.total
+    }
+  });
+
+  await prisma.clientActivity.create({
+    data: {
+      clientId: quote.clientId,
+      tipo: 'Cobro de Proyecto',
+      descripcion: `El administrador marcó la cotización #${id} como Terminada y Cobrada.`
+    }
+  });
+
+  revalidatePath('/admin/cotizaciones');
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/admin');
+}

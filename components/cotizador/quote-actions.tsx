@@ -1,8 +1,8 @@
 'use client'
 
-import { deleteQuote, adminAcceptQuote } from "@/app/actions/quotes"
+import { deleteQuote, adminAcceptQuote, adminCompleteQuote } from "@/app/actions/quotes"
 import { Button } from "@/components/ui/button"
-import { Trash2, Edit, Link as LinkIcon, Check, ThumbsUp } from "lucide-react"
+import { Trash2, Edit, Link as LinkIcon, Check, ThumbsUp, DollarSign } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -10,6 +10,8 @@ export function QuoteActions({ quoteId, token, status }: { quoteId: number, toke
   const [isDeleting, setIsDeleting] = useState(false)
   const [isApproving, setIsApproving] = useState(false)
   const [copied, setCopied] = useState(false)
+
+  const [isCompleting, setIsCompleting] = useState(false)
 
   const handleDelete = async () => {
     if (confirm('¿Estás seguro de que deseas eliminar esta cotización de forma permanente? Se borrarán todas las partidas asociadas.')) {
@@ -21,6 +23,20 @@ export function QuoteActions({ quoteId, token, status }: { quoteId: number, toke
         console.error(e)
         alert('Hubo un error al eliminar la cotización.')
         setIsDeleting(false)
+      }
+    }
+  }
+
+  const handleComplete = async () => {
+    if (confirm('¿Deseas marcar esta cotización como COBRADA y REALIZADA? Esto la sumará a las finanzas y la removerá de las pendientes.')) {
+      setIsCompleting(true)
+      try {
+        await adminCompleteQuote(quoteId)
+      } catch (e) {
+        console.error(e)
+        alert('Hubo un error al cobrar la cotización.')
+      } finally {
+        setIsCompleting(false)
       }
     }
   }
@@ -76,7 +92,7 @@ export function QuoteActions({ quoteId, token, status }: { quoteId: number, toke
           {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <LinkIcon className="w-4 h-4" />}
         </Button>
       )}
-      {status !== 'Aprobado' && (
+      {status !== 'Aprobado' && status !== 'Cobrada' && (
         <Button 
           variant="outline" 
           size="sm" 
@@ -86,6 +102,18 @@ export function QuoteActions({ quoteId, token, status }: { quoteId: number, toke
           title="Aprobar Manualmente"
         >
           <ThumbsUp className="w-4 h-4" />
+        </Button>
+      )}
+      {status === 'Aprobado' && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleComplete}
+          disabled={isCompleting}
+          className="w-8 h-8 p-0 text-slate-400 border-slate-700 bg-slate-900 hover:text-amber-400 hover:bg-amber-950/30 hover:border-amber-900/50 transition-colors shrink-0"
+          title="Marcar como Terminada y Cobrada"
+        >
+          <DollarSign className="w-4 h-4" />
         </Button>
       )}
     </div>

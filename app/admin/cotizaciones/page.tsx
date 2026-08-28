@@ -12,7 +12,7 @@ export default async function CotizacionesPage({ searchParams }: { searchParams:
   const resolvedParams = await searchParams;
   const showLost = resolvedParams.showLost === 'true';
   const allQuotes = await getQuotes();
-  const quotes = showLost ? allQuotes : allQuotes.filter(q => q.status !== 'Rechazada' && q.status !== 'Cancelada');
+  const quotes = showLost ? allQuotes : allQuotes.filter(q => q.status !== 'Rechazada' && q.status !== 'Cancelada' && q.status !== 'Cobrada');
 
   return (
     <AppShell title="Historial de Cotizaciones" subtitle="Gestiona las cotizaciones creadas, inventario y órdenes de compra.">
@@ -31,7 +31,7 @@ export default async function CotizacionesPage({ searchParams }: { searchParams:
             href={showLost ? "/admin/cotizaciones" : "?showLost=true"}
             className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors border border-slate-700 bg-slate-800 text-white hover:bg-slate-700 h-9 px-4 py-2 font-tech uppercase tracking-widest"
           >
-            {showLost ? "Ocultar Perdidas" : "Ver Perdidas"}
+            {showLost ? "Ocultar Archivadas" : "Ver Archivadas"}
           </Link>
           <Link 
             href="/admin/cotizador"
