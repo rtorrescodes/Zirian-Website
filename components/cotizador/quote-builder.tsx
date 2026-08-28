@@ -23,6 +23,7 @@ import { ProductSearch } from './product-search';
 import { QuoteCart } from './quote-cart';
 import { QuoteSummary } from './quote-summary';
 import { QuotePreview } from './quote-preview';
+import { createBrochure } from '@/app/actions/brochures';
 
 import { cn } from '@/lib/utils'
 import dynamic from 'next/dynamic'
