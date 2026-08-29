@@ -271,7 +271,7 @@ export function AppShell({
             <NotificationsDropdown />
 
             <Link
-              href="/cotizador"
+              href="/admin/cotizador"
               className={cn(
                 buttonVariants({ size: 'lg' }),
                 'hidden bg-primary font-semibold text-primary-foreground hover:bg-primary/90 sm:inline-flex',
