@@ -86,6 +86,7 @@ export default async function CotizadorPage({ searchParams }: { searchParams: Pr
 
   
   const brochures = await prisma.brochure.findMany({
+    select: { id: true, nombre: true, file_url: true, activo: true, fecha_creacion: true },
     orderBy: { fecha_creacion: 'desc' }
   });
   

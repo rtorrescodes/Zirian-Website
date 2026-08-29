@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache"
 
 export async function getBrochures() {
   return await prisma.brochure.findMany({
+    select: { id: true, nombre: true, file_url: true, activo: true, fecha_creacion: true },
     orderBy: { fecha_creacion: 'desc' }
   })
 }
