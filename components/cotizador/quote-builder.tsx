@@ -561,14 +561,23 @@ export function QuoteBuilder({
           updateQty={updateQty}
           updatePrice={updatePrice}
           removeItem={removeItem}
-          onFiles={(files) => {
+          onFiles={async (files) => {
             if (files) {
-              const newFiles = Array.from(files).map((f) => ({
-                id: Math.random().toString(36).substring(7),
-                name: f.name,
-                size: (f.size / 1024).toFixed(1) + ' KB',
-              }));
-              setAttachments((prev) => [...prev, ...newFiles]);
+              for (const f of Array.from(files)) {
+                const formData = new FormData();
+                formData.append('file', f);
+                formData.append('folder', 'documentos');
+                formData.append('nombre', f.name.replace('.pdf', ''));
+                try {
+                  const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                  const data = await res.json();
+                  if (data.brochure) {
+                    setAttachments(prev => [...prev, { id: String(data.brochure.id), name: data.brochure.nombre, size: 'PDF' }]);
+                  }
+                } catch (error) {
+                  console.error("Error uploading file", error);
+                }
+              }
             }
           }}
           removeFile={(id) => setAttachments(prev => prev.filter(a => a.id !== id))}

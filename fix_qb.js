@@ -1,0 +1,8 @@
+const fs = require('fs');
+let content = fs.readFileSync('components/cotizador/quote-builder.tsx', 'utf8');
+const oldOnFiles = '          onFiles={(files) => {\n            if (files) {\n              const newFiles = Array.from(files).map((f) => ({\n                id: Math.random().toString(36).substring(7),\n                name: f.name,\n                size: (f.size / 1024).toFixed(1) + \\' KB\\',\n              }));\n              setAttachments((prev) => [...prev, ...newFiles]);\n            }\n          }}';
+const newOnFiles = '          onFiles={async (files) => {\n            if (files) {\n              for (const f of Array.from(files)) {\n                const formData = new FormData();\n                formData.append(\\'file\\', f);\n                formData.append(\\'folder\\', \\'documentos\\');\n                formData.append(\\'nombre\\', f.name.replace(\\'.pdf\\', \\'\\'));\n                try {\n                  const res = await fetch(\\'/api/upload\\', { method: \\'POST\\', body: formData });\n                  const data = await res.json();\n                  if (data.brochure) {\n                    setAttachments((prev) => [...prev, { id: String(data.brochure.id), name: data.brochure.nombre, size: \\'PDF\\' }]);\n                  }\n                } catch (error) {\n                  console.error(\\'Error uploading file\\', error);\n                }\n              }\n            }\n          }}';
+content = content.replace(oldOnFiles, newOnFiles);
+fs.writeFileSync('components/cotizador/quote-builder.tsx', content);
+console.log('Fixed onFiles');
+

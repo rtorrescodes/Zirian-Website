@@ -32,10 +32,13 @@ export default function DocumentosPage() {
       return;
     }
 
+    let name = prompt("Nombre del documento:", file.name.replace('.pdf', '')) || file.name.replace('.pdf', '');
+
     setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
     formData.append('folder', 'documentos');
+    formData.append('nombre', name);
 
     try {
       const res = await fetch('/api/upload', {
@@ -45,8 +48,6 @@ export default function DocumentosPage() {
       const data = await res.json();
       
       if (data.url) {
-        let name = prompt("Nombre del documento:", file.name.replace('.pdf', '')) || file.name.replace('.pdf', '');
-        await createBrochure({ nombre: name, file_url: data.url, file_base64: data.base64 });
         await load();
       } else {
         alert("Error al subir archivo: " + data.error);

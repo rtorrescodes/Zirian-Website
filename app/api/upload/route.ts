@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(req: Request) {
   try {
@@ -32,7 +33,17 @@ export async function POST(req: Request) {
       console.warn('Could not write to local FS (Vercel), continuing for base64');
     }
     
-    return NextResponse.json({ url: fileUrl, base64: buffer.toString('base64') });
+    const nombre = (formData.get('nombre') as string) || cleanName;
+    const brochure = await prisma.brochure.create({
+      data: {
+        nombre: nombre,
+        file_url: fileUrl,
+        file_base64: buffer.toString('base64'),
+        activo: true
+      }
+    });
+
+    return NextResponse.json({ url: fileUrl, brochure });
   } catch (error: any) {
     console.error('Upload Error:', error);
     return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });
