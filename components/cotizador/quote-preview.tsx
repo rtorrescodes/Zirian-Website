@@ -406,12 +406,21 @@ export function QuotePreview({
           </div>
             {attachments && attachments.length > 0 && (
               <div className="mt-8 border-t border-slate-200 pt-4 px-12 pb-8">
-                <h4 className="text-[#1C497B] font-bold text-sm mb-2">Documentos Anexos a la Cotización:</h4>
-                <ul className="list-disc list-inside text-xs text-slate-600">
+                <h4 className="text-[#1C497B] font-bold text-sm mb-4">Documentos Anexos a la Cotización:</h4>
+                <div className="space-y-6">
                   {attachments.map((a: any) => (
-                    <li key={a.id}>{a.name} (Se adjuntará en el PDF final)</li>
+                    <div key={a.id} className="border border-slate-300 rounded-md overflow-hidden bg-slate-50">
+                      <div className="bg-slate-200 px-4 py-2 border-b border-slate-300">
+                        <p className="text-xs font-bold text-slate-700">{a.name} <span className="font-normal">(Previsualización)</span></p>
+                      </div>
+                      <iframe 
+                        src={`/api/brochure/${a.id}#view=FitH`} 
+                        className="w-full h-[600px]"
+                        title={a.name}
+                      />
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
 
