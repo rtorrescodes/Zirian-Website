@@ -394,7 +394,7 @@ export function QuotePreview({
                 <div className="px-12 pb-4 pt-1">
                   <div className="bg-[#25B150] text-white text-[8px] font-bold flex justify-between items-center py-1 px-3 w-full">
                     <span>{isEn ? 'Page 1' : 'Página 1'}</span>
-                    <span>{new Date().toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</span>
+                    <span suppressHydrationWarning>{new Date().toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</span>
                   </div>
                 </div>
 
