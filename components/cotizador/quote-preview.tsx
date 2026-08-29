@@ -181,8 +181,8 @@ export function QuotePreview({
                   <div className="flex-1">
                     <div className="bg-[#1C497B] text-white font-bold text-[10px] px-2 py-1 uppercase tracking-wider">{isEn ? 'Emission Details' : 'Detalles de Emisión'}</div>
                     <div className="p-2 text-xs flex flex-col gap-1 border-l border-slate-300 h-[calc(100%-24px)]">
-                      <p><span className="font-bold">{isEn ? 'Date:' : 'Fecha:'}</span> {new Date().toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
-                      <p><span className="font-bold">{isEn ? 'Valid until:' : 'Validez:'}</span> {new Date(Date.now() + 15 * 86400000).toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
+                      <p suppressHydrationWarning><span className="font-bold">{isEn ? 'Date:' : 'Fecha:'}</span> {new Date().toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
+                      <p suppressHydrationWarning><span className="font-bold">{isEn ? 'Valid until:' : 'Validez:'}</span> {new Date(Date.now() + 15 * 86400000).toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
                       <p className="mb-0.5"><span className="font-bold">Agente:</span> Ing. Rodrigo Torres</p>
                     </div>
                   </div>
