@@ -128,24 +128,66 @@ export default async function StorePage({
 
       {/* Categories Fast Links */}
       <div className="bg-slate-900 border-b border-brand-border">
-        <div className="max-w-7xl mx-auto px-6 py-6 flex flex-wrap gap-4 justify-center">
-          <Link href={`/${resolvedParams.locale}/store?q=cctv`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors text-sm font-tech text-slate-300">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-wrap gap-3 justify-center">
+          <Link 
+            href={`/${resolvedParams.locale}/store?q=aufit`} 
+            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-sm font-tech border ${
+              query.toLowerCase() === 'aufit' 
+                ? 'bg-cyan-500 text-slate-950 font-bold border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.4)]' 
+                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+            }`}
+          >
+            <Wind className="h-4 w-4 text-cyan-400" /> Aires Acondicionados (AUFIT)
+          </Link>
+          <Link 
+            href={`/${resolvedParams.locale}/store?q=cctv`} 
+            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-sm font-tech border ${
+              query.toLowerCase() === 'cctv' 
+                ? 'bg-brand-blue text-white font-bold border-blue-400' 
+                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+            }`}
+          >
             <ShieldCheck className="h-4 w-4 text-brand-blue" /> CCTV & Seguridad
           </Link>
-          <Link href={`/${resolvedParams.locale}/store?q=redes`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors text-sm font-tech text-slate-300">
+          <Link 
+            href={`/${resolvedParams.locale}/store?q=cargador%20ev`} 
+            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-sm font-tech border ${
+              query.toLowerCase().includes('cargador') 
+                ? 'bg-[#00FF41] text-brand-dark font-bold border-[#00FF41]' 
+                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+            }`}
+          >
+            <Zap className="h-4 w-4 text-[#00FF41]" /> Cargadores EV
+          </Link>
+          <Link 
+            href={`/${resolvedParams.locale}/store?q=redes`} 
+            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-sm font-tech border ${
+              query.toLowerCase() === 'redes' 
+                ? 'bg-brand-cyan text-brand-dark font-bold border-cyan-400' 
+                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+            }`}
+          >
             <Server className="h-4 w-4 text-brand-cyan" /> Redes
           </Link>
-          <Link href={`/${resolvedParams.locale}/store?q=acceso`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors text-sm font-tech text-slate-300">
-            <Key className="h-4 w-4 text-yellow-500" /> Acceso
+          <Link 
+            href={`/${resolvedParams.locale}/store?q=acceso`} 
+            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-sm font-tech border ${
+              query.toLowerCase() === 'acceso' 
+                ? 'bg-yellow-500 text-black font-bold border-yellow-400' 
+                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+            }`}
+          >
+            <Key className="h-4 w-4 text-yellow-500" /> Control de Acceso
           </Link>
-          <Link href={`/${resolvedParams.locale}/store?q=cargador%20ev`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors text-sm font-tech text-slate-300">
-            <Zap className="h-4 w-4 text-[#00FF41]" /> Cargadores de Vehículos
-          </Link>
-          <Link href={`/${resolvedParams.locale}/store?q=ecoflow`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-brand-cyan hover:text-black transition-colors text-sm font-tech text-slate-300 border border-brand-cyan/20">
+          <Link 
+            href={`/${resolvedParams.locale}/store?q=ecoflow`} 
+            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors text-sm font-tech border ${
+              query.toLowerCase() === 'ecoflow' 
+                ? 'bg-brand-cyan text-brand-dark font-bold border-cyan-400' 
+                : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+            }`}
+          >
             <Zap className="h-4 w-4" /> Baterías EcoFlow
-          </Link>
-          <Link href={`/${resolvedParams.locale}/store?q=aufit`} className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-full hover:bg-slate-200 hover:text-black transition-colors text-sm font-tech text-slate-300 border border-slate-300/20">
-            <Wind className="h-4 w-4" /> Aires Acondicionados
           </Link>
         </div>
       </div>

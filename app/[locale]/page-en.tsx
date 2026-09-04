@@ -10,7 +10,7 @@ import { SmartHome } from "@/components/home/smart-home";
 import { SecurityAlddea } from "@/components/home/security-alddea";
 import { EstimatorForm } from "@/components/home/estimator-form";
 import { ContactForm } from "@/components/home/contact-form";
-import { SupportTicket } from "@/components/home/support-ticket";
+import { HomeAufitSection } from "@/components/home/home-aufit-section";
 import { HomeBlog } from "@/components/home/home-blog";
 import { HomeFooter } from "@/components/home/home-footer";
 
@@ -22,11 +22,11 @@ export default function LandingPageEN() {
       <StatsBar locale="en" />
       <BrandsMarquee locale="en" />
       <EvChargers locale="en" />
+      <HomeAufitSection locale="en" />
       <SmartHome locale="en" />
       <SecurityAlddea locale="en" />
       <EstimatorForm locale="en" />
       <ContactForm locale="en" />
-      <SupportTicket locale="en" />
       <HomeBlog locale="en" />
       <HomeFooter locale="en" />
     </div>

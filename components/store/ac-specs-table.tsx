@@ -1,0 +1,180 @@
+'use client';
+
+import React from 'react';
+import {
+  ThermometerSnowflake,
+  Zap,
+  Flame,
+  Wind,
+  ShieldCheck,
+  Volume2,
+  Wifi,
+  Sun,
+  Activity,
+  Award,
+} from 'lucide-react';
+
+interface AcSpecsTableProps {
+  product: {
+    titulo: string;
+    modelo: string;
+    descripcion?: string;
+    caracteristicas?: string[];
+  };
+  locale?: string;
+}
+
+export function AcSpecsTable({ product, locale = 'es' }: AcSpecsTableProps) {
+  const isEn = locale === 'en';
+  const text = `${product.titulo} ${product.modelo} ${(product.caracteristicas || []).join(' ')}`.toLowerCase();
+
+  // 1. Determine Capacity (BTU / Tons)
+  let btu = '12,000 BTU';
+  let tons = '1.0 Tonelada';
+  if (text.includes('36000') || text.includes('36,000') || text.includes('3 ton') || text.includes('3ton') || text.includes('36k')) {
+    btu = '36,000 BTU';
+    tons = isEn ? '3.0 Tons' : '3.0 Toneladas';
+  } else if (text.includes('24000') || text.includes('24,000') || text.includes('2 ton') || text.includes('2ton') || text.includes('24k')) {
+    btu = '24,000 BTU';
+    tons = isEn ? '2.0 Tons' : '2.0 Toneladas';
+  } else if (text.includes('18000') || text.includes('18,000') || text.includes('1.5 ton') || text.includes('1.5ton') || text.includes('18k')) {
+    btu = '18,000 BTU';
+    tons = isEn ? '1.5 Tons' : '1.5 Toneladas';
+  } else if (text.includes('12000') || text.includes('12,000') || text.includes('1 ton') || text.includes('1ton') || text.includes('12k')) {
+    btu = '12,000 BTU';
+    tons = isEn ? '1.0 Ton' : '1.0 Tonelada';
+  }
+
+  // 2. Mode: Cool Only vs Heat & Cool
+  const isHeatCool = text.includes('frío/calor') || text.includes('frio/calor') || text.includes('frio calor') || text.includes('frío y calor') || text.includes('heat pump') || text.includes('calefaccion') || text.includes('calefacción') || text.includes('bomba de calor');
+  const modeText = isHeatCool 
+    ? (isEn ? 'Cooling & Heating' : 'Frío y Calor (Bomba de Calor)')
+    : (isEn ? 'Cool Only' : 'Solo Frío');
+
+  // 3. Voltage
+  let voltage = '220 V ~ 60 Hz / 1 Fase';
+  if (text.includes('110v') || text.includes('115v') || text.includes('110 v') || text.includes('115 v')) {
+    voltage = '110-115 V ~ 60 Hz / 1 Fase';
+  }
+
+  // 4. Refrigerant
+  const isR32 = text.includes('r32') || text.includes('r-32') || !text.includes('r410');
+  const refrigerant = isR32 ? 'R32 Ecológico (Bajo GWP)' : 'R410A';
+
+  // 5. SEER
+  let seer = 'SEER 17 (Full Inverter)';
+  if (text.includes('21 seer') || text.includes('seer 21') || text.includes('21seer')) {
+    seer = 'SEER 21 (Ultra Inverter)';
+  } else if (text.includes('18 seer') || text.includes('seer 18')) {
+    seer = 'SEER 18 (Inverter)';
+  } else if (text.includes('17 seer') || text.includes('seer 17')) {
+    seer = 'SEER 17 (Full Inverter)';
+  }
+
+  const specs = [
+    {
+      icon: ThermometerSnowflake,
+      label: isEn ? 'Thermal Capacity' : 'Capacidad Térmica',
+      value: `${btu} (${tons})`,
+      highlight: true,
+    },
+    {
+      icon: isHeatCool ? Flame : Wind,
+      label: isEn ? 'Operating Cycle' : 'Modalidad de Ciclo',
+      value: modeText,
+      badge: isHeatCool ? '4 Estaciones' : 'Alta Eficiencia',
+    },
+    {
+      icon: Zap,
+      label: isEn ? 'Electrical Supply' : 'Alimentación Eléctrica',
+      value: voltage,
+    },
+    {
+      icon: Activity,
+      label: isEn ? 'Energy Efficiency' : 'Eficiencia Energética',
+      value: seer,
+      highlight: true,
+    },
+    {
+      icon: Sun,
+      label: isEn ? 'Refrigerant Gas' : 'Gas Refrigerante',
+      value: refrigerant,
+      badge: isR32 ? 'Ecológico' : undefined,
+    },
+    {
+      icon: ShieldCheck,
+      label: isEn ? 'Coil Protection' : 'Protección de Serpentín',
+      value: 'Blue Fin Anticorrosión Marina',
+      badge: 'Costero',
+    },
+    {
+      icon: Volume2,
+      label: isEn ? 'Acoustic Level' : 'Nivel Sonoro',
+      value: '23 dB (Modo Ultra Silencioso)',
+    },
+    {
+      icon: Wifi,
+      label: isEn ? 'Smart Connectivity' : 'Conectividad Inteligente',
+      value: 'Wi-Fi Integrado (App + Alexa)',
+      badge: 'Smart Home',
+    },
+  ];
+
+  return (
+    <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 my-4 shadow-xl">
+      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-4">
+        <div className="flex items-center gap-2">
+          <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+            <Award className="w-4 h-4" />
+          </div>
+          <div>
+            <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-white">
+              {isEn ? 'Technical Specifications' : 'Ficha de Ingeniería y Especificaciones'}
+            </h4>
+            <p className="text-[10px] text-slate-400">
+              {isEn ? 'Certified values for residential and coastal installation' : 'Datos certificados para clima cálido y marino'}
+            </p>
+          </div>
+        </div>
+        <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+          AUFIT Pro
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        {specs.map((spec, i) => {
+          const Icon = spec.icon;
+          return (
+            <div
+              key={i}
+              className={`flex items-start gap-2.5 p-2.5 rounded-xl border transition-all ${
+                spec.highlight
+                  ? 'bg-cyan-950/20 border-cyan-800/50 hover:border-cyan-500/60'
+                  : 'bg-slate-950/40 border-slate-800/60 hover:border-slate-700'
+              }`}
+            >
+              <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-cyan-400 flex-shrink-0 mt-0.5">
+                <Icon className="w-3.5 h-3.5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 block truncate">
+                    {spec.label}
+                  </span>
+                  {spec.badge && (
+                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
+                      {spec.badge}
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs font-semibold text-slate-100 block truncate mt-0.5">
+                  {spec.value}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

@@ -11,6 +11,8 @@ import { SidebarEcommerceWidget } from '@/components/store/sidebar-ecommerce-wid
 import { auth } from '@/auth';
 import { BlacklistButton } from '@/components/store/blacklist-button';
 import { AcProductDetailWidget } from '@/components/store/ac-product-detail-widget';
+import { AcSpecsTable } from '@/components/store/ac-specs-table';
+import { AcCapacityCalculator } from '@/components/store/ac-capacity-calculator';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,10 +86,13 @@ export default async function ProductPage({
       <HomeHeader locale={locale} />
 
       <main className="mx-auto max-w-7xl px-6 pt-32 pb-12 lg:px-8">
-        {/* Breadcrumbs */}
+        {/* Breadcrumbs with interactive links */}
         <div className="mb-8 flex flex-wrap items-center text-sm text-slate-400 gap-2 font-mono">
+          <Link href={`/${locale}`} className="hover:text-brand-cyan transition-colors">
+            {isEn ? 'Home' : 'Inicio'}
+          </Link>
+          <span className="text-slate-600">/</span>
           <Link href={`/${locale}/store`} className="inline-flex items-center hover:text-brand-cyan transition-colors">
-            <ArrowLeft className="h-4 w-4 mr-2" />
             {isEn ? 'Store' : 'Tienda'}
           </Link>
           
@@ -98,13 +103,18 @@ export default async function ProductPage({
                 .map((cat, idx) => (
                   <div key={cat.id || idx} className="flex items-center gap-2">
                     <span className="text-slate-600">/</span>
-                    <span className="text-slate-300 capitalize">
+                    <Link 
+                      href={`/${locale}/store?category=${cat.id}`}
+                      className="text-slate-300 capitalize hover:text-brand-cyan hover:underline transition-colors"
+                    >
                       {cat.nombre.toLowerCase()}
-                    </span>
+                    </Link>
                   </div>
               ))}
             </>
           )}
+          <span className="text-slate-600">/</span>
+          <span className="text-slate-500 truncate max-w-xs">{product.modelo}</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 lg:gap-12">
@@ -114,9 +124,9 @@ export default async function ProductPage({
               <div className="grid grid-cols-1 lg:grid-cols-2 h-full">
             
             {/* Left Column Container */}
-            <div className="flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800/20">
+            <div className="flex flex-col border-b lg:border-b-0 lg:border-r border-slate-800/40 p-4 sm:p-6 space-y-4">
               {/* Image Viewer */}
-              <div className="bg-white p-4 lg:p-6 flex items-center justify-center min-h-[400px] relative">
+              <div className="bg-white p-4 lg:p-6 flex items-center justify-center min-h-[360px] relative rounded-2xl overflow-hidden shadow-inner">
                 <ProductImageGallery 
                   portada={product.img_portada || 'https://via.placeholder.com/600?text=No+Image'} 
                   title={mainTitle} 
@@ -126,32 +136,47 @@ export default async function ProductPage({
                   <BlacklistButton productId={product.producto_id} />
                 )}
                 {product.marca && (
-                  <div className="absolute top-6 left-6 bg-slate-900 text-white text-xs uppercase font-bold px-3 py-1.5 rounded-md tracking-widest shadow-lg">
+                  <div className="absolute top-4 left-4 bg-slate-900 text-white text-xs uppercase font-bold px-3 py-1.5 rounded-md tracking-widest shadow-lg">
                     {product.marca}
                   </div>
                 )}
                 {((product.existencia?.nuevo ?? 0) > 0 || (product.total_existencia ?? 0) > 0) && (
-                  <div className="absolute bottom-6 left-6 bg-slate-900 border border-[#00FF41]/30 text-[#00FF41] text-xs uppercase font-bold px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg">
+                  <div className="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur-sm border border-[#00FF41]/40 text-[#00FF41] text-xs uppercase font-bold px-3 py-1.5 rounded-lg flex items-center gap-2 shadow-lg">
                     <div className="w-2 h-2 bg-[#00FF41] rounded-full animate-pulse shadow-[0_0_10px_#00FF41]"></div>
                     Disponibilidad: {product.existencia?.nuevo || product.total_existencia} pzas.
                   </div>
                 )}
               </div>
 
-              {/* Added Value Widget (Fills remaining empty space) */}
-              <div className="flex-1 p-6 lg:p-8 bg-slate-900/60 hidden lg:flex flex-col justify-center">
-                <h4 className="text-base font-bold text-white mb-5 uppercase tracking-wider font-mono text-brand-cyan">Asesoría e Instalación</h4>
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <ShieldCheck className="h-6 w-6 text-brand-blue flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-slate-300 leading-relaxed">
-                      Si este producto lo requiere con instalación en <strong>Baja California Sur</strong>, favor de cotizar y comprarlo directamente con nosotros para poder asesorarlo y revisar muy bien todo lo necesario para su instalación.
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <CheckCircle2 className="h-6 w-6 text-[#00FF41] flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-slate-300 leading-relaxed">Equipos originales y garantía Zirian directa en todos nuestros servicios de integración y domótica.</span>
-                  </div>
+              {/* Technical Specifications Table (AC Only) */}
+              {isAcProduct && (
+                <>
+                  <AcSpecsTable product={product} locale={locale} />
+                  <AcCapacityCalculator 
+                    currentModel={product.modelo} 
+                    currentTitle={product.titulo} 
+                    locale={locale} 
+                  />
+                </>
+              )}
+
+              {/* Warranty & Advice Card */}
+              <div className="p-5 bg-slate-950/70 border border-slate-800/80 rounded-2xl space-y-3 shadow-md">
+                <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-brand-cyan flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-brand-cyan" />
+                  {isEn ? 'Zirian Direct Warranty & Installation' : 'Garantía Directa e Instalación Certificada'}
+                </h4>
+                <div className="flex items-start gap-3">
+                  <ShieldCheck className="h-4 w-4 text-brand-blue flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-slate-300 leading-relaxed">
+                    Suministro e instalación profesional en <strong>Los Cabos & La Paz (BCS)</strong> y <strong>Riviera Maya (Cancún, Playa, Tulum, Puerto Aventuras)</strong> con técnicos certificados.
+                  </span>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-4 w-4 text-[#00FF41] flex-shrink-0 mt-0.5" />
+                  <span className="text-xs text-slate-300 leading-relaxed">
+                    Equipos 100% nuevos de fábrica con soporte, garantía de componentes y refacciones originales.
+                  </span>
                 </div>
               </div>
             </div>

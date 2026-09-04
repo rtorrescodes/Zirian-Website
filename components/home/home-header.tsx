@@ -45,9 +45,10 @@ export function HomeHeader({ locale = 'es' }: { locale?: string }) {
           </div>
 
           <div className="flex-1 hidden xl:flex justify-center">
-            <nav className="flex space-x-4 2xl:space-x-8 items-center font-title uppercase tracking-wider text-xs 2xl:text-sm font-bold">
+            <nav className="flex space-x-3 2xl:space-x-7 items-center font-title uppercase tracking-wider text-xs 2xl:text-sm font-bold">
               <Link href={`/${locale}#cargadores`} className="text-gray-300 hover:text-brand-blue transition-colors whitespace-nowrap">{locale === 'en' ? 'EV Chargers' : 'Cargadores EV'}</Link>
-              <Link href={`/${locale}#servicios`} className="text-gray-300 hover:text-brand-blue transition-colors whitespace-nowrap">{locale === 'en' ? 'Engineering & Smart Home' : 'Ingeniería & Domótica'}</Link>
+              <Link href={`/${locale}#climatizacion`} className="text-cyan-400 hover:text-cyan-300 transition-colors whitespace-nowrap">{locale === 'en' ? 'HVAC & AC' : 'Climas AUFIT'}</Link>
+              <Link href={`/${locale}#servicios`} className="text-gray-300 hover:text-brand-blue transition-colors whitespace-nowrap">{locale === 'en' ? 'Engineering & Smart Home' : 'Domótica'}</Link>
               <Link href={`/${locale}/store`} className="text-brand-cyan hover:text-white transition-colors whitespace-nowrap">{locale === 'en' ? 'Store' : 'Tienda'}</Link>
               <Link href={`/${locale}#cotizador`} className="text-gray-300 hover:text-brand-blue transition-colors whitespace-nowrap">{locale === 'en' ? 'Estimate' : 'Cotizar'}</Link>
               <Link href={`/${locale}/blog`} className="text-gray-300 hover:text-brand-blue transition-colors whitespace-nowrap">Blog</Link>
@@ -91,6 +92,13 @@ export function HomeHeader({ locale = 'es' }: { locale?: string }) {
               className="text-gray-300 hover:text-brand-blue py-2 border-b border-brand-border/40 transition-colors"
             >
               {locale === 'en' ? 'EV Chargers' : 'Cargadores EV'}
+            </Link>
+            <Link
+              href={`/${locale}#climatizacion`}
+              onClick={() => setMenuOpen(false)}
+              className="text-cyan-400 hover:text-cyan-300 py-2 border-b border-brand-border/40 transition-colors"
+            >
+              {locale === 'en' ? 'HVAC & AC' : 'Climatización AUFIT'}
             </Link>
             <Link
               href={`/${locale}#servicios`}
