@@ -17,7 +17,7 @@ export function EvChargers({ locale = 'es' }: { locale?: string }) {
             </h2>
             <div className="h-1 w-20 bg-brand-blue mx-auto mt-4" />
             <p className="mt-4 text-gray-400">
-              {locale === 'en' ? 'We guarantee safe and optimized electrical installations to protect your battery life and your home in Los Cabos.' : 'Garantizamos instalaciones eléctricas seguras y optimizadas para proteger la vida útil de tu batería y tu hogar en Los Cabos.'}
+              {locale === 'en' ? 'We guarantee safe and optimized electrical installations to protect your battery life and your property in Los Cabos & Riviera Maya.' : 'Garantizamos instalaciones eléctricas seguras y optimizadas para proteger la vida útil de tu batería y tu propiedad en Los Cabos y Riviera Maya.'}
             </p>
           </div>
 
@@ -60,7 +60,7 @@ export function EvChargers({ locale = 'es' }: { locale?: string }) {
                 {locale === 'en' ? 'Infrastructure for Hotels, Plazas and Airbnb' : 'Infraestructura para Hoteles, Plazas y Airbnb'}
               </h3>
               <p className="text-gray-400 text-sm mt-4 leading-relaxed">
-                {locale === 'en' ? 'Do you have a vacation rental property or commercial development in Los Cabos? Offering EV charging immediately increases your property visibility and value.' : '¿Tienes una propiedad en alquiler vacacional o un desarrollo comercial en Los Cabos? Ofrecer carga EV aumenta la visibilidad y valor de tu propiedad de forma inmediata.'}
+                {locale === 'en' ? 'Do you have a vacation rental property or commercial development in Los Cabos or Riviera Maya? Offering EV charging immediately increases your property visibility and value.' : '¿Tienes una propiedad en alquiler vacacional o un desarrollo comercial en Los Cabos o Riviera Maya? Ofrecer carga EV aumenta la visibilidad y valor de tu propiedad de forma inmediata.'}
               </p>
 
               <ul className="mt-6 space-y-3 text-xs text-gray-300">

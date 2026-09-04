@@ -4,27 +4,36 @@ import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Zirian | Alta Ingeniería Eléctrica y Cargadores EV en Los Cabos",
-  description: "Líderes en infraestructura para vehículos eléctricos, instalaciones eléctricas de alta gama, domótica y redes en Los Cabos y La Paz. Certificación NOM y CFE.",
+  title: "Zirian | Alta Ingeniería, Cargadores EV y Climatización | Los Cabos & Riviera Maya",
+  description: "Líderes en infraestructura para vehículos eléctricos, aire acondicionado de alta eficiencia, instalaciones eléctricas de alta gama y domótica en Los Cabos, La Paz y Riviera Maya (Cancún, Playa del Carmen, Tulum). Certificación NOM y CFE.",
+  keywords: [
+    "Cargadores autos eléctricos Los Cabos",
+    "Cargadores EV Riviera Maya",
+    "Aire acondicionado AUFIT Cancún",
+    "Minisplits Playa del Carmen",
+    "Climatización Tulum",
+    "Domótica residencial",
+    "Ingeniería eléctrica NOM CFE",
+  ],
   metadataBase: new URL("https://zirian.com"),
   openGraph: {
     type: "website",
-    title: "Zirian | Alta Ingeniería Eléctrica y Cargadores EV en Los Cabos",
-    description: "Líderes en infraestructura para vehículos eléctricos, instalaciones eléctricas de alta gama, domótica y redes en Los Cabos y La Paz. Certificación NOM y CFE.",
+    title: "Zirian | Alta Ingeniería, Cargadores EV y Climatización | Los Cabos & Riviera Maya",
+    description: "Líderes en infraestructura para vehículos eléctricos, aire acondicionado y automatización en Los Cabos, La Paz y Riviera Maya.",
     url: "https://zirian.com",
     images: [
       {
         url: "/assets/images/hero_ev_charger.jpg",
         width: 1200,
         height: 630,
-        alt: "Zirian EV Charging Solutions",
+        alt: "Zirian Engineering & Energy Solutions",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Zirian | Ingeniería y Cargadores Eléctricos Los Cabos",
-    description: "Servicios de alta ingeniería para residencias y comercios en Baja California Sur. Instalación de cargadores EV, automatización y seguridad.",
+    title: "Zirian | Ingeniería, Cargadores EV y Climas | Los Cabos & Riviera Maya",
+    description: "Servicios de alta ingeniería para residencias y comercios en Baja California Sur y Riviera Maya. Cargadores EV, climatización AUFIT, domótica y seguridad.",
     images: ["/assets/images/hero_ev_charger.jpg"],
   },
   icons: {

@@ -12,6 +12,7 @@ import { FeaturedSection } from '@/components/store/featured-section';
 import { FeaturedButton } from '@/components/store/featured-button';
 import { auth } from '@/auth';
 import { BlacklistButton } from '@/components/store/blacklist-button';
+import { AufitStoreBanner } from '@/components/store/aufit-store-banner';
 
 export const dynamic = 'force-dynamic';
 
@@ -171,6 +172,11 @@ export default async function StorePage({
           
           {/* Main Products Container */}
           <div className="lg:col-span-3">
+          {/* Aufit Technology Banner */}
+          {(query.toLowerCase().includes('aufit') || query.toLowerCase().includes('aire') || query.toLowerCase().includes('clima') || query.toLowerCase().includes('minisplit')) && (
+            <AufitStoreBanner />
+          )}
+
           {/* Free Shipping Banner */}
           <div className="mb-8 bg-brand-cyan/10 border border-brand-cyan/30 p-4 rounded-xl flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(0,210,255,0.15)]">
             <Truck className="h-6 w-6 text-brand-cyan animate-bounce" />
@@ -195,7 +201,12 @@ export default async function StorePage({
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {products.map((product) => (
+            {products.map((product) => {
+              const isAcProduct = product.marca?.toUpperCase() === 'AUFIT' ||
+                product.titulo?.toLowerCase().includes('minisplit') ||
+                product.titulo?.toLowerCase().includes('aire acondicionado');
+
+              return (
               <Link href={`/${resolvedParams.locale}/store/${product.producto_id}`} key={product.producto_id} className="block group">
                 <div className="bg-slate-900/80 border border-brand-blue/30 rounded-2xl overflow-hidden hover:border-brand-cyan hover:shadow-[0_0_20px_rgba(0,163,255,0.2)] transition-all flex flex-col h-full relative">
                   {isAdmin && (
@@ -234,17 +245,31 @@ export default async function StorePage({
                   </h3>
                   
                   <div className="pt-4 border-t border-slate-800 flex items-center justify-between mt-auto">
-                    <div>
-                      <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{isEn ? 'Price' : 'Precio'}</p>
-                      <p className="text-lg font-bold font-tech text-white">
-                        {product.precios?.precio_lista 
-                          ? `$${(parseFloat(product.precios.precio_lista) * exchangeRate * 1.16).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`
-                          : (isEn ? 'Ask Quote' : 'Solicitar')}
-                      </p>
-                      {product.precios?.precio_lista && (
-                        <p className="text-[9px] text-slate-500 uppercase">{isEn ? 'Tax Included' : 'IVA Incluido'}</p>
-                      )}
-                    </div>
+                    {isAcProduct ? (
+                      <div>
+                        <span className="text-[10px] text-cyan-400 font-tech font-bold uppercase tracking-wider block mb-0.5">
+                          {isEn ? 'Quote by Region' : 'Cotizar por Región'}
+                        </span>
+                        <p className="text-xs font-bold font-tech text-white">
+                          Riviera Maya & Los Cabos
+                        </p>
+                        <p className="text-[9px] text-emerald-400 font-mono">
+                          {isEn ? 'Installation Available' : 'Instalación Opcional'}
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-xs text-slate-500 uppercase tracking-wider mb-1">{isEn ? 'Price' : 'Precio'}</p>
+                        <p className="text-lg font-bold font-tech text-white">
+                          {product.precios?.precio_lista 
+                            ? `$${(parseFloat(product.precios.precio_lista) * exchangeRate * 1.16).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`
+                            : (isEn ? 'Ask Quote' : 'Solicitar')}
+                        </p>
+                        {product.precios?.precio_lista && (
+                          <p className="text-[9px] text-slate-500 uppercase">{isEn ? 'Tax Included' : 'IVA Incluido'}</p>
+                        )}
+                      </div>
+                    )}
                     <button className="bg-slate-800 group-hover:bg-brand-cyan group-hover:text-black text-white h-10 w-10 rounded-full flex items-center justify-center transition-colors">
                       <ArrowRight className="h-4 w-4" />
                     </button>
@@ -252,7 +277,8 @@ export default async function StorePage({
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
             </div>
           )}
         </div>

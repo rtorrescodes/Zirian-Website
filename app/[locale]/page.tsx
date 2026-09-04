@@ -9,8 +9,8 @@ export async function generateMetadata({ params }: { params: { locale: string } 
 
   if (locale === 'en') {
     return {
-      title: "Zirian | High-End Electrical Engineering & EV Chargers in Los Cabos",
-      description: "Leaders in electric vehicle infrastructure, high-end electrical installations, smart home automation, and networks in Los Cabos and La Paz. CFE Certified.",
+      title: "Zirian | High-End Engineering, EV Chargers & HVAC | Los Cabos & Riviera Maya",
+      description: "Leaders in electric vehicle infrastructure, high-efficiency air conditioning (AUFIT), high-end electrical installations, and smart automation in Los Cabos, La Paz, and Riviera Maya (Cancún, Playa del Carmen, Tulum).",
       alternates: {
         languages: {
           'es': '/es',
@@ -21,8 +21,8 @@ export async function generateMetadata({ params }: { params: { locale: string } 
   }
 
   return {
-    title: "Zirian | Alta Ingeniería Eléctrica y Cargadores EV en Los Cabos",
-    description: "Líderes en infraestructura para vehículos eléctricos, instalaciones eléctricas de alta gama, domótica y redes en Los Cabos y La Paz. Certificación NOM y CFE.",
+    title: "Zirian | Alta Ingeniería, Cargadores EV y Climatización | Los Cabos & Riviera Maya",
+    description: "Líderes en infraestructura para vehículos eléctricos, aire acondicionado de alta eficiencia (AUFIT), instalaciones eléctricas de alta gama y domótica en Los Cabos, La Paz y Riviera Maya (Cancún, Playa del Carmen, Tulum). Certificación NOM y CFE.",
     alternates: {
       languages: {
         'es': '/es',

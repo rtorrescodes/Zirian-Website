@@ -112,7 +112,7 @@ export function EstimatorForm({ locale = 'es' }: { locale?: string }) {
               {locale === 'en' ? 'Qualify your Electric Charger Project' : 'Cualifica tu Proyecto de Cargador Eléctrico'}
             </h2>
             <p className="text-gray-400 text-sm mt-3">
-              {locale === 'en' ? 'Complete the interactive wizard in just 30 seconds to estimate your electric car charger installation in Los Cabos.' : 'Completa el asistente interactivo en solo 30 segundos para estimar la instalación de tu cargador de auto eléctrico en Los Cabos.'}
+              {locale === 'en' ? 'Complete the interactive wizard in just 30 seconds to estimate your electric car charger installation in Los Cabos or Riviera Maya.' : 'Completa el asistente interactivo en solo 30 segundos para estimar la instalación de tu cargador de auto eléctrico en Los Cabos o Riviera Maya.'}
             </p>
           </div>
 

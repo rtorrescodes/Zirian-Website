@@ -72,7 +72,7 @@ export function SecurityAlddea({ locale = 'es' }: { locale?: string }) {
               </h2>
               <div className="h-1 w-24 bg-gradient-to-r from-brand-blue to-brand-green mt-4 mb-6" />
               <p className="text-gray-400 text-sm leading-relaxed mb-8">
-                {locale === 'en' ? 'Alddea is the ultimate digital platform for managing high-end subdivisions, condominiums, and residential developments in Los Cabos. Automate operations and improve your residents\' experience from a single integrated system.' : 'Alddea es la plataforma digital definitiva para la administración de fraccionamientos, condominios y residenciales de alta gama en Los Cabos. Automatiza las operaciones y mejora la experiencia de tus residentes desde un solo sistema integrado.'}
+                {locale === 'en' ? 'Alddea is the ultimate digital platform for managing high-end subdivisions, condominiums, and residential developments in Los Cabos and Riviera Maya. Automate operations and improve your residents\' experience from a single integrated system.' : 'Alddea es la plataforma digital definitiva para la administración de fraccionamientos, condominios y residenciales de alta gama en Los Cabos y Riviera Maya. Automatiza las operaciones y mejora la experiencia de tus residentes desde un solo sistema integrado.'}
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">

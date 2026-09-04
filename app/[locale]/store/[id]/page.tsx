@@ -10,6 +10,7 @@ import { Metadata } from 'next';
 import { SidebarEcommerceWidget } from '@/components/store/sidebar-ecommerce-widget';
 import { auth } from '@/auth';
 import { BlacklistButton } from '@/components/store/blacklist-button';
+import { AcProductDetailWidget } from '@/components/store/ac-product-detail-widget';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,6 +42,16 @@ export default async function ProductPage({
   const precioVenta = product.precios?.precio_lista 
     ? parseFloat(product.precios.precio_lista) * exchangeRate * 1.16 
     : 0;
+
+  const isAcProduct = product.marca?.toUpperCase() === 'AUFIT' ||
+    product.titulo?.toLowerCase().includes('minisplit') ||
+    product.titulo?.toLowerCase().includes('aire acondicionado');
+
+  const rawCostUSD = (product.precios as any)?.precio_descuento
+    ? parseFloat((product.precios as any).precio_descuento)
+    : (product.precios?.precio_1 ? parseFloat(product.precios.precio_1) : (product.precios?.precio_lista ? parseFloat(product.precios.precio_lista) * 0.65 : 0));
+
+  const rawCostMxn = rawCostUSD * exchangeRate * 1.16;
 
   let mainTitle = product.titulo;
   let subTitle = "";
@@ -159,46 +170,58 @@ export default async function ProductPage({
                 )}
               </div>
 
-              <div className="bg-slate-800/50 rounded-2xl p-6 mb-8 border border-slate-700/50">
-                <div className="flex flex-col gap-3 mb-4">
-                  <div className="flex items-center gap-4">
-                    <ShieldCheck className="h-6 w-6 text-[#00FF41]" />
-                    <p className="text-sm text-slate-300">
-                      {isEn ? 'Official Authorized Distributor Warranty' : 'Garantía Oficial de Distribuidor Autorizado'}
-                    </p>
+              {isAcProduct ? (
+                <AcProductDetailWidget
+                  productId={product.producto_id}
+                  productTitle={product.titulo}
+                  productModel={product.modelo}
+                  productBrand={product.marca || 'AUFIT'}
+                  productImage={product.img_portada}
+                  rawCostMxn={rawCostMxn}
+                  locale={locale}
+                />
+              ) : (
+                <div className="bg-slate-800/50 rounded-2xl p-6 mb-8 border border-slate-700/50">
+                  <div className="flex flex-col gap-3 mb-4">
+                    <div className="flex items-center gap-4">
+                      <ShieldCheck className="h-6 w-6 text-[#00FF41]" />
+                      <p className="text-sm text-slate-300">
+                        {isEn ? 'Official Authorized Distributor Warranty' : 'Garantía Oficial de Distribuidor Autorizado'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <Truck className="h-6 w-6 text-brand-cyan" />
+                      <p className="text-sm text-slate-300 font-bold">
+                        {isEn ? 'Free Shipping Nationwide' : 'Envío Gratis a toda la República'}
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <Truck className="h-6 w-6 text-brand-cyan" />
-                    <p className="text-sm text-slate-300 font-bold">
-                      {isEn ? 'Free Shipping Nationwide' : 'Envío Gratis a toda la República'}
-                    </p>
+                  <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-700/50 pt-4 mt-4">
+                    <div className="min-w-fit">
+                      <p className="text-xs text-slate-400 uppercase tracking-wider">{isEn ? 'Pricing' : 'Precio'}</p>
+                      <p className="text-xl sm:text-2xl font-bold font-tech text-white mt-1 whitespace-nowrap">
+                        {product.precios?.precio_lista 
+                          ? `$${precioVenta.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`
+                          : (isEn ? 'Custom Quote' : 'Cotización a medida')}
+                      </p>
+                      {product.precios?.precio_lista && (
+                        <p className="text-[10px] text-slate-500 uppercase mt-1">{isEn ? 'Tax Included' : 'IVA Incluido'}</p>
+                      )}
+                    </div>
+                    <div className="w-full sm:w-auto">
+                      <AddToCartButton 
+                        productId={product.producto_id}
+                        title={product.titulo}
+                        brand={product.marca || null}
+                        model={product.modelo || null}
+                        image={product.img_portada || null}
+                        priceMxn={precioVenta}
+                        locale={locale}
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-700/50 pt-4 mt-4">
-                  <div className="min-w-fit">
-                    <p className="text-xs text-slate-400 uppercase tracking-wider">{isEn ? 'Pricing' : 'Precio'}</p>
-                    <p className="text-xl sm:text-2xl font-bold font-tech text-white mt-1 whitespace-nowrap">
-                      {product.precios?.precio_lista 
-                        ? `$${precioVenta.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} MXN`
-                        : (isEn ? 'Custom Quote' : 'Cotización a medida')}
-                    </p>
-                    {product.precios?.precio_lista && (
-                      <p className="text-[10px] text-slate-500 uppercase mt-1">{isEn ? 'Tax Included' : 'IVA Incluido'}</p>
-                    )}
-                  </div>
-                  <div className="w-full sm:w-auto">
-                    <AddToCartButton 
-                      productId={product.producto_id}
-                      title={product.titulo}
-                      brand={product.marca || null}
-                      model={product.modelo || null}
-                      image={product.img_portada || null}
-                      priceMxn={precioVenta}
-                      locale={locale}
-                    />
-                  </div>
-                </div>
-              </div>
+              )}
 
               {/* Features */}
               <div className="flex-1">

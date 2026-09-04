@@ -102,7 +102,7 @@ export function Hero({ locale = 'es' }: { locale?: string }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative w-full py-20 lg:py-32" style={{ zIndex: 10 }}>
         <div className="max-w-3xl">
           <h1 className="inline-block border-l-4 border-brand-green bg-brand-charcoal text-white font-title uppercase tracking-widest text-[10px] sm:text-xs font-bold px-4 py-2 mb-6">
-            {locale === 'en' ? 'Leading Electromobility and EV Charger Installation in Los Cabos' : 'Líderes en Instalación de Cargadores EV e Ingeniería en Los Cabos'}
+            {locale === 'en' ? 'Leading Electromobility, HVAC & Engineering in Los Cabos & Riviera Maya' : 'Líderes en Electromovilidad, Climatización e Ingeniería en Los Cabos y Riviera Maya'}
           </h1>
 
           <h2 className="text-4xl font-bold tracking-tight text-white sm:text-6xl font-title uppercase">
@@ -115,9 +115,9 @@ export function Hero({ locale = 'es' }: { locale?: string }) {
 
           <p className="mt-6 text-base sm:text-lg text-gray-300 max-w-2xl leading-relaxed">
             {locale === 'en' ? (
-              <>Professional installation of electric vehicle chargers certified under CFE and NOM-001 standards in Los Cabos and La Paz. We work with leading brands like <strong>Tesla, <span className="text-brand-green font-bold">BYD</span>, Geely, <span className="text-brand-green font-bold">Jetour</span>, Mercedes-Benz, Nissan, Audi</strong> and more. We connect smart home tech, Savant domotics, professional audio, networks, and cutting-edge security.</>
+              <>Professional installation of electric vehicle chargers and high-efficiency air conditioning certified under NOM standards in <strong>Los Cabos, La Paz and Riviera Maya</strong> (Cancún, Playa del Carmen, Tulum). We work with leading brands like <strong>Tesla, <span className="text-brand-green font-bold">BYD</span>, Geely, AUFIT, Savant</strong> and more. Connecting residential automation, premium sound, climate, networks, and cutting-edge energy.</>
             ) : (
-              <>Instalación profesional de cargadores para vehículos eléctricos certificada bajo normas CFE y NOM-001 en Los Cabos y La Paz. Trabajamos con marcas líderes como <strong>Tesla, <span className="text-brand-green font-bold">BYD</span>, Geely, <span className="text-brand-green font-bold">Jetour</span>, Mercedes-Benz, Nissan, Audi</strong> y más. Conectamos tecnología residencial, domótica Savant, audio profesional, redes y seguridad de vanguardia.</>
+              <>Instalación profesional de cargadores para vehículos eléctricos y climatización de alta eficiencia bajo normas NOM en <strong>Los Cabos, La Paz y Riviera Maya</strong> (Cancún, Playa del Carmen, Tulum). Trabajamos con marcas líderes como <strong>Tesla, <span className="text-brand-green font-bold">BYD</span>, Geely, AUFIT, Savant</strong> y más. Conectamos tecnología residencial, domótica, climatización, redes y energía de vanguardia.</>
             )}
           </p>
 
@@ -141,7 +141,7 @@ export function Hero({ locale = 'es' }: { locale?: string }) {
       {/* Vertical Accent Stripe */}
       <div className="hidden xl:block absolute right-0 top-0 h-full w-24 border-l border-brand-border bg-brand-charcoal/10 backdrop-blur-sm" style={{ zIndex: 10 }}>
         <span className="transform rotate-90 whitespace-nowrap text-brand-green font-title tracking-widest text-xs uppercase font-extrabold inline-block translate-y-48 translate-x-4">
-          ZIRIAN ENGINEERING • LOS CABOS
+          LOS CABOS • RIVIERA MAYA
         </span>
       </div>
     </section>

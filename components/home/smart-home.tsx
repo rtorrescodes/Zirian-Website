@@ -13,7 +13,7 @@ export function SmartHome({ locale = 'es' }: { locale?: string }) {
           <div className="text-center max-w-3xl mx-auto mb-16">
             <span className="text-brand-dark font-title uppercase tracking-widest text-xs font-bold font-black">{locale === 'en' ? 'HIGH TECH ENGINEERING' : 'ALTA INGENIERÍA TECNOLÓGICA'}</span>
             <h2 className="font-title text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-dark uppercase tracking-wide mt-2">
-              {locale === 'en' ? 'Systems and Installations in Los Cabos' : 'Sistemas e Instalaciones en Los Cabos'}
+              {locale === 'en' ? 'Systems and Installations in Los Cabos & Riviera Maya' : 'Sistemas e Instalaciones en Los Cabos y Riviera Maya'}
             </h2>
             <div className="h-1 w-20 bg-brand-dark mx-auto mt-4" />
             <p className="mt-4 text-gray-600">
