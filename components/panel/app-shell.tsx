@@ -21,6 +21,7 @@ import {
   Camera,
   Calendar,
   Database,
+  Megaphone,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button, buttonVariants } from '@/components/ui/button'
@@ -43,6 +44,7 @@ const nav: NavItem[] = [
   { label: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Cotizador', href: '/admin/cotizador', icon: Plus },
   { label: 'Cotizaciones', href: '/admin/cotizaciones', icon: FileText },
+  { label: 'Marketing', href: '/admin/marketing', icon: Megaphone, badge: 'AUFIT' },
   { label: 'Productos / Catálogo', href: '/admin/productos', icon: Settings },
   { label: 'Clientes / CRM', href: '/admin/clientes', icon: Users },
   { label: 'Calendario', href: '/admin/calendario', icon: Calendar },
@@ -64,9 +66,9 @@ function NavLinks({ onNavigate, userRole, isLoading }: { onNavigate?: () => void
   } else if (userRole === 'Distribuidor') {
     const allowed = [
       '/admin/dashboard', '/admin/cotizador', '/admin/cotizaciones', 
-      '/admin/clientes', '/admin/design-cctv', '/admin/productos', 
-      '/admin/levantamientos', '/admin/calendario', '/admin/mantenimientos', 
-      '/admin/tickets', '/admin/reportes'
+      '/admin/marketing', '/admin/clientes', '/admin/design-cctv', 
+      '/admin/productos', '/admin/levantamientos', '/admin/calendario', 
+      '/admin/mantenimientos', '/admin/tickets', '/admin/reportes'
     ];
     visibleNav = nav.filter(n => allowed.includes(n.href));
   }
@@ -74,7 +76,7 @@ function NavLinks({ onNavigate, userRole, isLoading }: { onNavigate?: () => void
   return (
     <nav className="flex flex-1 flex-col gap-1 px-3">
       {visibleNav.map((item) => {
-        const active = item.href === pathname
+        const active = item.href === pathname || (item.href !== '/admin/dashboard' && pathname.startsWith(item.href))
         const Icon = item.icon
         return (
           <Link
