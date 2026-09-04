@@ -100,7 +100,7 @@ export async function createClient(data: {
 }) {
   const cookieStore = await cookies();
   const session = cookieStore.get('zirian_session');
-  let assignedUserId = undefined;
+  let assignedUserId: number | undefined = undefined;
   if (session) {
     try {
       const payload = await verifyAuth(session.value);

@@ -8,7 +8,7 @@ import { verifyAuth } from "@/lib/auth"
 export async function getScoutingReports(query = '', status = 'all') {
   const cookieStore = await cookies();
   const session = cookieStore.get("zirian_session");
-  let userId = null;
+  let userId: number | null = null;
   let isDistribuidor = false;
   
   if (session) {
@@ -52,7 +52,7 @@ export async function getScoutingReports(query = '', status = 'all') {
 export async function getScoutingReportById(id: number) {
   const cookieStore = await cookies();
   const session = cookieStore.get("zirian_session");
-  let userId = null;
+  let userId: number | null = null;
   let isDistribuidor = false;
   
   if (session) {

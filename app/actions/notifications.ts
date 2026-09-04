@@ -8,7 +8,7 @@ import { verifyAuth } from "@/lib/auth";
 export async function getNotifications() {
   const cookieStore = await cookies();
   const session = cookieStore.get("zirian_session");
-  let userId = null;
+  let userId: number | null = null;
   let isDistribuidor = false;
 
   if (session) {
@@ -45,7 +45,7 @@ export async function getNotifications() {
 export async function markAsRead(id: number) {
   const cookieStore = await cookies();
   const session = cookieStore.get("zirian_session");
-  let userId = null;
+  let userId: number | null = null;
   if (session) {
     try {
       const payload = await verifyAuth(session.value);
@@ -65,7 +65,7 @@ export async function markAsRead(id: number) {
 export async function markAllAsRead() {
   const cookieStore = await cookies();
   const session = cookieStore.get("zirian_session");
-  let userId = null;
+  let userId: number | null = null;
   let isDistribuidor = false;
   if (session) {
     try {

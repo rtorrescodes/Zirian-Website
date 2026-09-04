@@ -8,7 +8,7 @@ export async function getReportsData() {
   const cookieStore = await cookies();
   const session = cookieStore.get("zirian_session");
   let isDistribuidor = false;
-  let userId = null;
+  let userId: number | null = null;
   if (session) {
     try {
       const payload = await verifyAuth(session.value);

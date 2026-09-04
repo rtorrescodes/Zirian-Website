@@ -88,7 +88,7 @@ export async function GET(request: Request) {
     const cookieStore = await cookies();
     const session = cookieStore.get('zirian_session');
     
-    let userId = null;
+    let userId: number | null = null;
     let isDistribuidor = false;
     
     if (session) {

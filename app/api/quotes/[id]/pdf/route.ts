@@ -91,12 +91,12 @@ export async function GET(
       console.error('Failed to read images for PDF', e);
     }
 
-    let agentName = quote.client?.assignedUser?.name || 'Ing. Rodrigo Torres';
+    let agentName = quote.client?.assignedUser?.nombre || 'Ing. Rodrigo Torres';
     let template = quote.template;
     
     // Check if client is owned by a distributor
     if (quote.client?.assignedUser?.role === 'Distribuidor') {
-      agentName = quote.client.assignedUser.name;
+      agentName = quote.client.assignedUser.nombre;
       if (template !== 'general_distribuidor_fotos') {
         template = 'general_distribuidor';
       }

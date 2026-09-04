@@ -14,7 +14,7 @@ export const verifyAuth = async (token: string) => {
       token,
       new TextEncoder().encode(getJwtSecretKey())
     );
-    return verified.payload as { id: number; email: string; role: string; name: string };
+    return verified.payload as { id: number; email: string; role: string; name: string; userId?: number };
   } catch (err) {
     throw new Error('Your token has expired or is invalid.');
   }

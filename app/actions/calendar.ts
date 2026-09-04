@@ -21,7 +21,7 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
   
   const cookieStore = await cookies();
   const session = cookieStore.get("zirian_session");
-  let userId = null;
+  let userId: number | null = null;
   let isDistribuidor = false;
   
   if (session) {
@@ -137,7 +137,7 @@ export async function createMaintenanceOrder(clientId: number, type: 'Mantenimie
 export async function getMaintenanceCandidates() {
   const cookieStore = await cookies();
   const session = cookieStore.get("zirian_session");
-  let userId = null;
+  let userId: number | null = null;
   let isDistribuidor = false;
   
   if (session) {

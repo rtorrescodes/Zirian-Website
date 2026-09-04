@@ -12,7 +12,7 @@ export default async function CotizadorPage({ searchParams }: { searchParams: Pr
   const cookieStore = await cookies();
   const session = cookieStore.get('zirian_session');
   let userRole = '';
-  let userId = null;
+  let userId: number | undefined = undefined;
   let marginZ = 0;
   let marginD = 0;
 

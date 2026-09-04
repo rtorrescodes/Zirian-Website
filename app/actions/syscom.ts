@@ -30,7 +30,7 @@ export async function searchSyscomForQuote(query: string) {
 
   const items = products.map(p => {
     let rawListaUSD = p.precios?.precio_lista ? parseFloat(p.precios.precio_lista.toString().replace(/,/g, '')) : 0;
-    let rawEspecialUSD = p.precios?.precio_especial ? parseFloat(p.precios.precio_especial.toString().replace(/,/g, '')) : 0;
+    let rawEspecialUSD = (p.precios as any)?.precio_especial ? parseFloat((p.precios as any).precio_especial.toString().replace(/,/g, '')) : 0;
     
     const rawCostMXN = rawEspecialUSD * tc;
     const rawListaMXN = rawListaUSD * tc;

@@ -373,7 +373,7 @@ export async function getQuoteByToken(token: string) {
 export async function acceptQuote(token: string) {
   const quote = await prisma.quote.update({
     where: { token },
-    data: { status: 'Aprobado', envioAddressId },
+    data: { status: 'Aprobado' },
     include: { items: { include: { product: true } } }
   });
   
@@ -412,7 +412,7 @@ export async function acceptQuote(token: string) {
 }
 
 export async function adminAcceptQuote(id: number, addressData?: any) {
-  let envioAddressId = null;
+  let envioAddressId: number | null = null;
 
   if (addressData) {
     const quoteData = await prisma.quote.findUnique({ where: { id }, select: { clientId: true } });

@@ -27,7 +27,7 @@ export default async function ClientesAdminPage(props: { searchParams?: Promise<
   if (session) {
     try {
       const payload = await verifyAuth(session.value);
-      userId = payload.id || payload.userId;
+      userId = payload.id || payload.userId || 0;
       const dbUser = await prisma.user.findUnique({ where: { id: userId } });
       userRole = dbUser?.role || payload.role;
     } catch(e) {}

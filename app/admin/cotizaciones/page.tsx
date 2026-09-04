@@ -19,7 +19,7 @@ export default async function CotizacionesPage({ searchParams }: { searchParams:
   if (session) {
     try {
       const payload = await verifyAuth(session.value);
-      userId = payload.id || payload.userId;
+      userId = payload.id || payload.userId || 0;
       const dbUser = await prisma.user.findUnique({ where: { id: payload.id || payload.userId } });
       userRole = dbUser?.role || payload.role;
     } catch(e){ console.error('PAGE VERIFY AUTH ERROR:', e); }

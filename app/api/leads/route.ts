@@ -22,7 +22,7 @@ export async function GET() {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  let userId = null;
+  let userId: number | null = null;
   let isDistribuidor = false;
   try {
     const payload = await verifyAuth(session.value);

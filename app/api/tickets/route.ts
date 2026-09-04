@@ -23,7 +23,7 @@ export async function GET() {
   }
 
   let isDistribuidor = false;
-  let userId = null;
+  let userId: number | null = null;
   try {
     const payload = await verifyAuth(session.value);
     if (payload.role === 'Distribuidor') {
