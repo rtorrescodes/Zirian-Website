@@ -1,13 +1,40 @@
 import { AppShell } from '@/components/panel/app-shell'
 import { QuoteBuilder } from '@/components/cotizador/quote-builder'
 import { prisma } from '@/lib/prisma'
+import { cookies } from 'next/headers'
+import { verifyAuth } from '@/lib/auth'
 
 export const dynamic = "force-dynamic";
 
 export default async function CotizadorPage({ searchParams }: { searchParams: Promise<{ clientId?: string, editId?: string }> }) {
   const resolvedParams = await searchParams
+  
+  const cookieStore = await cookies();
+  const session = cookieStore.get('zirian_session');
+  let userRole = '';
+  let userId = null;
+  let marginZ = 0;
+  let marginD = 0;
+
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      userRole = payload.role;
+      userId = payload.id || payload.userId;
+
+      if (userRole === 'Distribuidor') {
+        const dbUser = await prisma.user.findUnique({ where: { id: userId } });
+        marginZ = Number(dbUser?.margen_zirian || 0);
+        marginD = Number(dbUser?.margen_distribuidor || 0);
+      }
+    } catch(e){}
+  }
+
+  const baseWhereClient = userRole === 'Distribuidor' ? { assignedUserId: userId } : {};
+
   // Fetch real data from the database
   const clients = await prisma.client.findMany({
+    where: baseWhereClient,
     orderBy: { nombre: 'asc' }
   })
 
@@ -22,21 +49,39 @@ export default async function CotizadorPage({ searchParams }: { searchParams: Pr
     orderBy: { nombre: 'asc' }
   })
 
-  const plainProducts = products.map(p => ({
-    ...p,
-    precio_base: p.precio_base ? Number(p.precio_base) : 0,
-    costo_estimado: p.costo_estimado ? Number(p.costo_estimado) : 0,
-    stock_general: p.stock_general ? Number(p.stock_general) : 0,
-    recommendations: p.recommendations?.map(r => ({
-      ...r,
-      recommended: {
-        ...r.recommended,
-        precio_base: r.recommended.precio_base ? Number(r.recommended.precio_base) : 0,
-        costo_estimado: r.recommended.costo_estimado ? Number(r.recommended.costo_estimado) : 0,
-        stock_general: r.recommended.stock_general ? Number(r.recommended.stock_general) : 0
-      }
-    }))
-  }))
+  const plainProducts = products.map(p => {
+    let costo = p.costo_estimado ? Number(p.costo_estimado) : 0;
+    let precio = p.precio_base ? Number(p.precio_base) : 0;
+
+    if (userRole === 'Distribuidor') {
+      costo = costo * (1 + (marginZ / 100)); // El costo que el distribuidor nos paga
+    }
+
+    return {
+      ...p,
+      precio_base: precio,
+      costo_estimado: costo,
+      stock_general: p.stock_general ? Number(p.stock_general) : 0,
+      recommendations: p.recommendations?.map(r => {
+        let rCosto = r.recommended.costo_estimado ? Number(r.recommended.costo_estimado) : 0;
+        let rPrecio = r.recommended.precio_base ? Number(r.recommended.precio_base) : 0;
+        
+        if (userRole === 'Distribuidor') {
+          rCosto = rCosto * (1 + (marginZ / 100));
+        }
+
+        return {
+          ...r,
+          recommended: {
+            ...r.recommended,
+            precio_base: rPrecio,
+            costo_estimado: rCosto,
+            stock_general: r.recommended.stock_general ? Number(r.recommended.stock_general) : 0
+          }
+        };
+      })
+    };
+  });
 
   const categories = await prisma.productCategory.findMany({
     orderBy: { nombre: 'asc' }
@@ -64,6 +109,7 @@ export default async function CotizadorPage({ searchParams }: { searchParams: Pr
           costo_real: q.costo_real ? Number(q.costo_real) : 0,
           utilidad_real: q.utilidad_real ? Number(q.utilidad_real) : 0,
           monto_pagado: q.monto_pagado ? Number(q.monto_pagado) : 0,
+          comision_partner: q.comision_partner ? Number(q.comision_partner) : null,
           items: q.items.map(item => ({
             ...item,
             cantidad: item.cantidad ? Number(item.cantidad) : 0,
@@ -96,6 +142,7 @@ export default async function CotizadorPage({ searchParams }: { searchParams: Pr
       subtitle="Instalación de cargadores EV · genera y guarda cotizaciones"
     >
       <QuoteBuilder 
+        userRole={userRole}
         initialClients={clients} 
         initialProducts={plainProducts} 
         initialCategories={categories} 
@@ -106,3 +153,4 @@ export default async function CotizadorPage({ searchParams }: { searchParams: Pr
     </AppShell>
   )
 }
+

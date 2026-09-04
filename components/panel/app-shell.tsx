@@ -55,11 +55,25 @@ const nav: NavItem[] = [
   { label: 'Partners', href: '/admin/partners', icon: Users },
 ]
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavLinks({ onNavigate, userRole, isLoading }: { onNavigate?: () => void; userRole?: string; isLoading?: boolean }) {
   const pathname = usePathname()
+  
+  let visibleNav = nav;
+  if (isLoading) {
+    visibleNav = []; // Show empty or skeleton while loading to prevent flicker
+  } else if (userRole === 'Distribuidor') {
+    const allowed = [
+      '/admin/dashboard', '/admin/cotizador', '/admin/cotizaciones', 
+      '/admin/clientes', '/admin/design-cctv', '/admin/productos', 
+      '/admin/levantamientos', '/admin/calendario', '/admin/mantenimientos', 
+      '/admin/tickets', '/admin/reportes'
+    ];
+    visibleNav = nav.filter(n => allowed.includes(n.href));
+  }
+  
   return (
     <nav className="flex flex-1 flex-col gap-1 px-3">
-      {nav.map((item) => {
+      {visibleNav.map((item) => {
         const active = item.href === pathname
         const Icon = item.icon
         return (
@@ -102,7 +116,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   )
 }
 
-function SidebarContent({ onNavigate, user }: { onNavigate?: () => void, user?: { name: string; role: string } }) {
+function SidebarContent({ onNavigate, user, isLoading }: { onNavigate?: () => void, user?: { name: string; role: string }, isLoading?: boolean }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center px-5">
@@ -112,10 +126,10 @@ function SidebarContent({ onNavigate, user }: { onNavigate?: () => void, user?: 
         <p className="px-6 pb-2 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60">
           Operaciones
         </p>
-        <NavLinks onNavigate={onNavigate} />
+        <NavLinks onNavigate={onNavigate} userRole={user?.role} isLoading={isLoading} />
       </div>
       <div className="border-t border-slate-800 p-3">
-        {(!user || user.role === 'SuperAdmin' || user.role === 'Gerente') && (
+        {!isLoading && (!user || user.role === 'SuperAdmin' || user.role === 'Gerente' || user.role === 'Admin') && (
           <>
             <Link
               href="/admin/configuracion/usuarios"
@@ -192,6 +206,7 @@ export function AppShell({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [user, setUser] = useState(initialUser)
+  const [isLoading, setIsLoading] = useState(!initialUser)
 
   useEffect(() => {
     if (!initialUser) {
@@ -203,6 +218,7 @@ export function AppShell({
           }
         })
         .catch(console.error)
+        .finally(() => setIsLoading(false))
     }
   }, [initialUser])
 
@@ -211,7 +227,7 @@ export function AppShell({
       {/* Desktop sidebar */}
       <aside className="hidden w-64 shrink-0 border-r border-slate-800 bg-slate-950/80 backdrop-blur-xl lg:block shadow-2xl">
         <div className="sticky top-0 h-screen">
-          <SidebarContent user={user} />
+          <SidebarContent user={user} isLoading={isLoading} />
         </div>
       </aside>
 
@@ -231,7 +247,7 @@ export function AppShell({
             >
               <X className="h-5 w-5" />
             </button>
-            <SidebarContent onNavigate={() => setMobileOpen(false)} user={user} />
+            <SidebarContent onNavigate={() => setMobileOpen(false)} user={user} isLoading={isLoading} />
           </div>
         </div>
       )}

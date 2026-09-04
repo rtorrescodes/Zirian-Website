@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+import { verifyAuth } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
@@ -83,15 +85,33 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const clientId = searchParams.get('clientId');
+    const cookieStore = await cookies();
+    const session = cookieStore.get('zirian_session');
+    
+    let userId = null;
+    let isDistribuidor = false;
+    
+    if (session) {
+      try {
+        const payload = await verifyAuth(session.value);
+        if (payload.role === 'Distribuidor') {
+          isDistribuidor = true;
+          userId = payload.id;
+        }
+      } catch (e) {}
+    }
+
+    const baseWhere = isDistribuidor ? { client: { assignedUserId: userId } } : {};
 
     let projects;
     if (clientId) {
       projects = await prisma.cctvProject.findMany({
-        where: { clientId: parseInt(clientId) },
+        where: { clientId: parseInt(clientId), ...baseWhere },
         orderBy: { fecha_creacion: 'desc' }
       });
     } else {
       projects = await prisma.cctvProject.findMany({
+        where: baseWhere,
         orderBy: { fecha_creacion: 'desc' },
         include: { client: true }
       });

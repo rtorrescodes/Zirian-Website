@@ -1,17 +1,35 @@
 import { getQuotes } from "@/app/actions/quotes"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { FileText, Settings } from "lucide-react"
+import { FileText, Settings, UserCheck } from "lucide-react"
 import Link from "next/link"
 import { AppShell } from "@/components/panel/app-shell"
 import { QuoteActions } from "@/components/cotizador/quote-actions"
+import { cookies } from 'next/headers';
+import { verifyAuth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic'
 
 export default async function CotizacionesPage({ searchParams }: { searchParams: Promise<{ showLost?: string }> }) {
+  const cookieStore = await cookies();
+  const session = cookieStore.get('zirian_session');
+  let userRole = 'Instalador';
+  let userId = 0;
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      userId = payload.id || payload.userId;
+      const dbUser = await prisma.user.findUnique({ where: { id: payload.id || payload.userId } });
+      userRole = dbUser?.role || payload.role;
+    } catch(e){ console.error('PAGE VERIFY AUTH ERROR:', e); }
+  }
+  const isAdmin = userRole === 'Admin' || userRole === 'SuperAdmin';
+
   const resolvedParams = await searchParams;
   const showLost = resolvedParams.showLost === 'true';
-  const allQuotes = await getQuotes();
+  console.log('COTIZACIONES PAGE ROLE:', userRole, 'USERID:', userId);
+  const allQuotes = await getQuotes(userRole, userId);
   const quotes = showLost ? allQuotes : allQuotes.filter(q => q.status !== 'Rechazada' && q.status !== 'Cancelada' && q.status !== 'Cobrada');
 
   return (
@@ -67,6 +85,25 @@ export default async function CotizacionesPage({ searchParams }: { searchParams:
               </Badge>
             </div>
             
+            {(isAdmin && (Number(quote.utilidad_real) > 0 || Number(quote.comision_partner) > 0)) && (
+              <div className="mt-3 bg-slate-950/80 rounded border border-brand-blue/20 p-2.5">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <UserCheck className="h-3 w-3 text-brand-blue" />
+                  <span className="text-[10px] font-tech font-bold uppercase tracking-widest text-brand-blue">Venta de Distribuidor</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-slate-500 block text-[9px] uppercase tracking-wider">Ganancia Zirian</span>
+                    <span className="font-bold text-emerald-400 font-mono">${Number(quote.utilidad_real || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block text-[9px] uppercase tracking-wider">Comisión Dist.</span>
+                    <span className="font-bold text-amber-500 font-mono">${Number(quote.comision_partner || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="mt-4 flex items-center justify-between border-t border-slate-800 pt-4">
               <p className="font-mono text-xl font-bold text-emerald-400">
                 ${Number(quote.total).toLocaleString('es-MX', { minimumFractionDigits: 2 })}
@@ -106,3 +143,8 @@ export default async function CotizacionesPage({ searchParams }: { searchParams:
     </AppShell>
   )
 }
+
+
+
+
+

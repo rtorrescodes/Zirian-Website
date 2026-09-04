@@ -13,6 +13,9 @@ export async function getUsers() {
       nombre: true,
       role: true,
       activo: true,
+      margen_zirian: true,
+      margen_distribuidor: true,
+      limitar_precio_lista: true,
       fecha_creacion: true,
       updatedAt: true,
     }
@@ -28,6 +31,9 @@ export async function getUserById(id: number) {
       nombre: true,
       role: true,
       activo: true,
+      margen_zirian: true,
+      margen_distribuidor: true,
+      limitar_precio_lista: true,
     }
   });
 }
@@ -38,6 +44,9 @@ export async function createUser(data: {
   role: string;
   password?: string;
   activo: boolean;
+  margen_zirian?: number;
+  margen_distribuidor?: number;
+  limitar_precio_lista?: boolean;
 }) {
   const { email, password, ...rest } = data;
   const normalizedEmail = email.toLowerCase().trim();
@@ -76,6 +85,9 @@ export async function updateUser(id: number, data: {
   role: string;
   password?: string;
   activo: boolean;
+  margen_zirian?: number;
+  margen_distribuidor?: number;
+  limitar_precio_lista?: boolean;
 }) {
   const { email, password, ...rest } = data;
   const normalizedEmail = email.toLowerCase().trim();

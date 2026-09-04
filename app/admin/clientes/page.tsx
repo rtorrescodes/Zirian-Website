@@ -1,4 +1,7 @@
 import { getClients } from '@/app/actions/clients';
+import { cookies } from 'next/headers';
+import { verifyAuth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Plus, Users, Edit2, FileText, Phone, Mail, MapPin } from 'lucide-react';
@@ -17,7 +20,19 @@ export default async function ClientesAdminPage(props: { searchParams?: Promise<
   const tipoFilter = searchParams?.tipo || 'all';
   const ciudadFilter = searchParams?.ciudad || 'all';
 
-  const clients = await getClients(query, statusFilter, origenFilter, tipoFilter, ciudadFilter);
+  const cookieStore = await cookies();
+  const session = cookieStore.get('zirian_session');
+  let userRole = 'Instalador';
+  let userId = 0;
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      userId = payload.id || payload.userId;
+      const dbUser = await prisma.user.findUnique({ where: { id: userId } });
+      userRole = dbUser?.role || payload.role;
+    } catch(e) {}
+  }
+  const clients = await getClients(query, statusFilter, origenFilter, tipoFilter, ciudadFilter, userRole, userId);
 
   return (
     <AppShell title="CRM / Clientes" subtitle="Gestiona tus prospectos y clientes, y genera cotizaciones al instante.">
@@ -154,3 +169,4 @@ export default async function ClientesAdminPage(props: { searchParams?: Promise<
     </AppShell>
   );
 }
+

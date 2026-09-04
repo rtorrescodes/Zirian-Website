@@ -6,6 +6,8 @@ import { PDFDocument } from 'pdf-lib';
 import React from 'react';
 import fs from 'fs';
 import path from 'path';
+import { cookies } from 'next/headers';
+import { verifyAuth } from '@/lib/auth';
 function serializeQuote(quote: any) {
   if (!quote) return quote;
   return {
@@ -17,6 +19,7 @@ function serializeQuote(quote: any) {
     costo_real: quote.costo_real ? Number(quote.costo_real) : 0,
     utilidad_real: quote.utilidad_real ? Number(quote.utilidad_real) : 0,
     monto_pagado: quote.monto_pagado ? Number(quote.monto_pagado) : 0,
+    comision_partner: quote.comision_partner ? Number(quote.comision_partner) : null,
     items: quote.items ? quote.items.map((item: any) => ({
       ...item,
       cantidad: item.cantidad ? Number(item.cantidad) : 0,
@@ -43,8 +46,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
-    const quoteId = parseInt(id, 10);
+    const resolvedParams = await params;
+    const quoteId = parseInt(resolvedParams.id, 10);
     if (isNaN(quoteId)) {
       return new NextResponse('Invalid ID', { status: 400 });
     }
@@ -53,7 +56,11 @@ export async function GET(
     const quote = await prisma.quote.findUnique({
       where: { id: quoteId },
       include: {
-        client: true,
+        client: {
+          include: {
+            assignedUser: true
+          }
+        },
         items: {
           include: {
             product: true
@@ -84,10 +91,41 @@ export async function GET(
       console.error('Failed to read images for PDF', e);
     }
 
+    let agentName = quote.client?.assignedUser?.name || 'Ing. Rodrigo Torres';
+    let template = quote.template;
+    
+    // Check if client is owned by a distributor
+    if (quote.client?.assignedUser?.role === 'Distribuidor') {
+      agentName = quote.client.assignedUser.name;
+      if (template !== 'general_distribuidor_fotos') {
+        template = 'general_distribuidor';
+      }
+    }
+
+    try {
+      const cookieStore = await cookies();
+      const session = cookieStore.get('zirian_session');
+      if (session) {
+        const payload = await verifyAuth(session.value);
+        if (payload.role === 'Distribuidor') {
+          agentName = payload.name;
+          if (template !== 'general_distribuidor_fotos') {
+            template = 'general_distribuidor';
+          }
+        }
+      }
+    } catch(e) {}
+    
+    if (template === 'general_distribuidor' || template === 'general_distribuidor_fotos') {
+      agentName = 'Polo Esponda';
+    }
+    
+    quote.template = template;
+
     // Generate base PDF stream
     const plainQuote = serializeQuote(quote);
     const stream = await renderToStream(
-      React.createElement(BaseQuotePdf, { quote: plainQuote, client: plainQuote.client, logoData, stripData }) as any
+      React.createElement(BaseQuotePdf, { quote: plainQuote, client: plainQuote.client, logoData, stripData, agentName }) as any
     );
 
     // Convert NodeJS Readable stream to buffer

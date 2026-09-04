@@ -82,7 +82,7 @@ export async function GET() {
   if (session && session.value) {
     try {
       const payload = await verifyAuth(session.value);
-      const dbUser = await prisma.user.findUnique({ where: { id: payload.id } });
+      const dbUser = await prisma.user.findUnique({ where: { id: payload.id || payload.userId } });
       if (dbUser) {
         payload.name = dbUser.nombre;
         payload.role = dbUser.role;
@@ -95,3 +95,4 @@ export async function GET() {
 
   return NextResponse.json({ authenticated: false }, { status: 401 });
 }
+

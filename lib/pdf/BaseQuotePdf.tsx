@@ -223,6 +223,47 @@ const styles = StyleSheet.create({
     fontWeight: 'black',
     color: '#1C497B',
   },
+  photoGridTitle: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#1C497B',
+    marginHorizontal: 40,
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginHorizontal: 40,
+    gap: 10,
+    justifyContent: 'flex-start',
+  },
+  photoItem: {
+    width: '30%',
+    marginBottom: 15,
+    alignItems: 'center',
+  },
+  photoImageWrapper: {
+    width: 120,
+    height: 120,
+    border: '1px solid #e2e8f0',
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    padding: 5,
+  },
+  photoImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'contain',
+  },
+  photoLabel: {
+    fontSize: 7,
+    color: '#475569',
+    marginTop: 4,
+    textAlign: 'center',
+  },
   termsWrapper: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -318,7 +359,7 @@ const styles = StyleSheet.create({
   }
 });
 
-export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: any, client: any, logoData?: string, stripData?: string }) => {
+export const BaseQuotePdf = ({ quote, client, logoData, stripData, agentName }: { quote: any, client: any, logoData?: string, stripData?: string, agentName?: string }) => {
   const defaultLogoPath = typeof window !== 'undefined' ? '/logo-zirian-cotizador.png' : require('path').join(process.cwd(), 'public', 'logo-zirian-cotizador.png');
   const defaultStripPath = typeof window !== 'undefined' ? '/instalaciones-strip.png' : require('path').join(process.cwd(), 'public', 'instalaciones-strip.png');
   
@@ -391,7 +432,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
     });
     
     quote.items.forEach((i: any) => {
-      const groupName = i.product?.grupo_impresion || 'Concepto General';
+      const groupName = i.product?.grupo_impresion || i.seccion || (quote.items.length === 1 ? i.product?.nombre || i.descripcion : 'Concepto General');
       
       if (!groups[groupName]) {
         groups[groupName] = {
@@ -436,8 +477,26 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
   const calculatedIva = (quote.requiere_factura || quote.impuestos > 0) ? calculatedSubtotal * 0.16 : 0;
   const calculatedTotal = calculatedSubtotal + calculatedIva;
 
-  const isEn = quote.template === 'ev_charger_en';
-  const isGeneral = quote.template === 'general';
+  const isEn = quote?.template === 'ev_charger_en';
+  const isDistribuidor = quote?.template === 'general_distribuidor' || quote?.template === 'general_distribuidor_fotos' || client?.assignedUserId !== null;
+  const showPhotos = quote?.template === 'general_distribuidor_fotos';
+  const isGeneral = quote?.template === 'general' || isDistribuidor;
+
+  const productPhotos: {name: string, url: string}[] = [];
+  if (showPhotos) {
+    const seen = new Set();
+    quote.items.forEach((i: any) => {
+      const imgUrl = i.imagen_url || i.product?.img_portada;
+      if (imgUrl && (!i.product || !seen.has(i.product.id))) {
+        if (i.product) seen.add(i.product.id);
+        else seen.add(imgUrl);
+        productPhotos.push({
+          name: i.product?.nombre || i.descripcion,
+          url: imgUrl.startsWith('http') ? imgUrl : `https://www.zirian.mx${imgUrl}`
+        });
+      }
+    });
+  }
 
   return (
     <Document>
@@ -447,9 +506,20 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
         <View style={styles.headerWrapper}>
           <View style={styles.companyInfo}>
             <Image src={logoPath} style={styles.logo} />
-            <Text style={styles.companyTitle}>Energía y sistemas, donde necesites</Text>
-            <Text style={styles.companyText}>San José del Cabo, Baja California Sur</Text>
-            <Text style={styles.companyText}>WhatsApp: (624) 6220525 | www.zirian.com</Text>
+            {isDistribuidor ? (
+              <>
+                <Text style={styles.companyTitle}>Soluciones Integrales</Text>
+                <Text style={styles.companyText}>Bahía Chemuyil Mz3 Lt7 Depto 106B</Text>
+                <Text style={styles.companyText}>Puerto Aventuras, Quintana Roo CP 77733</Text>
+                <Text style={styles.companyText}>Tel: 5528613165</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.companyTitle}>Energía y sistemas, donde necesites</Text>
+                <Text style={styles.companyText}>San José del Cabo, Baja California Sur</Text>
+                <Text style={styles.companyText}>WhatsApp: (624) 6220525 | www.zirian.com</Text>
+              </>
+            )}
           </View>
           <View style={styles.quoteHeaderRight}>
             <Text style={styles.quoteTitle}>Cotización</Text>
@@ -472,20 +542,20 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
             <View style={styles.infoBlockContentRight}>
               <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Date: ' : 'Fecha: '}</Text>{createdAt.toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
               <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Valid until: ' : 'Validez: '}</Text>{validUntil.toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
-              <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Agent: ' : 'Agente: '}</Text>Ing. Rodrigo Torres</Text>
+              <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Agent: ' : 'Agente: '}</Text>{agentName || client?.assignedUser?.name || 'Ing. Rodrigo Torres'}</Text>
             </View>
           </View>
         </View>
 
-        {/* Intro */}
-        <View style={styles.introSection}>
-          <Text style={styles.introText}>{isEn ? 'Dear Client:' : 'Estimado/a cliente:'}</Text>
-          <Text style={styles.introText}>
-            {isEn 
-              ? 'It is a pleasure to present our technical proposal for the integration of your ecosystem. At Zirian México, we prioritize regulatory safety and energy efficiency.'
-              : 'Es un gusto presentarle nuestra propuesta técnica para la integración de su ecosistema. En Zirian México, priorizamos la seguridad normativa y la eficiencia energética.'}
-          </Text>
-        </View>
+          {/* Intro */}
+          <View style={styles.introSection}>
+            <Text style={styles.introText}>{isEn ? 'Dear Client:' : 'Estimado/a cliente:'}</Text>
+            <Text style={styles.introText}>
+              {isEn 
+                ? `It is a pleasure to present our technical proposal for the integration of your ecosystem. ${isDistribuidor ? 'We prioritize regulatory safety and efficiency.' : 'At Zirian México, we prioritize regulatory safety and energy efficiency.'}`
+                : `Es un gusto presentarle nuestra propuesta técnica para la integración de su ecosistema. ${isDistribuidor ? 'Priorizamos la seguridad normativa y la eficiencia.' : 'En Zirian México, priorizamos la seguridad normativa y la eficiencia energética.'}`}
+            </Text>
+          </View>
 
         {/* Banner */}
         <View style={styles.banner}>
@@ -559,6 +629,22 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
             </View>
           </View>
         </View>
+
+        {showPhotos && productPhotos.length > 0 && (
+          <View wrap={false}>
+            <Text style={styles.photoGridTitle}>Imágenes de Referencia</Text>
+            <View style={styles.photoGrid}>
+              {productPhotos.map((photo, idx) => (
+                <View key={idx} style={styles.photoItem}>
+                  <View style={styles.photoImageWrapper}>
+                    <Image src={photo.url} style={styles.photoImage} />
+                  </View>
+                  <Text style={styles.photoLabel}>{photo.name}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* Spacer to push everything below to the bottom of the page */}
         <View style={{ flexGrow: 1, minHeight: 20 }} />
@@ -634,7 +720,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
             <Text style={styles.termsTitle}>{isEn ? '2. WARRANTY & COVERAGE' : '2. GARANTÍA Y COBERTURA'}</Text>
             <Text style={styles.termsText}>
               {isGeneral
-                ? (isEn ? 'Warranty applies to equipment supplied/installed by Zirian. Excludes damage caused by misuse, third parties, voltage fluctuations or natural disasters.' : 'Garantía sobre equipos suministrados y/o instalados por Zirian. Quedan excluidos daños por uso indebido, terceros, variaciones de voltaje o desastres naturales.')
+                ? (isEn ? `Warranty applies to equipment supplied/installed by ${isDistribuidor ? 'us' : 'Zirian'}. Excludes damage caused by misuse, third parties, voltage fluctuations or natural disasters.` : `Garantía sobre equipos suministrados y/o instalados por ${isDistribuidor ? 'nosotros' : 'Zirian'}. Quedan excluidos daños por uso indebido, terceros, variaciones de voltaje o desastres naturales.`)
                 : (isEn ? 'Warranty applies to equipment installed by Zirian. Excludes damage caused by misuse, voltage fluctuations, third parties, or natural phenomena.' : 'Garantía sobre equipos instalados por Zirian. Quedan excluidos daños por uso indebido, variaciones de voltaje, terceros o fenómenos naturales.')}
             </Text>
           </View>
@@ -650,7 +736,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
             <Text style={styles.termsTitle}>{isGeneral ? (isEn ? '6. CONFIDENTIALITY' : '6. CONFIDENCIALIDAD') : (isEn ? '6. INTELLECTUAL PROPERTY' : '6. PROPIEDAD INTELECTUAL')}</Text>
             <Text style={styles.termsText}>
               {isGeneral
-                ? (isEn ? 'The commercial information and prices contained in this document are confidential and property of Zirian. Distribution is prohibited.' : 'La información comercial y precios contenidos en este documento son confidenciales y propiedad de Zirian, prohibida su distribución sin autorización.')
+                ? (isEn ? `The commercial information and prices contained in this document are confidential and property of ${isDistribuidor ? 'our company' : 'Zirian'}. Distribution is prohibited.` : `La información comercial y precios contenidos en este documento son confidenciales y propiedad de ${isDistribuidor ? 'nuestra empresa' : 'Zirian'}, prohibida su distribución sin autorización.`)
                 : (isEn ? 'Engineering and designs provided are the intellectual property of Zirian. Reproduction or distribution without authorization is prohibited.' : 'La ingeniería y diseños proporcionados son propiedad intelectual de Zirian. Queda prohibida su reproducción o distribución sin autorización.')}
             </Text>
           </View>
@@ -666,3 +752,4 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData }: { quote: an
     </Document>
   );
 };
+

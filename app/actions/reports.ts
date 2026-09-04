@@ -1,16 +1,36 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { cookies } from "next/headers";
+import { verifyAuth } from "@/lib/auth";
 
 export async function getReportsData() {
-  const totalQuotes = await prisma.quote.count();
-  const approvedQuotes = await prisma.quote.count({ where: { status: 'Aprobado' } });
-  const totalClients = await prisma.client.count();
-  const totalOrders = await prisma.serviceOrder.count();
+  const cookieStore = await cookies();
+  const session = cookieStore.get("zirian_session");
+  let isDistribuidor = false;
+  let userId = null;
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      if (payload.role === 'Distribuidor') {
+        isDistribuidor = true;
+        userId = payload.id;
+      }
+    } catch(e){}
+  }
+  
+  const baseWhereClient = isDistribuidor ? { assignedUserId: userId } : {};
+  const baseWhereQuote = isDistribuidor ? { client: { assignedUserId: userId } } : {};
+  const baseWhereOrder = isDistribuidor ? { client: { assignedUserId: userId } } : {};
+
+  const totalQuotes = await prisma.quote.count({ where: baseWhereQuote });
+  const approvedQuotes = await prisma.quote.count({ where: { status: 'Aprobado', ...baseWhereQuote } });
+  const totalClients = await prisma.client.count({ where: baseWhereClient });
+  const totalOrders = await prisma.serviceOrder.count({ where: baseWhereOrder });
 
   // Ingresos reales (Cotizaciones Aprobadas / Cerradas)
   const wonQuotes = await prisma.quote.findMany({
-    where: { status: { in: ['Aprobado', 'Cerrado'] } },
+    where: { status: { in: ['Aprobado', 'Cerrado'] }, ...baseWhereQuote },
     select: {
       total: true,
       fecha_creacion: true
@@ -57,10 +77,9 @@ export async function getReportsData() {
   }));
 
   // Distribución de Proyectos
-  // Asumimos que los Leads tienen tipo_instalacion o algo similar, o contamos por origen.
-  // Vamos a usar el origen de los clientes para la donación de proyectos
   const sourceDistribution = await prisma.client.groupBy({
     by: ['origen'],
+    where: baseWhereClient,
     _count: { id: true }
   });
 

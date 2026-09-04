@@ -1,6 +1,8 @@
 'use server'
 
 import { prisma } from "@/lib/prisma"
+import { cookies } from "next/headers"
+import { verifyAuth } from "@/lib/auth"
 
 export interface CalendarEvent {
   id: string; // prefix with type e.g. "scouting-1"
@@ -16,11 +18,29 @@ export interface CalendarEvent {
 
 export async function getCalendarEvents(): Promise<CalendarEvent[]> {
   const events: CalendarEvent[] = [];
+  
+  const cookieStore = await cookies();
+  const session = cookieStore.get("zirian_session");
+  let userId = null;
+  let isDistribuidor = false;
+  
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      if (payload.role === 'Distribuidor') {
+        isDistribuidor = true;
+        userId = payload.userId || payload.id;
+      }
+    } catch (e) {}
+  }
+
+  const baseWhere = isDistribuidor ? { client: { assignedUserId: userId } } : {};
 
   // 1. Initial Visits (Removed since fecha_visita is not on Client)
 
   // 2. Scouting Reports (fecha_visita is required, so we just fetch all or filter by status)
   const scoutings = await prisma.scoutingReport.findMany({
+    where: baseWhere,
     include: { client: { select: { nombre: true } } }
   });
 
@@ -40,7 +60,7 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
 
   // 3. Service Orders (Installations / Maintenance / Support)
   const orders = await prisma.serviceOrder.findMany({
-    where: { fecha_programada: { not: null } },
+    where: { fecha_programada: { not: null }, ...baseWhere },
     include: { 
       quote: { include: { client: { select: { nombre: true } } } },
       client: { select: { nombre: true } },
@@ -115,10 +135,28 @@ export async function createMaintenanceOrder(clientId: number, type: 'Mantenimie
 }
 
 export async function getMaintenanceCandidates() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("zirian_session");
+  let userId = null;
+  let isDistribuidor = false;
+  
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      if (payload.role === 'Distribuidor') {
+        isDistribuidor = true;
+        userId = payload.userId || payload.id;
+      }
+    } catch (e) {}
+  }
+
+  const baseWhere = isDistribuidor ? { client: { assignedUserId: userId } } : {};
+
   const completedOrders = await prisma.serviceOrder.findMany({
     where: {
       tipo: 'Instalacion',
-      status: 'Completada'
+      status: 'Completada',
+      ...baseWhere
     },
     include: {
       client: { select: { id: true, nombre: true } },

@@ -7,11 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 interface QuoteSummaryProps {
+  userRole?: string;
   items: any[];
   status: string;
   setStatus: (status: string) => void;
   requiereFactura: boolean;
   setRequiereFactura: (val: boolean) => void;
+  cobroTarjeta: boolean;
+  setCobroTarjeta: (val: boolean) => void;
   mostrarDesglose: boolean;
   setMostrarDesglose: (val: boolean) => void;
   template: string;
@@ -31,17 +34,21 @@ interface QuoteSummaryProps {
   isSaving: boolean;
   isSaved: boolean;
   savedQuoteId: number | null;
-  handleSave: () => void;
-  handleViewPdf: () => void;
-  selectedClient: any;
+  handleSave?: () => void;
+  onSave?: () => void;
+  handleViewPdf?: () => void;
+  selectedClient?: any;
 }
 
 export function QuoteSummary({
+  userRole,
   items,
   status,
   setStatus,
   requiereFactura,
   setRequiereFactura,
+  cobroTarjeta,
+  setCobroTarjeta,
   mostrarDesglose,
   setMostrarDesglose,
   template,
@@ -60,6 +67,7 @@ export function QuoteSummary({
   isSaved,
   savedQuoteId,
   handleSave,
+  onSave,
   handleViewPdf,
   selectedClient,
 }: QuoteSummaryProps) {
@@ -75,6 +83,17 @@ export function QuoteSummary({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Col 1: Totals and Status */}
         <div className="flex flex-col gap-4">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="cobro-tarjeta"
+              checked={cobroTarjeta}
+              onCheckedChange={setCobroTarjeta}
+              className="data-[state=checked]:bg-brand-blue"
+            />
+            <Label htmlFor="cobro-tarjeta" className="font-tech text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+              Pago con Tarjeta (Stripe) <Badge variant="outline" className="text-[9px] h-4 bg-amber-500/10 text-amber-500 border-amber-500/20 px-1 py-0">+4.2%</Badge>
+            </Label>
+          </div>
           <div className="flex items-center space-x-2">
             <Switch
               id="requiere-factura"
@@ -97,7 +116,9 @@ export function QuoteSummary({
             
             {ganancia > 0 && (
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/50">
-                <dt className="font-tech text-[10px] font-bold uppercase tracking-widest text-slate-400">Ganancia Estimada</dt>
+                <dt className="font-tech text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  {userRole === 'Distribuidor' ? 'Comisión Estimada' : 'Ganancia Estimada'}
+                </dt>
                 <dd className="font-mono text-sm font-bold text-amber-500">
                   {currencyExact(ganancia)}
                 </dd>
@@ -143,9 +164,19 @@ export function QuoteSummary({
               onChange={(e) => setTemplate(e.target.value)}
               className="w-full bg-slate-900 border border-slate-700 text-white rounded p-1.5 text-xs outline-none focus-visible:ring-1 focus-visible:ring-brand-blue"
             >
-              <option value="ev_charger">Cargadores EV</option>
-              <option value="ev_charger_en">Cargadores EV (Inglés)</option>
-              <option value="general">Cotización General (CCTV, Redes, etc)</option>
+              {userRole === 'Distribuidor' ? (
+                <>
+                  <option value="general_distribuidor">Cotización General</option>
+                </>
+              ) : (
+                <>
+                  <option value="ev_charger">Cargadores EV</option>
+                  <option value="ev_charger_en">Cargadores EV (Inglés)</option>
+                  <option value="general">Cotización General (CCTV, Redes, etc)</option>
+                  <option value="general_distribuidor">Cotización General - Plantilla Distribuidor</option>
+                  <option value="general_distribuidor_fotos">Cotización General - Plantilla Distribuidor (Con Fotos)</option>
+                </>
+              )}
             </select>
           </div>
 

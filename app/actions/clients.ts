@@ -2,9 +2,14 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { cookies } from 'next/headers';
+import { verifyAuth } from '@/lib/auth';
 
-export async function getClients(query?: string, statusFilter?: string, origenFilter?: string, tipoFilter?: string, ciudadFilter?: string) {
+export async function getClients(query?: string, statusFilter?: string, origenFilter?: string, tipoFilter?: string, ciudadFilter?: string, roleOverride?: string, userIdOverride?: number) {
   const whereClause: any = {};
+    if (roleOverride === 'Distribuidor' && userIdOverride) {
+      whereClause.assignedUserId = userIdOverride;
+    }
   
   if (query) {
     whereClause.OR = [
@@ -31,7 +36,21 @@ export async function getClients(query?: string, statusFilter?: string, origenFi
     whereClause.ciudad = ciudadFilter;
   }
 
-  const clients = await prisma.client.findMany({
+  const cookieStore = await cookies();
+  const session = cookieStore.get('zirian_session');
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      const dbUser = await prisma.user.findUnique({ where: { id: payload.id || payload.userId } });
+      const actualRole = dbUser?.role || payload.role;
+      if (actualRole === 'Distribuidor') {
+        whereClause.assignedUserId = payload.id || payload.userId;
+      }
+    } catch(e){}
+  }
+
+  console.log('GET CLIENTS WHERE CLAUSE:', JSON.stringify(whereClause));
+    const clients = await prisma.client.findMany({
     where: whereClause,
     orderBy: { fecha_creacion: 'desc' },
     include: {
@@ -79,9 +98,24 @@ export async function createClient(data: {
   partnerId?: number;
   fecha_creacion?: Date;
 }) {
+  const cookieStore = await cookies();
+  const session = cookieStore.get('zirian_session');
+  let assignedUserId = undefined;
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      const dbUser = await prisma.user.findUnique({ where: { id: payload.id || payload.userId } });
+      const actualRole = dbUser?.role || payload.role;
+      if (actualRole === 'Distribuidor') {
+        assignedUserId = payload.id || payload.userId;
+      }
+    } catch(e){}
+  }
+
   const client = await prisma.client.create({
     data: {
       ...data,
+      assignedUserId,
       partnerId: data.partnerId ? Number(data.partnerId) : null
     }
   });
@@ -181,3 +215,8 @@ export async function removeClientContact(id: number, clientId: number) {
   });
   revalidatePath(`/admin/clientes/editor/${clientId}`);
 }
+
+
+
+
+

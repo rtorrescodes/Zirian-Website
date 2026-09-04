@@ -2,13 +2,34 @@
 
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { cookies } from "next/headers"
+import { verifyAuth } from "@/lib/auth"
 
 export async function getScoutingReports(query = '', status = 'all') {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("zirian_session");
+  let userId = null;
+  let isDistribuidor = false;
+  
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      if (payload.role === 'Distribuidor') {
+        isDistribuidor = true;
+        userId = payload.userId || payload.id;
+      }
+    } catch (e) {}
+  }
+
   const where: any = {}
+  
+  if (isDistribuidor) {
+    where.client = { assignedUserId: userId };
+  }
   
   if (query) {
     where.OR = [
-      { client: { nombre: { contains: query, mode: 'insensitive' } } },
+      { client: { nombre: { contains: query, mode: 'insensitive' }, ...(isDistribuidor ? { assignedUserId: userId } : {}) } },
       { tecnico: { contains: query, mode: 'insensitive' } },
       { notas: { contains: query, mode: 'insensitive' } }
     ]
@@ -29,13 +50,34 @@ export async function getScoutingReports(query = '', status = 'all') {
 }
 
 export async function getScoutingReportById(id: number) {
-  return await prisma.scoutingReport.findUnique({
+  const cookieStore = await cookies();
+  const session = cookieStore.get("zirian_session");
+  let userId = null;
+  let isDistribuidor = false;
+  
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      if (payload.role === 'Distribuidor') {
+        isDistribuidor = true;
+        userId = payload.userId || payload.id;
+      }
+    } catch (e) {}
+  }
+
+  const report = await prisma.scoutingReport.findUnique({
     where: { id },
     include: {
       client: true,
       photos: true
     }
-  })
+  });
+
+  if (isDistribuidor && report?.client?.assignedUserId !== userId) {
+    return null; // No autorizado
+  }
+
+  return report;
 }
 
 export async function createScoutingReport(data: {

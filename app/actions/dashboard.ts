@@ -2,16 +2,39 @@
 
 import { prisma } from "@/lib/prisma";
 
+import { cookies } from "next/headers";
+import { verifyAuth } from "@/lib/auth";
+
 export async function getDashboardMetrics() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("zirian_session");
+  let userId = null;
+  let isDistribuidor = false;
+  
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      const dbUser = await prisma.user.findUnique({ where: { id: payload.id || payload.userId } });
+      const actualRole = dbUser?.role || payload.role;
+      if (actualRole === 'Distribuidor') {
+        isDistribuidor = true;
+        userId = payload.userId || payload.id;
+      }
+    } catch (e) {}
+  }
+
+  const baseWhereClient = isDistribuidor ? { assignedUserId: userId } : {};
+  const baseWhereQuote = isDistribuidor ? { client: { assignedUserId: userId } } : {};
+  
   const totalLeadsCount = await prisma.client.count({
-    where: { status: 'Lead' }
+    where: { status: 'Lead', ...baseWhereClient }
   });
 
   const qualifiedQuotesCount = await prisma.quote.count({
-    where: { status: { notIn: ['Borrador', 'Rechazada', 'Cancelada'] } }
+    where: { status: { notIn: ['Borrador', 'Rechazada', 'Cancelada'] }, ...baseWhereQuote }
   });
 
-  const openTicketsCount = await prisma.supportTicket.count({
+  const openTicketsCount = isDistribuidor ? 0 : await prisma.supportTicket.count({
     where: { status: 'Abierto' }
   });
 
@@ -19,7 +42,7 @@ export async function getDashboardMetrics() {
 
   // 1. Ingreso Total (Ventas Aprobadas y Cerradas)
   const wonQuotes = await prisma.quote.findMany({
-    where: { status: { in: ['Aprobado', 'Cerrado'] } },
+    where: { status: { in: ['Aprobada', 'Aprobado', 'Cerrado'] }, ...baseWhereQuote },
     select: {
       total: true,
       fecha_creacion: true
@@ -52,7 +75,7 @@ export async function getDashboardMetrics() {
   // 2. Distribución de Leads por Status
   const leadsDistribution = await prisma.client.groupBy({
     by: ['status'],
-    where: { status: { in: ['Lead', 'Contactado', 'Visita Programada'] } },
+    where: { status: { in: ['Lead', 'Contactado', 'Visita Programada'] }, ...baseWhereClient },
     _count: { id: true }
   });
 
@@ -62,15 +85,18 @@ export async function getDashboardMetrics() {
   }));
 
   // 3. Distribución de Tickets
-  const ticketsDistribution = await prisma.supportTicket.groupBy({
-    by: ['status'],
-    _count: { id: true }
-  });
+  let ticketData: { name: string, value: number }[] = [];
+  if (!isDistribuidor) {
+    const ticketsDistribution = await prisma.supportTicket.groupBy({
+      by: ['status'],
+      _count: { id: true }
+    });
 
-  const ticketData = ticketsDistribution.map(t => ({
-    name: t.status,
-    value: t._count.id
-  }));
+    ticketData = ticketsDistribution.map(t => ({
+      name: t.status,
+      value: t._count.id
+    }));
+  }
 
   return {
     totalLeadsCount,
@@ -82,3 +108,5 @@ export async function getDashboardMetrics() {
     ticketData
   };
 }
+
+

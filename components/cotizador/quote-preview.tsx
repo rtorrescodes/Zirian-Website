@@ -37,7 +37,25 @@ export function QuotePreview({
   attachments = [],
 }: QuotePreviewProps) {
   const isEn = template === 'ev_charger_en';
-  const isGeneral = template === 'general';
+  const isDistribuidor = template === 'general_distribuidor' || template === 'general_distribuidor_fotos' || selectedClient?.assignedUserId !== null;
+  const showPhotos = template === 'general_distribuidor_fotos';
+  const isGeneral = template === 'general' || isDistribuidor;
+
+  const productPhotos: {name: string, url: string}[] = [];
+  if (showPhotos) {
+    const seen = new Set();
+    items.forEach((i: any) => {
+      const imgUrl = i.imagen_url || i.product?.img_portada;
+      if (imgUrl && (!i.product || !seen.has(i.product.id))) {
+        if (i.product) seen.add(i.product.id);
+        else seen.add(imgUrl);
+        productPhotos.push({
+          name: i.product?.nombre || i.descripcion,
+          url: imgUrl.startsWith('http') ? imgUrl : `https://www.zirian.mx${imgUrl}`
+        });
+      }
+    });
+  }
 
   // Group items logic
   let displayItems: any[] = [];
@@ -144,23 +162,36 @@ export function QuotePreview({
         </div>
         <div className="bg-slate-50 md:bg-slate-900 py-4 px-0 md:p-8 rounded-xl flex justify-center shadow-inner overflow-hidden w-full">
           <div className="flex flex-col gap-8 w-full md:w-auto overflow-hidden md:overflow-visible">
-            {(() => {
-              const isEn = template === 'ev_charger_en';
-              const isGeneral = template === 'general';
-              return (
+              {(() => {
+                const isEn = template === 'ev_charger_en';
+                const isDistribuidor = template === 'general_distribuidor' || template === 'general_distribuidor_fotos' || selectedClient?.assignedUserId !== null;
+                const showPhotos = template === 'general_distribuidor_fotos';
+                const isGeneral = template === 'general' || isDistribuidor;
+                return (
               <div className="w-[340px] h-[500px] sm:w-[510px] sm:h-[730px] md:w-auto md:h-auto mx-auto overflow-hidden">
                 <div className="w-[850px] min-h-[1202px] bg-white md:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.5)] font-sans relative shrink-0 scale-[0.4] sm:scale-[0.6] md:scale-100 origin-top-left transition-all text-[#1F2937] flex flex-col">
                 
                 {/* Header (Top) */}
                 <div className="flex justify-between items-start px-12 pt-12 pb-6">
-                  <div className="max-w-[400px]">
-                    <div className="flex items-center gap-2 mb-2">
-                      <img src="/logo-zirian-cotizador.png" alt="Zirian Logo" className="h-12 w-auto" />
+                    <div className="max-w-[400px]">
+                      <div className="flex items-center gap-2 mb-2">
+                        <img src="/logo-zirian-cotizador.png" alt="Logo" className="h-12 w-auto" />
+                      </div>
+                      {isDistribuidor ? (
+                        <>
+                          <h2 className="text-[#1C497B] font-bold text-lg leading-tight mb-2">Soluciones Integrales</h2>
+                          <p className="text-sm text-slate-500 mb-1 leading-snug">Bahía Chemuyil Mz3 Lt7 Depto 106B</p>
+                          <p className="text-sm text-slate-500 mb-1 leading-snug">Puerto Aventuras, Quintana Roo CP 77733</p>
+                          <p className="text-sm text-slate-500 leading-snug">Tel: 5528613165</p>
+                        </>
+                      ) : (
+                        <>
+                          <h2 className="text-[#1C497B] font-bold text-lg leading-tight mb-2">Energía y sistemas, donde necesites</h2>
+                          <p className="text-sm text-slate-500 mb-1 leading-snug">San José del Cabo, Baja California Sur</p>
+                          <p className="text-sm text-slate-500 leading-snug">WhatsApp: (624) 6220525 | www.zirian.com</p>
+                        </>
+                      )}
                     </div>
-                    <h2 className="text-[#1C497B] font-bold text-lg leading-tight mb-2">Energía y sistemas, donde necesites</h2>
-                    <p className="text-sm text-slate-500 mb-1 leading-snug">San José del Cabo, Baja California Sur</p>
-                    <p className="text-sm text-slate-500 leading-snug">WhatsApp: (624) 6220525 | www.zirian.com</p>
-                  </div>
 
                   <div className="text-right">
                     <h1 className="text-3xl font-black text-[#1C497B] tracking-wider mb-2 uppercase">{isEn ? 'Quote' : 'Cotización'}</h1>
@@ -183,7 +214,7 @@ export function QuotePreview({
                     <div className="p-2 text-xs flex flex-col gap-1 border-l border-slate-300 h-[calc(100%-24px)]">
                       <p suppressHydrationWarning><span className="font-bold">{isEn ? 'Date:' : 'Fecha:'}</span> {new Date().toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
                       <p suppressHydrationWarning><span className="font-bold">{isEn ? 'Valid until:' : 'Validez:'}</span> {new Date(Date.now() + 15 * 86400000).toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
-                      <p className="mb-0.5"><span className="font-bold">Agente:</span> Ing. Rodrigo Torres</p>
+                      <p className="mb-0.5"><span className="font-bold">Agente:</span> {isDistribuidor ? 'Polo Esponda' : (selectedClient?.assignedUser?.name || 'Ing. Rodrigo Torres')}</p>
                     </div>
                   </div>
                 </div>
@@ -193,8 +224,8 @@ export function QuotePreview({
                   <p className="text-xs text-slate-700 mb-1">{isEn ? 'Dear Client:' : 'Estimado/a cliente:'}</p>
                   <p className="text-xs text-slate-700 leading-relaxed">
                     {isEn 
-                      ? 'It is a pleasure to present our technical proposal for the integration of your ecosystem. At Zirian México, we prioritize regulatory safety and energy efficiency.'
-                      : <>Es un gusto presentarle nuestra propuesta técnica para la integración de su ecosistema. En <strong>Zirian México</strong>, priorizamos la seguridad normativa y la eficiencia energética.</>}
+                      ? `It is a pleasure to present our technical proposal for the integration of your ecosystem. ${isDistribuidor ? 'We prioritize regulatory safety and efficiency.' : 'At Zirian México, we prioritize regulatory safety and energy efficiency.'}`
+                      : <>Es un gusto presentarle nuestra propuesta técnica para la integración de su ecosistema. {isDistribuidor ? 'Priorizamos la seguridad normativa y la eficiencia.' : <span>En <strong>Zirian México</strong>, priorizamos la seguridad normativa y la eficiencia energética.</span>}</>}
                   </p>
                 </div>
 
@@ -277,9 +308,25 @@ export function QuotePreview({
                       </table>
                     </div>
                   </div>
-                </div>
+                  </div>
 
-                {/* Spacer to push everything below to the bottom */}
+                  {showPhotos && productPhotos.length > 0 && (
+                    <div className="px-12 mt-4">
+                      <h3 className="text-[#1C497B] font-bold text-sm uppercase tracking-wider mb-3">Imágenes de Referencia</h3>
+                      <div className="grid grid-cols-4 gap-4">
+                        {productPhotos.map((photo, idx) => (
+                          <div key={idx} className="flex flex-col items-center">
+                            <div className="w-24 h-24 bg-white border border-slate-200 rounded-lg p-2 mb-2 flex items-center justify-center overflow-hidden">
+                              <img src={photo.url} alt={photo.name} className="max-w-full max-h-full object-contain" />
+                            </div>
+                            <p className="text-[9px] text-center text-slate-600 line-clamp-2 leading-tight px-1">{photo.name}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Spacer to push everything below to the bottom */}
                 <div className="flex-grow min-h-[20px]"></div>
 
                                 {/* Compromiso Zirian Section */}
@@ -338,7 +385,7 @@ export function QuotePreview({
                     <div>
                       <p className="font-bold mb-0.5">{isEn ? '2. WARRANTY & COVERAGE' : '2. GARANTÍA Y COBERTURA'}</p>
                       <p>{isGeneral
-                        ? (isEn ? 'Warranty applies to equipment supplied/installed by Zirian. Excludes damage caused by misuse, third parties, voltage fluctuations or natural disasters.' : 'Garantía sobre equipos suministrados y/o instalados por Zirian. Quedan excluidos daños por uso indebido, terceros, variaciones de voltaje o desastres naturales.')
+                        ? (isEn ? `Warranty applies to equipment supplied/installed by ${isDistribuidor ? 'us' : 'Zirian'}. Excludes damage caused by misuse, third parties, voltage fluctuations or natural disasters.` : `Garantía sobre equipos suministrados y/o instalados por ${isDistribuidor ? 'nosotros' : 'Zirian'}. Quedan excluidos daños por uso indebido, terceros, variaciones de voltaje o desastres naturales.`)
                         : (isEn ? 'Warranty applies to equipment installed by Zirian. Excludes damage caused by misuse, voltage fluctuations, third parties, or natural phenomena.' : 'Garantía sobre equipos instalados por Zirian. Quedan excluidos daños por uso indebido, variaciones de voltaje, terceros o fenómenos naturales.')
                       }</p>
                     </div>
@@ -370,7 +417,7 @@ export function QuotePreview({
                     <div>
                       <p className="font-bold mb-0.5">{isGeneral ? (isEn ? '6. CONFIDENTIALITY' : '6. CONFIDENCIALIDAD') : (isEn ? '6. INTELLECTUAL PROPERTY' : '6. PROPIEDAD INTELECTUAL')}</p>
                       <p>{isGeneral
-                        ? (isEn ? 'The commercial information and prices contained in this document are confidential and property of Zirian. Distribution is prohibited.' : 'La información comercial y precios contenidos en este documento son confidenciales y propiedad de Zirian, prohibida su distribución sin autorización.')
+                        ? (isEn ? `The commercial information and prices contained in this document are confidential and property of ${isDistribuidor ? 'our company' : 'Zirian'}. Distribution is prohibited.` : `La información comercial y precios contenidos en este documento son confidenciales y propiedad de ${isDistribuidor ? 'nuestra empresa' : 'Zirian'}, prohibida su distribución sin autorización.`)
                         : (isEn ? 'Engineering and designs provided are the intellectual property of Zirian. Reproduction or distribution without authorization is prohibited.' : 'La ingeniería y diseños proporcionados son propiedad intelectual de Zirian. Queda prohibida su reproducción o distribución sin autorización.')
                       }</p>
                     </div>
@@ -428,3 +475,4 @@ export function QuotePreview({
     </div>
   );
 }
+

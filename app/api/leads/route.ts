@@ -4,23 +4,42 @@ import { prisma } from "@/lib/prisma";
 import { enviarCorreo } from "@/lib/mail";
 import { createNotification } from "@/app/actions/notifications";
 
+import { verifyAuth } from "@/lib/auth";
+
 // Helper to verify admin session
 async function isAuthenticated() {
   const cookieStore = await cookies();
   const session = cookieStore.get("zirian_session");
-  return session && session.value === "authenticated";
+  return session && session.value !== undefined;
 }
 
 // GET: Fetch all leads (admin protected)
 export async function GET() {
-  if (!(await isAuthenticated())) {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("zirian_session");
+  
+  if (!session) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
+  let userId = null;
+  let isDistribuidor = false;
   try {
+    const payload = await verifyAuth(session.value);
+    if (payload.role === 'Distribuidor') {
+      isDistribuidor = true;
+      userId = payload.id;
+    }
+  } catch (e) {
+    return NextResponse.json({ error: "Token invalido" }, { status: 401 });
+  }
+
+  try {
+    const baseWhere = isDistribuidor ? { assignedUserId: userId } : {};
     const leads = await prisma.client.findMany({
       where: {
-        status: { in: ["Lead", "Contactado", "Visita Programada"] }
+        status: { in: ["Lead", "Contactado", "Visita Programada"] },
+        ...baseWhere
       },
       orderBy: {
         fecha_creacion: "desc",

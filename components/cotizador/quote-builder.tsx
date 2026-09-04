@@ -65,6 +65,8 @@ interface Product {
   costo_estimado?: any
   unidad_medida: string
   categoryId: number
+  img_portada?: string | null
+  grupo_impresion?: string | null
   category?: Category
   recommendations?: { recommended: Product }[]
   syscom_precio_lista?: any
@@ -84,6 +86,7 @@ interface LineItem {
   product: Product
   qty: number
   detalles: string
+  seccion?: string
 }
 
 interface Attachment {
@@ -93,6 +96,7 @@ interface Attachment {
 }
 
 interface QuoteBuilderProps {
+  userRole?: string
   initialClients: any[]
   initialProducts: any[]
   initialCategories: any[]
@@ -108,12 +112,13 @@ const clientTypeColor: Record<string, string> = {
 }
 
 export function QuoteBuilder({
+  userRole,
   initialClients,
   initialProducts,
   initialCategories,
+  initialBrochures = [],
   initialClientId,
   initialQuote,
-  initialBrochures = [],
 }: QuoteBuilderProps) {
   const getInitialClient = () => {
     if (initialQuote?.clientId) return initialClients.find(c => c.id === initialQuote.clientId) || null
@@ -193,11 +198,17 @@ export function QuoteBuilder({
   const [savedQuoteId, setSavedQuoteId] = useState<number | null>(initialQuote?.id || null)
   const [mostrarDesglose, setMostrarDesglose] = useState(initialQuote?.mostrar_desglose ?? false)
   const [groupPrices, setGroupPrices] = useState<Record<string, number>>(initialQuote?.group_prices || {})
-  const [template, setTemplate] = useState<string>(initialQuote?.template || 'ev_charger')
+  const [template, setTemplate] = useState<string>(() => {
+    if (userRole === 'Distribuidor') {
+      return 'general_distribuidor';
+    }
+    return initialQuote?.template || 'ev_charger';
+  });
   const [notasCliente, setNotasCliente] = useState(initialQuote?.notas_cliente || '')
   const [requiereFactura, setRequiereFactura] = useState<boolean>(initialQuote ? (initialQuote.requiere_factura || initialQuote.impuestos > 0) : true)
   const [status, setStatus] = useState<string>(initialQuote?.status || 'Borrador')
   const [motivoRechazo, setMotivoRechazo] = useState<string>(initialQuote?.motivo_rechazo || '')
+  const [cobroTarjeta, setCobroTarjeta] = useState<boolean>(initialQuote?.cobro_tarjeta ?? false)
 
   const resetBuilder = () => {
     setSaved(false)
@@ -252,10 +263,11 @@ export function QuoteBuilder({
         descripcion: sp.descripcion ? `${sp.descripcion}\nModelo: ${sp.modelo} | Marca: ${sp.marca}` : `Modelo: ${sp.modelo} | Marca: ${sp.marca}`,
         codigo: sp.modelo,
         precio_base: sp.precioListaMXN,
-        costo_estimado: sp.precioDescuentoMXN,
+        costo_estimado: sp.precioEspecialMXN,
         syscom_precio_lista: sp.precioListaMXN,
         syscom_precio_especial: sp.precioEspecialMXN,
         unidad_medida: 'Pieza',
+        img_portada: sp.imagen,
         categoryId: catId,
       } as Product
     }
@@ -266,7 +278,7 @@ export function QuoteBuilder({
     if (!pickedProduct) return
     let finalProduct = { ...pickedProduct };
     let finalDetails = itemDetails || finalProduct.descripcion || '';
-    if (finalProduct.nombre.length > 100) {
+    if (finalProduct.nombre && finalProduct.nombre.length > 100) {
       const cutoff = finalProduct.nombre.lastIndexOf(' ', 100);
       if (cutoff > 50) {
         const excess = finalProduct.nombre.substring(cutoff).trim();
@@ -285,7 +297,7 @@ export function QuoteBuilder({
   const addDirectItem = (product: Product, quantity = 1) => {
       let finalProduct = { ...product };
       let finalDetails = finalProduct.descripcion || '';
-    if (finalProduct.nombre.length > 100) {
+    if (finalProduct.nombre && finalProduct.nombre.length > 100) {
       const cutoff = finalProduct.nombre.lastIndexOf(' ', 100);
       if (cutoff > 50) {
         const excess = finalProduct.nombre.substring(cutoff).trim();
@@ -333,8 +345,27 @@ export function QuoteBuilder({
     setAttachments((prev) => [...prev, ...next])
   }
 
-  const baseSubtotal = items.reduce((s, i) => s + (Number(i.product.precio_base) * i.qty), 0)
-  const subtotalCost = items.reduce((s, i) => s + (Number(i.product.costo_estimado || 0) * i.qty), 0)
+  const stripeMultiplier = cobroTarjeta ? 1.0435 : 1;
+  const stripeFixed = cobroTarjeta ? 3.48 : 0; // fixed amount per item or just lump sum? Let's just do a 4.5% flat markup to be safe and simple if they want it hidden.
+  // We'll use exactly 1.0435 multiplier.
+  
+  const adjustedItems = useMemo(() => {
+    return items.map(i => {
+      const adjustedPrice = cobroTarjeta 
+        ? Math.ceil((Number(i.product.precio_base) + (3 * 1.16)) / (1 - 0.036 * 1.16))
+        : Number(i.product.precio_base);
+      return {
+        ...i,
+        product: {
+          ...i.product,
+          precio_base: adjustedPrice
+        }
+      }
+    });
+  }, [items, cobroTarjeta]);
+
+  const baseSubtotal = adjustedItems.reduce((s, i) => s + (Number(i.product.precio_base) * i.qty), 0)
+  const subtotalCost = adjustedItems.reduce((s, i) => s + (Number(i.product.costo_estimado || 0) * i.qty), 0)
 
   const prevCalculatedGroupsRef = useRef<Record<string, number>>({});
 
@@ -345,7 +376,7 @@ export function QuoteBuilder({
       const calculatedGroups: Record<string, number> = {};
       
       items.forEach((i: any) => {
-        const groupName = i.product?.grupo_impresion || 'Concepto General';
+        const groupName = i.product?.grupo_impresion || i.seccion || (items.length === 1 ? i.product?.nombre : 'Concepto General');
         if (calculatedGroups[groupName] === undefined) {
           calculatedGroups[groupName] = 0;
         }
@@ -383,7 +414,7 @@ export function QuoteBuilder({
   const customSubtotal = Object.values(groupPrices).reduce((s, val) => s + (Number(val) || 0), 0);
   const subtotal = mostrarDesglose ? baseSubtotal : (Object.keys(groupPrices).length > 0 ? customSubtotal : baseSubtotal);
   
-  const ganancia = subtotal - (subtotalCost * 1.16)
+  const ganancia = userRole === 'Distribuidor' ? subtotal - subtotalCost : subtotal - (subtotalCost * 1.16);
   const iva = requiereFactura ? subtotal * 0.16 : 0
   const total = subtotal + iva
 
@@ -403,16 +434,18 @@ export function QuoteBuilder({
         status: status,
         brochures: attachments.map(a => parseInt(a.id)),
         motivo_rechazo: (status === 'Rechazada' || status === 'Cancelada') ? motivoRechazo : null,
-        items: [
-          ...items.filter(i => !i.seccion || !secciones.includes(i.seccion)),
-          ...secciones.flatMap(s => items.filter(i => i.seccion === s))
-        ].map(i => ({
-          productId: i.product.id < 0 ? null : i.product.id,
+        cobro_tarjeta: cobroTarjeta,
+          items: [
+            ...adjustedItems.filter(i => !i.seccion || !secciones.includes(i.seccion)),
+            ...secciones.flatMap(s => adjustedItems.filter(i => i.seccion === s))
+          ].map(i => ({
+          productId: typeof i.product.id === 'string' ? null : (i.product.id < 0 ? null : i.product.id),
+            syscom_id: typeof i.product.id === 'string' ? String(i.product.id).replace('syscom-', '') : null,
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
           cantidad: i.qty,
           precio_unitario: Number(i.product.precio_base),
             costo_unitario: Number(i.product.costo_estimado || 0),
-            total: Number(i.product.precio_base) * i.qty, seccion: i.seccion || null
+            total: Number(i.product.precio_base) * i.qty, seccion: i.seccion || null, imagen_url: i.product.img_portada || null
         }))
       }
       
@@ -452,15 +485,17 @@ export function QuoteBuilder({
         template: template,
         requiere_factura: requiereFactura,
         brochures: attachments.map(a => parseInt(a.id)),
-        items: [
-          ...items.filter(i => !i.seccion || !secciones.includes(i.seccion)),
-          ...secciones.flatMap(s => items.filter(i => i.seccion === s))
-        ].map(i => ({
-          productId: i.product.id < 0 ? null : i.product.id,
+        cobro_tarjeta: cobroTarjeta,
+          items: [
+            ...adjustedItems.filter(i => !i.seccion || !secciones.includes(i.seccion)),
+            ...secciones.flatMap(s => adjustedItems.filter(i => i.seccion === s))
+          ].map(i => ({
+          productId: typeof i.product.id === 'string' ? null : (i.product.id < 0 ? null : i.product.id),
+            syscom_id: typeof i.product.id === 'string' ? String(i.product.id).replace('syscom-', '') : null,
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
           cantidad: i.qty,
           precio_unitario: Number(i.product.precio_base),
-          total: Number(i.product.precio_base) * i.qty, seccion: i.seccion || null
+          total: Number(i.product.precio_base) * i.qty, seccion: i.seccion || null, imagen_url: i.product.img_portada || null
         }))
       }
       
@@ -604,11 +639,14 @@ export function QuoteBuilder({
         />
 
         <QuoteSummary 
+          userRole={userRole}
           items={items}
           status={status}
           setStatus={setStatus}
           requiereFactura={requiereFactura}
           setRequiereFactura={setRequiereFactura}
+          cobroTarjeta={cobroTarjeta}
+          setCobroTarjeta={setCobroTarjeta}
           mostrarDesglose={mostrarDesglose}
           setMostrarDesglose={setMostrarDesglose}
           template={template}
@@ -677,3 +715,8 @@ function SectionTitle({
     </div>
   )
 }
+
+
+
+
+

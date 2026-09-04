@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { enviarCorreo } from "@/lib/mail";
+import { createNotification } from "@/app/actions/notifications";
+import { verifyAuth } from "@/lib/auth";
 import { createClient } from "@supabase/supabase-js";
 
 // Helper to verify admin session
@@ -13,12 +15,30 @@ async function isAuthenticated() {
 
 // GET: Fetch all tickets (admin protected)
 export async function GET() {
-  if (!(await isAuthenticated())) {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("zirian_session");
+  
+  if (!session) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
+  let isDistribuidor = false;
+  let userId = null;
+  try {
+    const payload = await verifyAuth(session.value);
+    if (payload.role === 'Distribuidor') {
+      isDistribuidor = true;
+      userId = payload.id;
+    }
+  } catch (e) {
+    return NextResponse.json({ error: "Token invalido" }, { status: 401 });
+  }
+
+  const baseWhere = isDistribuidor ? { client: { assignedUserId: userId } } : {};
+
   try {
     const tickets = await prisma.supportTicket.findMany({
+      where: baseWhere,
       orderBy: {
         fecha_creacion: "desc",
       },

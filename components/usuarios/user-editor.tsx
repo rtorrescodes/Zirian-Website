@@ -23,18 +23,13 @@ export function UserEditor({ initialData }: UserEditorProps) {
     email: initialData?.email || '',
     role: initialData?.role || 'Gerente',
     activo: initialData?.activo ?? true,
+    margen_zirian: initialData?.margen_zirian || 0,
+    margen_distribuidor: initialData?.margen_distribuidor || 0,
+    limitar_precio_lista: initialData?.limitar_precio_lista ?? true,
     password: ''
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData(prev => ({ ...prev, [name]: checked }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-  };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => { const { name, value, type } = e.target; setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value })); };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,6 +104,7 @@ export function UserEditor({ initialData }: UserEditorProps) {
                     <SelectItem value="Gerente">Gerente</SelectItem>
                     <SelectItem value="Instalador">Instalador / Técnico</SelectItem>
                     <SelectItem value="Supervisor">Supervisor</SelectItem>
+                    <SelectItem value="Distribuidor">Distribuidor</SelectItem>
                     <SelectItem value="SuperAdmin">Super Administrador</SelectItem>
                   </SelectContent>
                 </Select>
@@ -129,8 +125,44 @@ export function UserEditor({ initialData }: UserEditorProps) {
             </div>
           </div>
 
-          <div className="space-y-4 pt-6 border-t border-slate-800">
-            <h3 className="font-tech text-sm font-bold uppercase tracking-widest text-emerald-400 flex items-center gap-2">
+          {formData.role === 'Distribuidor' && (
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-6 shadow-xl backdrop-blur-sm">
+              <h3 className="font-tech text-sm font-bold uppercase tracking-widest text-brand-blue border-b border-slate-800 pb-3">Configuración de Distribuidor</h3>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Margen Zirian (%)</label>
+                  <Input name="margen_zirian" type="number" step="0.01" value={formData.margen_zirian} onChange={handleChange} className="bg-slate-950/80 border-slate-700 text-white focus-visible:ring-brand-blue" />
+                  <p className="text-[10px] text-slate-500 font-tech">Utilidad de Zirian sobre el costo base de Syscom.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Margen Distribuidor (%)</label>
+                  <Input name="margen_distribuidor" type="number" step="0.01" value={formData.margen_distribuidor} onChange={handleChange} className="bg-slate-950/80 border-slate-700 text-white focus-visible:ring-brand-blue" />
+                  <p className="text-[10px] text-slate-500 font-tech">Utilidad predeterminada del distribuidor al cotizar.</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center space-x-3 cursor-pointer bg-slate-950/60 p-2.5 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors">
+                  <input
+                    type="checkbox"
+                    name="limitar_precio_lista"
+                    checked={formData.limitar_precio_lista}
+                    onChange={handleChange}
+                    className="h-4 w-4 rounded border-slate-700 bg-slate-900 text-brand-blue focus:ring-brand-blue focus:ring-offset-slate-950"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-tech font-bold uppercase tracking-wider text-slate-300">Tope Precio de Lista Syscom</span>
+                    <span className="text-[10px] text-slate-500 font-tech">Garantiza que el precio final nunca supere el Precio 1 de Syscom.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+          )}
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 space-y-4 shadow-xl backdrop-blur-sm">
+            <h3 className="font-tech text-sm font-bold uppercase tracking-widest text-emerald-400 flex items-center gap-2 border-b border-slate-800 pb-3">
               <KeyRound className="h-4 w-4" /> 
               Seguridad
             </h3>

@@ -2,6 +2,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { verifyAuth } from "@/lib/auth";
 
 function serializeQuote(quote: any) {
   if (!quote) return quote;
@@ -14,6 +16,7 @@ function serializeQuote(quote: any) {
     costo_real: quote.costo_real ? Number(quote.costo_real) : 0,
     utilidad_real: quote.utilidad_real ? Number(quote.utilidad_real) : 0,
     monto_pagado: quote.monto_pagado ? Number(quote.monto_pagado) : 0,
+      comision_partner: quote.comision_partner ? Number(quote.comision_partner) : null,
     items: quote.items ? quote.items.map((item: any) => ({
       ...item,
       cantidad: item.cantidad ? Number(item.cantidad) : 0,
@@ -50,7 +53,10 @@ export async function createQuote(data: {
     precio_unitario: number;
     costo_unitario?: number;
     total: number;
-  }[];
+      seccion?: string | null;
+      imagen_url?: string | null;
+      syscom_id?: string | null;
+    }[];
   brochures?: number[];
 }) {
   const { items, brochures, ...quoteData } = data;
@@ -60,11 +66,44 @@ export async function createQuote(data: {
     orderBy: { fecha_creacion: 'desc' }
   });
 
+  const cookieStore = await cookies();
+  const session = cookieStore.get('zirian_session');
+  let user: any = null;
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      user = await prisma.user.findUnique({ where: { id: payload.id || payload.userId } });
+    } catch(e){}
+  }
+
+  let utilidad_real = 0;
+  let comision_partner = 0;
+  
+  if (user?.role === 'Distribuidor') {
+    const marginZ = Number(user.margen_zirian || 0);
+    // Calcular costos inversos (de abajo hacia arriba)
+    items.forEach(item => {
+      const costoDistribuidor = Number(item.costo_unitario || 0);
+      const ventaCliente = Number(item.precio_unitario || 0);
+      const qty = Number(item.cantidad || 1);
+      
+      const rawCost = marginZ > 0 ? costoDistribuidor / (1 + (marginZ / 100)) : costoDistribuidor;
+      
+      const miUtilidadUnitariaZirian = costoDistribuidor - rawCost;
+      const utilidadDistribuidor = ventaCliente - costoDistribuidor;
+      
+      utilidad_real += (miUtilidadUnitariaZirian * qty);
+      comision_partner += (utilidadDistribuidor * qty);
+    });
+  }
+
   const quote = await prisma.quote.create({
     data: {
       ...quoteData,
       status: "Borrador",
       cctvProjectId: latestCctv ? latestCctv.id : undefined,
+      utilidad_real: utilidad_real > 0 ? utilidad_real : undefined,
+      comision_partner: comision_partner > 0 ? comision_partner : undefined,
       items: {
         create: items,
       },
@@ -99,7 +138,7 @@ export async function updateQuotePartnerCommission(id: number, comision_partner:
 
 import { createNotification } from "./notifications";
 
-export async function getQuotes() {
+export async function getQuotes(roleOverride?: string, userIdOverride?: number) {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
   
@@ -156,7 +195,28 @@ export async function getQuotes() {
     console.error("Error auto-expiring quotes", e);
   }
 
-  const quotes = await prisma.quote.findMany({
+  const cookieStore = await cookies();
+  const session = cookieStore.get('zirian_session');
+  let whereClause: any = {};
+    console.log('getQuotes CALLED WITH roleOverride:', roleOverride, 'userIdOverride:', userIdOverride);
+    if (roleOverride === 'Distribuidor' && userIdOverride) {
+      whereClause = { client: { assignedUserId: userIdOverride } };
+    }
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      console.log('User role:', payload.role, 'User ID:', payload.id || payload.userId);
+        const dbUser = await prisma.user.findUnique({ where: { id: payload.id || payload.userId } });
+        const actualRole = dbUser?.role || payload.role;
+        if (actualRole === 'Distribuidor') {
+        whereClause = { client: { assignedUserId: payload.id || payload.userId } };
+      }
+    } catch(e) { console.error('getQuotes auth error:', e) }
+  }
+
+  console.log('GET QUOTES WHERE CLAUSE:', JSON.stringify(whereClause));
+    const quotes = await prisma.quote.findMany({
+    where: whereClause,
     include: {
       client: true,
       items: {
@@ -172,6 +232,8 @@ export async function getQuotes() {
 
 export async function deleteQuote(id: number) {
   const quote = await prisma.quote.findUnique({ where: { id } });
+
+  if (!quote) return null;
 
   if (quote) {
     await prisma.clientActivity.create({
@@ -213,11 +275,43 @@ export async function updateQuote(id: number, data: any) {
     where: { quoteId: id }
   });
 
+  const cookieStore = await cookies();
+  const session = cookieStore.get('zirian_session');
+  let user: any = null;
+  if (session) {
+    try {
+      const payload = await verifyAuth(session.value);
+      user = await prisma.user.findUnique({ where: { id: payload.id || payload.userId } });
+    } catch(e){}
+  }
+
+  let utilidad_real = 0;
+  let comision_partner = 0;
+  
+  if (user?.role === 'Distribuidor') {
+    const marginZ = Number(user.margen_zirian || 0);
+    items.forEach((item: any) => {
+      const costoDistribuidor = Number(item.costo_unitario || 0);
+      const ventaCliente = Number(item.precio_unitario || 0);
+      const qty = Number(item.cantidad || 1);
+      
+      const rawCost = marginZ > 0 ? costoDistribuidor / (1 + (marginZ / 100)) : costoDistribuidor;
+      
+      const miUtilidadUnitariaZirian = costoDistribuidor - rawCost;
+      const utilidadDistribuidor = ventaCliente - costoDistribuidor;
+      
+      utilidad_real += (miUtilidadUnitariaZirian * qty);
+      comision_partner += (utilidadDistribuidor * qty);
+    });
+  }
+
   const quote = await prisma.quote.update({
     where: { id },
     data: {
       ...quoteData,
       requiere_factura: requiere_factura,
+      utilidad_real: utilidad_real > 0 ? utilidad_real : undefined,
+      comision_partner: comision_partner > 0 ? comision_partner : undefined,
       items: {
         create: items,
       },
@@ -279,7 +373,7 @@ export async function getQuoteByToken(token: string) {
 export async function acceptQuote(token: string) {
   const quote = await prisma.quote.update({
     where: { token },
-    data: { status: 'Aprobado' },
+    data: { status: 'Aprobado', envioAddressId },
     include: { items: { include: { product: true } } }
   });
   
@@ -317,10 +411,37 @@ export async function acceptQuote(token: string) {
   return serializeQuote(quote);
 }
 
-export async function adminAcceptQuote(id: number) {
+export async function adminAcceptQuote(id: number, addressData?: any) {
+  let envioAddressId = null;
+
+  if (addressData) {
+    const quoteData = await prisma.quote.findUnique({ where: { id }, select: { clientId: true } });
+    if (quoteData) {
+      const newAddress = await prisma.address.create({
+        data: {
+          clientId: quoteData.clientId,
+          nombre_contacto: addressData.nombre_contacto || "Cliente",
+          calle: addressData.calle || "",
+          num_ext: addressData.num_ext || "",
+          num_int: addressData.num_int || "",
+          colonia: addressData.colonia || "",
+          codigo_postal: addressData.codigo_postal || "",
+          ciudad: addressData.ciudad || "",
+          estado: addressData.estado || "",
+          telefono: addressData.telefono || ""
+        }
+      });
+      envioAddressId = newAddress.id;
+      
+      // TODO: Here we will call Syscom API with the newAddress data and quote items.
+      // await createSyscomOrder(id, newAddress);
+      console.log("Simulando creación de pedido Syscom para cotización", id, "con dirección:", newAddress);
+    }
+  }
+
   const quote = await prisma.quote.update({
     where: { id },
-    data: { status: 'Aprobado' },
+    data: { status: 'Aprobado', envioAddressId },
     include: { items: { include: { product: true } } }
   });
   
@@ -385,3 +506,16 @@ export async function adminCompleteQuote(id: number) {
   revalidatePath('/admin/dashboard');
   revalidatePath('/admin');
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
