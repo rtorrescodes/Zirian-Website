@@ -81,8 +81,7 @@ export function AcSpecsTable({ product, locale = 'es' }: AcSpecsTableProps) {
     {
       icon: isHeatCool ? Flame : Wind,
       label: isEn ? 'Operating Cycle' : 'Modalidad de Ciclo',
-      value: modeText,
-      badge: isHeatCool ? '4 Estaciones' : 'Alta Eficiencia',
+      value: isHeatCool ? (isEn ? 'Cool & Heat' : 'Frío y Calor (Bomba)') : (isEn ? 'Cool Only' : 'Solo Frío'),
     },
     {
       icon: Zap,
@@ -99,30 +98,27 @@ export function AcSpecsTable({ product, locale = 'es' }: AcSpecsTableProps) {
       icon: Sun,
       label: isEn ? 'Refrigerant Gas' : 'Gas Refrigerante',
       value: refrigerant,
-      badge: isR32 ? 'Ecológico' : undefined,
     },
     {
       icon: ShieldCheck,
       label: isEn ? 'Coil Protection' : 'Protección de Serpentín',
-      value: 'Blue Fin Anticorrosión Marina',
-      badge: 'Costero',
+      value: 'Blue Fin Marina',
     },
     {
       icon: Volume2,
       label: isEn ? 'Acoustic Level' : 'Nivel Sonoro',
-      value: '23 dB (Modo Ultra Silencioso)',
+      value: '23 dB (Ultra Silencio)',
     },
     {
       icon: Wifi,
-      label: isEn ? 'Smart Connectivity' : 'Conectividad Inteligente',
-      value: 'Wi-Fi Integrado (App + Alexa)',
-      badge: 'Smart Home',
+      label: isEn ? 'Connectivity' : 'Conectividad Wi-Fi',
+      value: 'Smart Life + Alexa',
     },
   ];
 
   return (
     <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 my-4 shadow-xl">
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-4">
+      <div className="flex items-center justify-between border-b border-slate-800/80 pb-3 mb-2">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
             <Award className="w-4 h-4" />
@@ -132,7 +128,7 @@ export function AcSpecsTable({ product, locale = 'es' }: AcSpecsTableProps) {
               {isEn ? 'Technical Specifications' : 'Ficha de Ingeniería y Especificaciones'}
             </h4>
             <p className="text-[10px] text-slate-400">
-              {isEn ? 'Certified values for residential and coastal installation' : 'Datos certificados para clima cálido y marino'}
+              {isEn ? 'Certified values for residential and coastal installation' : 'Valores certificados para clima costero'}
             </p>
           </div>
         </div>
@@ -141,33 +137,23 @@ export function AcSpecsTable({ product, locale = 'es' }: AcSpecsTableProps) {
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      <div className="divide-y divide-slate-800/60">
         {specs.map((spec, i) => {
           const Icon = spec.icon;
           return (
             <div
               key={i}
-              className={`flex items-start gap-2.5 p-2.5 rounded-xl border transition-all ${
-                spec.highlight
-                  ? 'bg-cyan-950/20 border-cyan-800/50 hover:border-cyan-500/60'
-                  : 'bg-slate-950/40 border-slate-800/60 hover:border-slate-700'
-              }`}
+              className="py-2 px-2 flex items-center justify-between gap-3 hover:bg-slate-800/30 transition-colors rounded-lg"
             >
-              <div className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-cyan-400 flex-shrink-0 mt-0.5">
-                <Icon className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-2 shrink-0">
+                <Icon className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <span className="text-xs text-slate-400 font-mono uppercase tracking-wider">
+                  {spec.label}
+                </span>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 block truncate">
-                    {spec.label}
-                  </span>
-                  {spec.badge && (
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">
-                      {spec.badge}
-                    </span>
-                  )}
-                </div>
-                <span className="text-xs font-semibold text-slate-100 block truncate mt-0.5">
+
+              <div className="text-right">
+                <span className={`text-xs font-mono font-bold ${spec.highlight ? 'text-cyan-400' : 'text-slate-100'}`}>
                   {spec.value}
                 </span>
               </div>

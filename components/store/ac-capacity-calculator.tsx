@@ -87,22 +87,17 @@ export function AcCapacityCalculator({
           <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.2)]">
             <Calculator className="w-4 h-4" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h4 className="text-xs font-mono font-bold uppercase tracking-wider text-white">
-                {isEn ? 'AC Sizing Calculator' : 'Calculadora de Capacidad Térmica'}
-              </h4>
-              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                {isEn ? 'Coastal Advisor' : 'Asesor Costero'}
-              </span>
-            </div>
-            <p className="text-[10px] text-slate-400">
-              {isEn ? 'Find the ideal tonnage for your room in Los Cabos & Riviera Maya' : 'Calcula la capacidad exacta para tu espacio en Los Cabos y Riviera Maya'}
+          <div className="min-w-0 flex-1">
+            <h4 className="text-xs sm:text-sm font-mono font-bold uppercase tracking-wider text-white">
+              {isEn ? 'AC Sizing Calculator' : 'Calculadora de Capacidad Térmica'}
+            </h4>
+            <p className="text-[10px] text-slate-400 mt-0.5">
+              {isEn ? 'Coastal thermal advisor for Los Cabos & Riviera Maya' : 'Asesor térmico costero para Los Cabos y Riviera Maya'}
             </p>
           </div>
         </div>
 
-        <button className="text-slate-400 hover:text-white p-1">
+        <button className="text-slate-400 hover:text-white p-1 shrink-0">
           {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
       </div>
@@ -114,7 +109,7 @@ export function AcCapacityCalculator({
             <label className="text-[11px] font-mono uppercase text-slate-300 mb-2 block font-semibold">
               {isEn ? '1. Select room type or area:' : '1. Selecciona tipo de habitación o m²:'}
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2.5">
               {presets.map((p) => {
                 const active = areaM2 === p.area;
                 return (
@@ -122,14 +117,14 @@ export function AcCapacityCalculator({
                     key={p.area}
                     type="button"
                     onClick={() => setAreaM2(p.area)}
-                    className={`p-2 rounded-xl text-left border transition-all ${
+                    className={`p-2.5 rounded-xl text-left border transition-all ${
                       active
                         ? 'bg-cyan-500/10 border-cyan-500 text-white shadow-[0_0_10px_rgba(6,182,212,0.25)]'
                         : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                     }`}
                   >
-                    <div className="text-[11px] font-bold leading-tight truncate">{p.label}</div>
-                    <div className="text-[9px] font-mono text-cyan-400 mt-0.5">{p.sub}</div>
+                    <div className="text-xs font-bold leading-tight text-slate-200">{p.label}</div>
+                    <div className="text-[10px] font-mono text-cyan-400 mt-1">{p.sub}</div>
                   </button>
                 );
               })}

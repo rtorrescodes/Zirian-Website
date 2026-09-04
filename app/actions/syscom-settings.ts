@@ -4,14 +4,6 @@ import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 
 export async function getSyscomSettings() {
-  const settings = await prisma.systemSetting.findMany({
-    where: {
-      key: {
-        in: ['syscom_allowed_brands', 'syscom_allowed_models', 'syscom_category_map', 'syscom_featured_models']
-      }
-    }
-  });
-
   const config = {
     brands: [] as string[],
     models: [] as string[],
@@ -19,23 +11,35 @@ export async function getSyscomSettings() {
     categoryMap: {} as Record<string, string>
   };
 
-  for (const s of settings) {
-    if (s.key === 'syscom_allowed_brands' && s.value) {
-      config.brands = s.value.split(',').map(x => x.trim().toUpperCase()).filter(Boolean);
-    }
-    if (s.key === 'syscom_allowed_models' && s.value) {
-      config.models = s.value.split(',').map(x => x.trim().toUpperCase()).filter(Boolean);
-    }
-    if (s.key === 'syscom_featured_models' && s.value) {
-      config.featuredModels = s.value.split(',').map(x => x.trim().toUpperCase()).filter(Boolean);
-    }
-    if (s.key === 'syscom_category_map' && s.value) {
-      try {
-        config.categoryMap = JSON.parse(s.value);
-      } catch (e) {
-        config.categoryMap = {};
+  try {
+    const settings = await prisma.systemSetting.findMany({
+      where: {
+        key: {
+          in: ['syscom_allowed_brands', 'syscom_allowed_models', 'syscom_category_map', 'syscom_featured_models']
+        }
+      }
+    });
+
+    for (const s of settings) {
+      if (s.key === 'syscom_allowed_brands' && s.value) {
+        config.brands = s.value.split(',').map(x => x.trim().toUpperCase()).filter(Boolean);
+      }
+      if (s.key === 'syscom_allowed_models' && s.value) {
+        config.models = s.value.split(',').map(x => x.trim().toUpperCase()).filter(Boolean);
+      }
+      if (s.key === 'syscom_featured_models' && s.value) {
+        config.featuredModels = s.value.split(',').map(x => x.trim().toUpperCase()).filter(Boolean);
+      }
+      if (s.key === 'syscom_category_map' && s.value) {
+        try {
+          config.categoryMap = JSON.parse(s.value);
+        } catch (e) {
+          config.categoryMap = {};
+        }
       }
     }
+  } catch (error) {
+    console.error('getSyscomSettings fallback on connection glitch:', error);
   }
 
   return config;

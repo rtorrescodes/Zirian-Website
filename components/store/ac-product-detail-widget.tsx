@@ -100,21 +100,20 @@ export function AcProductDetailWidget({
         </div>
       </div>
 
-      {/* Price & Action Area */}
-      <div className="pt-2 border-t border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <p className="text-[11px] text-slate-400 uppercase tracking-wider font-tech">
-            {selectedRegion === 'riviera_maya' ? 'Precio Riviera Maya:' : 'Precio Los Cabos / BCS:'}
-          </p>
-          <p className="text-2xl sm:text-3xl font-black font-tech text-white mt-0.5">
-            ${priceMxn.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
-          </p>
-          <p className="text-[10px] text-slate-400 uppercase font-mono mt-0.5">
-            IVA Incluido • Suministro directo
-          </p>
-        </div>
+      {/* Price Area */}
+      <div className="pt-3 border-t border-slate-800/80">
+        <p className="text-[11px] text-slate-400 uppercase tracking-wider font-tech">
+          {selectedRegion === 'riviera_maya' ? 'Precio Riviera Maya:' : 'Precio Los Cabos / BCS:'}
+        </p>
+        <p className="text-3xl sm:text-4xl font-black font-tech text-white mt-1 tracking-tight">
+          ${priceMxn.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN
+        </p>
+        <p className="text-[11px] text-slate-400 uppercase font-mono mt-0.5">
+          IVA Incluido • Suministro directo
+        </p>
 
-        <div className="w-full sm:w-auto">
+        {/* Full-width CTA Button */}
+        <div className="mt-4 w-full">
           <AcQuoteModal
             productId={productId}
             productTitle={productTitle}
@@ -123,13 +122,13 @@ export function AcProductDetailWidget({
             productImage={productImage}
             rawCostMxn={rawCostMxn}
             triggerText={isEn ? 'Request Quote & Installation' : 'Cotizar con Instalación'}
-            triggerClassName="w-full sm:w-auto py-3 px-6 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-tech font-bold text-xs uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(0,163,255,0.3)] flex items-center justify-center gap-2"
+            triggerClassName="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-tech font-bold text-sm uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(0,163,255,0.35)] hover:shadow-[0_0_25px_rgba(0,163,255,0.5)] flex items-center justify-center gap-2 cursor-pointer"
           />
         </div>
       </div>
 
-      {/* Direct WhatsApp Callout */}
-      <div className="text-center pt-2 border-t border-slate-800/60">
+      {/* Direct WhatsApp Callout with phone number on second line */}
+      <div className="pt-3 border-t border-slate-800/60">
         <a
           href={
             selectedRegion === 'riviera_maya'
@@ -138,13 +137,18 @@ export function AcProductDetailWidget({
           }
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 font-tech font-bold uppercase tracking-wider transition-colors"
+          className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl bg-emerald-950/30 hover:bg-emerald-900/40 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 transition-all group cursor-pointer text-center"
         >
-          <MessageCircle className="w-3.5 h-3.5" />
-          <span>
-            {selectedRegion === 'riviera_maya'
-              ? 'Consultar asesor Riviera Maya (+52 1 55 2861 3165)'
-              : 'Consultar asesor Los Cabos (+52 624 622 0525)'}
+          <div className="flex items-center justify-center gap-2 text-xs font-tech font-bold uppercase tracking-wider">
+            <MessageCircle className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span>
+              {selectedRegion === 'riviera_maya'
+                ? 'Consultar Asesor Riviera Maya'
+                : 'Consultar Asesor Los Cabos & BCS'}
+            </span>
+          </div>
+          <span className="text-xs font-mono font-bold text-white tracking-wider">
+            {selectedRegion === 'riviera_maya' ? '+52 1 55 2861 3165' : '+52 624 622 0525'}
           </span>
         </a>
       </div>

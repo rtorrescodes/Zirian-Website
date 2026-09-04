@@ -101,8 +101,12 @@ export async function createNotification(data: {
   url?: string;
   userId?: number;
 }) {
-  await prisma.notification.create({
-    data
-  });
-  revalidatePath("/admin/dashboard");
+  try {
+    await prisma.notification.create({
+      data
+    });
+    revalidatePath("/admin/dashboard");
+  } catch (error) {
+    console.error("Failed to persist notification:", error);
+  }
 }
