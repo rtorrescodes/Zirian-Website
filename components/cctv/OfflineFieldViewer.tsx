@@ -87,7 +87,8 @@ export default function OfflineFieldViewer({
   const [showDori, setShowDori] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
-  const [followUser, setFollowUser] = useState(true);
+  const [followUser, setFollowUser] = useState(false);
+  const [gpsNotice, setGpsNotice] = useState<string | null>(null);
   const [showToolsPanel, setShowToolsPanel] = useState(false);
 
   const { bounds, width, height, imageDataUrl } = extract;
@@ -97,6 +98,15 @@ export default function OfflineFieldViewer({
   const metersNorthSouth = (bounds.north - bounds.south) * 111139;
   const metersEastWest = (bounds.east - bounds.west) * (111139 * Math.cos((centerLat * Math.PI) / 180));
   const pixelsPerMeter = ((height / metersNorthSouth) + (width / metersEastWest)) / 2;
+
+  // Check if current user GPS is physically inside the downloaded map bounding box
+  const isUserInBounds = Boolean(
+    userLocation &&
+    userLocation.lat >= bounds.south &&
+    userLocation.lat <= bounds.north &&
+    userLocation.lng >= bounds.west &&
+    userLocation.lng <= bounds.east
+  );
 
   // Convert lat/lng to image pixel coords
   const latLngToPixel = useCallback((lat: number, lng: number) => {
@@ -112,9 +122,64 @@ export default function OfflineFieldViewer({
     return { lat, lng };
   }, [bounds, width, height]);
 
-  // Center on user if follow mode is active
+  // Dedicated helper to fit and center the satellite extract in the viewport
+  const handleCenterOnMap = useCallback(() => {
+    if (containerRef.current) {
+      const viewW = containerRef.current.clientWidth;
+      const viewH = containerRef.current.clientHeight;
+      const s = Math.min(viewW / width, viewH / height) * 0.95;
+      const finalScale = Math.max(s, 0.2);
+      setScale(finalScale);
+      setOffset({
+        x: (viewW - width * finalScale) / 2,
+        y: (viewH - height * finalScale) / 2
+      });
+      setFollowUser(false);
+    }
+  }, [width, height]);
+
+  // Distance calculation helper (Haversine)
+  const getDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  const handleCenterOnGps = () => {
+    if (!userLocation) {
+      setGpsNotice('Buscando satélites GPS en tu dispositivo...');
+      setTimeout(() => setGpsNotice(null), 4000);
+      return;
+    }
+
+    if (isUserInBounds) {
+      setFollowUser(true);
+      if (containerRef.current) {
+        const { x, y } = latLngToPixel(userLocation.lat, userLocation.lng);
+        const viewW = containerRef.current.clientWidth;
+        const viewH = containerRef.current.clientHeight;
+        setOffset({
+          x: viewW / 2 - x * scale,
+          y: viewH / 2 - y * scale
+        });
+      }
+    } else {
+      const dist = Math.round(getDistanceKm(userLocation.lat, userLocation.lng, extract.center.lat, extract.center.lng));
+      setGpsNotice(`Tu GPS actual está a ~${dist} km del sitio "${extract.name}". Centrando vista en el plano satelital descargado.`);
+      setTimeout(() => setGpsNotice(null), 5000);
+      handleCenterOnMap();
+    }
+  };
+
+  // Center on user ONLY if follow mode is active AND user is inside the map bounds
   useEffect(() => {
-    if (followUser && userLocation && containerRef.current) {
+    if (followUser && userLocation && isUserInBounds && containerRef.current) {
       const { x, y } = latLngToPixel(userLocation.lat, userLocation.lng);
       const viewW = containerRef.current.clientWidth;
       const viewH = containerRef.current.clientHeight;
@@ -123,21 +188,12 @@ export default function OfflineFieldViewer({
         y: viewH / 2 - y * scale
       });
     }
-  }, [userLocation, followUser, scale, latLngToPixel]);
+  }, [userLocation, isUserInBounds, followUser, scale, latLngToPixel]);
 
-  // Initial fit to screen
+  // Initial fit to screen: ALWAYS center on the downloaded map extract first
   useEffect(() => {
-    if (containerRef.current) {
-      const viewW = containerRef.current.clientWidth;
-      const viewH = containerRef.current.clientHeight;
-      const s = Math.min(viewW / width, viewH / height) * 0.9;
-      setScale(Math.max(s, 0.4));
-      setOffset({
-        x: (viewW - width * s) / 2,
-        y: (viewH - height * s) / 2
-      });
-    }
-  }, [width, height]);
+    handleCenterOnMap();
+  }, [handleCenterOnMap]);
 
   // Auto-save offline project to buffer
   useEffect(() => {
@@ -191,7 +247,7 @@ export default function OfflineFieldViewer({
         e.touches[0].clientY - e.touches[1].clientY
       );
       const ratio = currentDist / touchStartDistRef.current;
-      const newScale = Math.min(Math.max(touchStartScaleRef.current * ratio, 0.3), 5);
+      const newScale = Math.min(Math.max(touchStartScaleRef.current * ratio, 0.2), 6);
       setScale(newScale);
     }
   };
@@ -227,19 +283,27 @@ export default function OfflineFieldViewer({
     e.preventDefault();
     setFollowUser(false);
     const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
-    const newScale = Math.min(Math.max(scale * zoomFactor, 0.3), 6);
+    const newScale = Math.min(Math.max(scale * zoomFactor, 0.2), 6);
     setScale(newScale);
   };
 
-  // Plant camera or Wi-Fi AP at GPS or Center
+  // Plant camera or Wi-Fi AP at GPS (if in bounds) or at current Viewport Center
   const handlePlantDevice = (type: DeviceType = 'camera') => {
     let targetLat = extract.center.lat;
     let targetLng = extract.center.lng;
     let initialHeading = userHeading || 0;
 
-    if (userLocation) {
+    if (userLocation && isUserInBounds) {
       targetLat = userLocation.lat;
       targetLng = userLocation.lng;
+    } else if (containerRef.current) {
+      const viewW = containerRef.current.clientWidth;
+      const viewH = containerRef.current.clientHeight;
+      const centerImageX = (viewW / 2 - offset.x) / scale;
+      const centerImageY = (viewH / 2 - offset.y) / scale;
+      const centerCoord = pixelToLatLng(centerImageX, centerImageY);
+      targetLat = centerCoord.lat;
+      targetLng = centerCoord.lng;
     }
 
     const prefix = type === 'wifi' ? 'AP' : 'Cám';
@@ -369,6 +433,12 @@ export default function OfflineFieldViewer({
         <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-emerald-950/90 border border-emerald-500 text-emerald-300 px-4 py-2 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2 animate-bounce">
           <Check className="w-4 h-4 text-emerald-400" />
           ¡Diseño sincronizado con éxito a Zirian Cloud!
+        </div>
+      )}
+
+      {gpsNotice && (
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-amber-950/95 border border-amber-500 text-amber-200 px-4 py-2 rounded-xl text-xs font-bold shadow-2xl flex items-center gap-2 max-w-lg text-center animate-in fade-in slide-in-from-top-2">
+          <span>⚠️ {gpsNotice}</span>
         </div>
       )}
 
@@ -571,14 +641,42 @@ export default function OfflineFieldViewer({
         </div>
       </div>
 
-      {/* Floating Bottom Center Action: Plant at GPS */}
+      {/* Floating Tablet Zoom & Center Controls */}
+      <div className="absolute right-4 bottom-24 z-40 flex flex-col gap-2 pointer-events-auto">
+        <Button
+          onClick={() => setScale(s => Math.min(s * 1.25, 6))}
+          size="icon"
+          className="w-10 h-10 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-white shadow-xl text-lg font-bold"
+          title="Acercar (Zoom In)"
+        >
+          +
+        </Button>
+        <Button
+          onClick={() => setScale(s => Math.max(s * 0.8, 0.2))}
+          size="icon"
+          className="w-10 h-10 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-white shadow-xl text-lg font-bold"
+          title="Alejar (Zoom Out)"
+        >
+          -
+        </Button>
+        <Button
+          onClick={handleCenterOnMap}
+          size="icon"
+          className="w-10 h-10 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-brand-blue/50 text-brand-blue shadow-xl"
+          title="Centrar en el plano satelital completo"
+        >
+          <Layers className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {/* Floating Bottom Center Action: Plant at GPS or Viewport */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 pointer-events-auto">
         <Button
           onClick={() => handlePlantDevice('camera')}
-          className="bg-brand-blue hover:bg-brand-blue/90 text-slate-950 font-tech font-bold uppercase tracking-widest text-xs h-12 px-6 rounded-full shadow-[0_0_30px_rgba(0,163,255,0.6)] border-2 border-white/20 flex items-center gap-2 active:scale-95 transition-transform animate-pulse"
+          className="bg-brand-blue hover:bg-brand-blue/90 text-slate-950 font-tech font-bold uppercase tracking-widest text-xs h-12 px-5 rounded-full shadow-[0_0_30px_rgba(0,163,255,0.6)] border-2 border-white/20 flex items-center gap-2 active:scale-95 transition-transform"
         >
           <Camera className="w-4 h-4" />
-          <span>Plantar Cámara en mi GPS</span>
+          <span>{userLocation && isUserInBounds ? 'Plantar Cámara en GPS' : 'Plantar Cámara Aquí'}</span>
         </Button>
 
         <Button
@@ -590,18 +688,27 @@ export default function OfflineFieldViewer({
           <span className="hidden sm:inline">AP Wi-Fi</span>
         </Button>
 
+        <Button
+          onClick={handleCenterOnMap}
+          size="icon"
+          className="w-12 h-12 rounded-full border-2 shadow-lg bg-slate-900 border-slate-700 text-slate-300 hover:text-white"
+          title="Centrar en el plano satelital completo"
+        >
+          <Layers className="w-5 h-5 text-brand-blue" />
+        </Button>
+
         {userLocation && (
           <Button
-            onClick={() => setFollowUser(true)}
+            onClick={handleCenterOnGps}
             size="icon"
             className={`w-12 h-12 rounded-full border-2 shadow-lg transition-colors ${
               followUser
                 ? 'bg-brand-blue border-white text-slate-950'
                 : 'bg-slate-900 border-slate-700 text-slate-300 hover:text-white'
             }`}
-            title="Centrar en mi ubicación GPS"
+            title={isUserInBounds ? 'Centrar en mi ubicación GPS' : 'GPS fuera de área descargada (click para ver distancia)'}
           >
-            <LocateFixed className="w-5 h-5" />
+            <LocateFixed className={`w-5 h-5 ${isUserInBounds ? 'text-brand-blue' : 'text-amber-400'}`} />
           </Button>
         )}
       </div>

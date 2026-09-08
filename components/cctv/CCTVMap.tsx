@@ -366,21 +366,31 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       setActiveCamId(null);
       await new Promise(r => setTimeout(r, 100));
 
-      const snapshot = await captureMapSnapshot(mapRef.current);
+      const centerCoord = { lat: center ? center.lat() : defaultCenter.lat, lng: center ? center.lng() : defaultCenter.lng };
+      const currentZoom = map.getZoom() || 18;
+      const currentBounds = {
+        north: ne.lat(),
+        south: sw.lat(),
+        east: ne.lng(),
+        west: sw.lng()
+      };
+
+      const snapshot = await captureMapSnapshot(
+        mapRef.current,
+        centerCoord,
+        currentZoom,
+        currentBounds
+      );
       const imageDataUrl = snapshot.imageDataUrl;
+      const finalBounds = snapshot.bounds || currentBounds;
 
       const extractData: OfflineMapExtract = {
         id: 'extract_' + Date.now(),
         name: extractName.trim() || projectName || 'Levantamiento Salara',
         timestamp: Date.now(),
-        center: { lat: center ? center.lat() : defaultCenter.lat, lng: center ? center.lng() : defaultCenter.lng },
-        zoom: map.getZoom() || 18,
-        bounds: {
-          north: ne.lat(),
-          south: sw.lat(),
-          east: ne.lng(),
-          west: sw.lng()
-        },
+        center: centerCoord,
+        zoom: currentZoom,
+        bounds: finalBounds,
         imageDataUrl,
         width: snapshot.width,
         height: snapshot.height,
@@ -390,7 +400,9 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       await saveOfflineExtract(extractData);
       setActiveExtract(extractData);
       setShowExtractModal(false);
-      setExtractSuccess(`Extracto "${extractData.name}" guardado exitosamente. ${(imageDataUrl.length / 1024 / 1024).toFixed(1)} MB descargados.`);
+      const approxMb = (imageDataUrl.length * 0.75 / 1024 / 1024);
+      const sizeDisplay = approxMb >= 1 ? `${approxMb.toFixed(2)} MB` : `${Math.round(approxMb * 1024)} KB`;
+      setExtractSuccess(`Extracto "${extractData.name}" guardado exitosamente (${sizeDisplay}). Listo para uso offline.`);
       setTimeout(() => setExtractSuccess(null), 6000);
     } catch (err: any) {
       console.error("Error al descargar extracto offline:", err);
