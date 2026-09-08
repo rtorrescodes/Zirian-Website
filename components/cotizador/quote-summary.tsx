@@ -255,10 +255,13 @@ export function QuoteSummary({
             )}
           </div>
 
-          {/* Botones de Acción */}
-          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+          {/* Botones de Acción Icon-Only */}
+          <div className="flex items-center gap-2 shrink-0">
             {isSaved && savedQuoteId && (
-              <div className="rounded border border-brand-green/30 bg-brand-green/10 px-3 py-1.5 text-center text-xs font-semibold text-brand-green hidden lg:block mr-auto">
+              <div 
+                className="rounded border border-brand-green/30 bg-brand-green/10 px-2.5 py-1.5 text-center text-xs font-semibold text-brand-green whitespace-nowrap"
+                title={`Cotización #${savedQuoteId.toString().padStart(4, '0')}`}
+              >
                 ID: {savedQuoteId.toString().padStart(4, '0')}
               </div>
             )}
@@ -269,30 +272,32 @@ export function QuoteSummary({
                 onClick={onDeleteQuote}
                 disabled={isSaving}
                 variant="outline"
-                className="h-11 border-red-900/50 text-red-400 hover:bg-red-950/40 hover:text-red-300 hover:border-red-700 font-tech text-xs uppercase tracking-wider px-3 shadow-lg"
-                title="Eliminar esta cotización permanentemente"
+                className="h-10 w-10 p-0 border-red-900/50 text-red-400 hover:bg-red-950/40 hover:text-red-300 hover:border-red-700 shadow-lg shrink-0 transition-colors"
+                title="Eliminar cotización"
+                aria-label="Eliminar cotización"
               >
-                <Trash2 className="w-4 h-4 mr-1.5" />
-                <span className="hidden md:inline">Eliminar</span>
+                <Trash2 className="w-4 h-4" />
               </Button>
             )}
 
             <Button
               onClick={handleSave}
               disabled={!selectedClient || items.length === 0 || isSaving}
-              className="h-11 bg-slate-800 text-white hover:bg-slate-700 font-tech font-bold uppercase tracking-widest text-xs border border-slate-700 px-5 shadow-lg flex-1 sm:flex-initial"
+              className="h-10 w-10 p-0 bg-slate-800 text-white hover:bg-slate-700 border border-slate-700 shadow-lg shrink-0 transition-colors"
+              title={isSaving ? 'Guardando progreso...' : 'Guardar cotización'}
+              aria-label="Guardar cotización"
             >
-              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4 text-brand-blue" />}
-              <span>{isSaving ? 'Guardando...' : 'Guardar'}</span>
+              {isSaving ? <Loader2 className="h-4 w-4 animate-spin text-brand-blue" /> : <Save className="h-4 w-4 text-brand-blue" />}
             </Button>
 
             <Button
               onClick={handleViewPdf}
               disabled={!selectedClient || items.length === 0}
-              className="h-11 bg-brand-blue text-slate-950 hover:bg-brand-cyan hover:shadow-[0_0_20px_rgba(0,255,255,0.4)] transition-all font-tech font-bold uppercase tracking-widest text-xs px-6 shadow-lg flex-1 sm:flex-initial font-bold"
+              className="h-10 w-10 p-0 bg-brand-blue text-slate-950 hover:bg-brand-cyan hover:shadow-[0_0_15px_rgba(0,255,255,0.4)] shadow-lg shrink-0 transition-all"
+              title="Generar y ver PDF"
+              aria-label="Generar y ver PDF"
             >
-              <FileText className="mr-2 h-4 w-4" />
-              <span>Generar PDF</span>
+              <FileText className="h-4 w-4" />
             </Button>
           </div>
         </div>
