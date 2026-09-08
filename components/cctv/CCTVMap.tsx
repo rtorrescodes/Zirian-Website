@@ -19,6 +19,7 @@ import {
   getOfflineProjectBuffer, 
   clearOfflineProjectBuffer 
 } from '@/lib/cctv-offline-storage';
+import { captureMapSnapshot } from '@/lib/capture-map';
 
 const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ['places', 'geometry'];
 
@@ -363,14 +364,8 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       setActiveCamId(null);
       await new Promise(r => setTimeout(r, 100));
 
-      const canvas = await html2canvas(mapRef.current, {
-        useCORS: true,
-        allowTaint: false,
-        logging: false,
-        scale: 1.5
-      });
-
-      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const snapshot = await captureMapSnapshot(mapRef.current);
+      const imageDataUrl = snapshot.imageDataUrl;
 
       const extractData: OfflineMapExtract = {
         id: 'extract_' + Date.now(),
@@ -385,8 +380,8 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
           west: sw.lng()
         },
         imageDataUrl,
-        width: canvas.width,
-        height: canvas.height,
+        width: snapshot.width,
+        height: snapshot.height,
         camerasCount: cameras.length
       };
 
@@ -625,10 +620,10 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       let previewImage = '';
       if (mapRef.current) {
         try {
-          const canvas = await html2canvas(mapRef.current, { useCORS: true, allowTaint: false, logging: false });
-          previewImage = canvas.toDataURL('image/jpeg', 0.8);
+          const snapshot = await captureMapSnapshot(mapRef.current);
+          previewImage = snapshot.imageDataUrl;
         } catch (canvasError) {
-          console.warn("No se pudo generar el screenshot (posible error de CSS moderno o WebGL). Guardando sin preview.", canvasError);
+          console.warn("No se pudo generar el screenshot. Guardando sin preview.", canvasError);
         }
       }
 
