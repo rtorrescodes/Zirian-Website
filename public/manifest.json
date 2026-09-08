@@ -1,0 +1,20 @@
+{
+  "name": "Zirian CCTV Designer - Modo Terreno",
+  "short_name": "CCTV Zirian",
+  "description": "Herramienta profesional de diseño y sembrado de cámaras CCTV con GPS y soporte offline para levantamientos en terreno.",
+  "start_url": "/admin/design-cctv",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#020617",
+  "theme_color": "#00a3ff",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/assets/images/logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

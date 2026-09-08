@@ -1,14 +1,24 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { GoogleMap, useJsApiLoader, Marker, Polygon, Autocomplete } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Marker, Polygon, Circle, Autocomplete } from '@react-google-maps/api';
 import { Button } from '@/components/ui/button';
-import { Plus, Save, Layers, Map as MapIcon, Crosshair, ChevronLeft, X, LocateFixed, RotateCcw, RotateCw, FolderOpen, FileText, Trash2, Search } from 'lucide-react';
+import { Plus, Save, Layers, Map as MapIcon, Crosshair, ChevronLeft, X, LocateFixed, RotateCcw, RotateCw, FolderOpen, FileText, Trash2, Search, DownloadCloud, WifiOff, CloudUpload, Radio, Compass, Wifi, Camera } from 'lucide-react';
 import Link from 'next/link';
 import html2canvas from 'html2canvas';
 import { getClients } from '@/app/actions/clients';
 import { createQuoteFromCctv, getPendingQuotesForClient, getQuotesLinkedToCctv, syncCctvToQuote, checkQuoteMismatch } from '@/app/actions/cctvToQuote';
 import { useRouter, useSearchParams } from 'next/navigation';
+import OfflineFieldViewer from './OfflineFieldViewer';
+import PWAInstaller from './PWAInstaller';
+import { 
+  saveOfflineExtract, 
+  getLatestOfflineExtract, 
+  listOfflineExtracts, 
+  OfflineMapExtract, 
+  getOfflineProjectBuffer, 
+  clearOfflineProjectBuffer 
+} from '@/lib/cctv-offline-storage';
 
 const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ['places', 'geometry'];
 
@@ -115,7 +125,20 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
   // GPS Tracking State
   const [gpsTracking, setGpsTracking] = useState(false);
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
+  const [userHeading, setUserHeading] = useState<number | null>(null);
+  const [followUser, setFollowUser] = useState(true);
   const watchIdRef = useRef<number | null>(null);
+
+  // Offline Mode & Extract State
+  const [showExtractModal, setShowExtractModal] = useState(false);
+  const [extractName, setExtractName] = useState('Salara Levantamiento');
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractSuccess, setExtractSuccess] = useState<string | null>(null);
+  const [activeExtract, setActiveExtract] = useState<OfflineMapExtract | null>(null);
+  const [offlineModeActive, setOfflineModeActive] = useState(false);
+  const [pendingOfflineBuffer, setPendingOfflineBuffer] = useState<any | null>(null);
+
   // Map View State
   const [mapHeading, setMapHeading] = useState(0);
   const [mapType, setMapType] = useState<'satellite' | 'roadmap'>('satellite');
@@ -201,6 +224,76 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
     getClients().then(data => setClients(data));
   }, []);
 
+  // Orientation / Compass listener for Tablet
+  useEffect(() => {
+    if (!gpsTracking) return;
+
+    const handleOrientation = (e: DeviceOrientationEvent) => {
+      if ((e as any).webkitCompassHeading !== undefined) {
+        // iOS Safari
+        setUserHeading(Math.round((e as any).webkitCompassHeading));
+      } else if (e.alpha !== null) {
+        // Android Chrome
+        setUserHeading(Math.round((360 - e.alpha) % 360));
+      }
+    };
+
+    if (typeof window !== 'undefined' && window.DeviceOrientationEvent) {
+      if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
+        (DeviceOrientationEvent as any).requestPermission()
+          .then((permissionState: string) => {
+            if (permissionState === 'granted') {
+              window.addEventListener('deviceorientation', handleOrientation);
+            }
+          })
+          .catch(console.warn);
+      } else {
+        window.addEventListener('deviceorientation', handleOrientation);
+      }
+    }
+
+    return () => {
+      window.removeEventListener('deviceorientation', handleOrientation);
+    };
+  }, [gpsTracking]);
+
+  // Offline status and extract checking on mount
+  useEffect(() => {
+    const initOffline = async () => {
+      try {
+        const latest = await getLatestOfflineExtract();
+        if (latest) setActiveExtract(latest);
+
+        const buffer = getOfflineProjectBuffer();
+        if (buffer && buffer.pendingSync) {
+          setPendingOfflineBuffer(buffer);
+        }
+      } catch (err) {
+        console.warn('Error inicializando almacenamiento offline:', err);
+      }
+    };
+    initOffline();
+
+    const handleOnline = () => {
+      const buf = getOfflineProjectBuffer();
+      if (buf && buf.pendingSync) setPendingOfflineBuffer(buf);
+    };
+    const handleOffline = () => {
+      setOfflineModeActive(true);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      setOfflineModeActive(true);
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   const toggleGpsTracking = () => {
     if (gpsTracking) {
       if (watchIdRef.current !== null) {
@@ -209,15 +302,22 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       }
       setGpsTracking(false);
       setUserLocation(null);
+      setGpsAccuracy(null);
+      setUserHeading(null);
     } else {
       if ('geolocation' in navigator) {
         const id = navigator.geolocation.watchPosition(
           (position) => {
             const loc = { lat: position.coords.latitude, lng: position.coords.longitude };
             setUserLocation(loc);
-            if (map) {
+            setGpsAccuracy(position.coords.accuracy || null);
+
+            if (position.coords.heading !== null && !isNaN(position.coords.heading)) {
+              setUserHeading(Math.round(position.coords.heading));
+            }
+
+            if (map && followUser) {
               map.panTo(loc);
-              map.setZoom(20); // Zoom in closely on the user's location
             }
           },
           (error) => {
@@ -225,10 +325,11 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
             alert("Error obteniendo ubicación GPS. Verifica los permisos de tu navegador.");
             setGpsTracking(false);
           },
-          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
         );
         watchIdRef.current = id;
         setGpsTracking(true);
+        setFollowUser(true);
       } else {
         alert("El GPS no está soportado en este navegador.");
       }
@@ -242,6 +343,94 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       }
     };
   }, []);
+
+  const handleDownloadExtract = async () => {
+    if (!map || !mapRef.current) {
+      alert("El mapa debe estar completamente cargado para generar el extracto.");
+      return;
+    }
+
+    try {
+      setIsExtracting(true);
+      const bounds = map.getBounds();
+      if (!bounds) throw new Error("No se pudieron obtener las coordenadas del mapa");
+
+      const ne = bounds.getNorthEast();
+      const sw = bounds.getSouthWest();
+      const center = map.getCenter();
+
+      // Ensure active cam deselected for clean satellite view
+      setActiveCamId(null);
+      await new Promise(r => setTimeout(r, 100));
+
+      const canvas = await html2canvas(mapRef.current, {
+        useCORS: true,
+        allowTaint: false,
+        logging: false,
+        scale: 1.5
+      });
+
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+      const extractData: OfflineMapExtract = {
+        id: 'extract_' + Date.now(),
+        name: extractName.trim() || projectName || 'Levantamiento Salara',
+        timestamp: Date.now(),
+        center: { lat: center ? center.lat() : defaultCenter.lat, lng: center ? center.lng() : defaultCenter.lng },
+        zoom: map.getZoom() || 18,
+        bounds: {
+          north: ne.lat(),
+          south: sw.lat(),
+          east: ne.lng(),
+          west: sw.lng()
+        },
+        imageDataUrl,
+        width: canvas.width,
+        height: canvas.height,
+        camerasCount: cameras.length
+      };
+
+      await saveOfflineExtract(extractData);
+      setActiveExtract(extractData);
+      setShowExtractModal(false);
+      setExtractSuccess(`Extracto "${extractData.name}" guardado exitosamente. ${(imageDataUrl.length / 1024 / 1024).toFixed(1)} MB descargados.`);
+      setTimeout(() => setExtractSuccess(null), 6000);
+    } catch (err: any) {
+      console.error("Error al descargar extracto offline:", err);
+      alert("Error al capturar mapa offline: " + err.message);
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
+  const handleSyncOfflineBufferToCloud = async () => {
+    const buffer = pendingOfflineBuffer || getOfflineProjectBuffer();
+    if (!buffer) return;
+
+    try {
+      setIsSaving(true);
+      const res = await fetch('/api/cctv', {
+        method: buffer.id ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: buffer.id,
+          clientId: buffer.clientId || selectedClientId || '1',
+          nombre: buffer.nombre || projectName || 'Levantamiento Terreno Salara',
+          mapState: buffer.mapState
+        })
+      });
+
+      if (!res.ok) throw new Error("Error al sincronizar con el servidor");
+      clearOfflineProjectBuffer();
+      setPendingOfflineBuffer(null);
+      alert("¡Levantamiento sincronizado con éxito a la nube!");
+    } catch (err: any) {
+      console.error("Error sincronizando buffer:", err);
+      alert("Error sincronizando: " + err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Handle auto-load from URL
   useEffect(() => {
@@ -328,7 +517,7 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
         modelId: defaultModel.id,
         lat: center.lat,
         lng: center.lng,
-        heading: 0,
+        heading: (loc && userHeading !== null) ? Math.round(userHeading) : 0,
         fov: defaultModel.fov,
         dori: defaultModel.dori,
         layer: activeLayer,
@@ -579,15 +768,92 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
     }
   };
 
-  if (loadError) {
+  if (offlineModeActive && activeExtract) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-slate-950 text-white font-tech">
-        <p className="text-red-400">Error al cargar el mapa. Verifica tu API Key.</p>
+      <OfflineFieldViewer
+        extract={activeExtract}
+        cameras={cameras}
+        setCameras={setCameras}
+        layers={layers}
+        visibleLayers={visibleLayers}
+        activeLayer={activeLayer}
+        sections={sections}
+        activeSection={activeSection}
+        userLocation={userLocation}
+        userHeading={userHeading}
+        gpsAccuracy={gpsAccuracy}
+        onExitOffline={() => setOfflineModeActive(false)}
+        onSyncOnline={handleSyncOfflineBufferToCloud}
+        projectName={projectName}
+        clientId={selectedClientId}
+      />
+    );
+  }
+
+  if (loadError) {
+    if (activeExtract) {
+      return (
+        <OfflineFieldViewer
+          extract={activeExtract}
+          cameras={cameras}
+          setCameras={setCameras}
+          layers={layers}
+          visibleLayers={visibleLayers}
+          activeLayer={activeLayer}
+          sections={sections}
+          activeSection={activeSection}
+          userLocation={userLocation}
+          userHeading={userHeading}
+          gpsAccuracy={gpsAccuracy}
+          onExitOffline={() => setOfflineModeActive(false)}
+          onSyncOnline={handleSyncOfflineBufferToCloud}
+          projectName={projectName}
+          clientId={selectedClientId}
+        />
+      );
+    }
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950 text-white font-tech p-6 text-center">
+        <WifiOff className="w-12 h-12 text-amber-400 mb-4 animate-pulse" />
+        <h2 className="text-xl font-bold mb-2">Sin Conexión con Google Maps</h2>
+        <p className="text-slate-400 text-sm max-w-md mb-6">
+          No hay señal de internet para descargar el mapa de Google. Si descargaste previamente un extracto de mapa para terreno, selecciónalo para trabajar offline.
+        </p>
+        <div className="flex gap-4">
+          <Button onClick={() => window.location.reload()} variant="outline" className="border-slate-700 text-white">
+            Reintentar Conexión
+          </Button>
+          <Link href="/admin/dashboard">
+            <Button className="bg-brand-blue text-slate-950 font-bold">Volver al Panel</Button>
+          </Link>
+        </div>
       </div>
     );
   }
 
   if (!isLoaded) {
+    if (activeExtract && typeof navigator !== 'undefined' && !navigator.onLine) {
+      return (
+        <OfflineFieldViewer
+          extract={activeExtract}
+          cameras={cameras}
+          setCameras={setCameras}
+          layers={layers}
+          visibleLayers={visibleLayers}
+          activeLayer={activeLayer}
+          sections={sections}
+          activeSection={activeSection}
+          userLocation={userLocation}
+          userHeading={userHeading}
+          gpsAccuracy={gpsAccuracy}
+          onExitOffline={() => setOfflineModeActive(false)}
+          onSyncOnline={handleSyncOfflineBufferToCloud}
+          projectName={projectName}
+          clientId={selectedClientId}
+        />
+      );
+    }
+
     return (
       <div className="w-full h-full flex items-center justify-center bg-slate-950 text-white font-tech">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-blue"></div>
@@ -802,13 +1068,31 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
               </React.Fragment>
             );
           })}
+          {userLocation && gpsAccuracy && (
+            <Circle
+              center={userLocation}
+              radius={gpsAccuracy}
+              options={{
+                fillColor: '#3b82f6',
+                fillOpacity: 0.15,
+                strokeColor: '#3b82f6',
+                strokeWeight: 1.5,
+                clickable: false,
+                zIndex: 9998
+              }}
+            />
+          )}
+
           {userLocation && (
             <Marker
               position={userLocation}
               icon={{
-                path: typeof window !== 'undefined' && window.google ? window.google.maps.SymbolPath.CIRCLE : 0,
-                scale: 8,
-                fillColor: '#3b82f6', // brand-blue
+                path: (userHeading !== null && typeof window !== 'undefined' && window.google)
+                  ? window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW
+                  : (typeof window !== 'undefined' && window.google ? window.google.maps.SymbolPath.CIRCLE : 0),
+                scale: userHeading !== null ? 6 : 8,
+                rotation: userHeading !== null ? userHeading : 0,
+                fillColor: '#3b82f6',
                 fillOpacity: 1,
                 strokeColor: '#ffffff',
                 strokeWeight: 2,
@@ -820,12 +1104,36 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
       </div>
 
       {gpsTracking && userLocation && (
-        <div className="absolute bottom-40 md:bottom-12 left-1/2 -translate-x-1/2 z-[60] pointer-events-auto">
+        <div className="absolute bottom-36 md:bottom-12 left-1/2 -translate-x-1/2 z-[60] pointer-events-auto flex items-center gap-2">
           <Button 
             onClick={() => handleAddDevice('camera', userLocation)}
-            className="rounded-full shadow-[0_0_30px_rgba(0,163,255,0.6)] bg-brand-blue text-slate-950 hover:bg-brand-blue/90 h-14 px-8 font-tech font-bold uppercase tracking-widest text-sm animate-pulse border-2 border-white/20"
+            className="rounded-full shadow-[0_0_30px_rgba(0,163,255,0.6)] bg-brand-blue text-slate-950 hover:bg-brand-blue/90 h-14 px-6 md:px-8 font-tech font-bold uppercase tracking-widest text-xs md:text-sm animate-pulse border-2 border-white/20 flex items-center gap-2"
           >
-            📍 Plantar Cámara Aquí
+            <Camera className="w-5 h-5" />
+            <span>Plantar Cámara en mi GPS</span>
+          </Button>
+
+          <Button 
+            onClick={() => handleAddDevice('wifi', userLocation)}
+            className="rounded-full shadow-[0_0_20px_rgba(147,51,234,0.5)] bg-purple-600 hover:bg-purple-500 text-white h-14 px-4 font-tech font-bold uppercase tracking-widest text-xs border-2 border-white/20 flex items-center gap-1.5"
+            title="Plantar AP Wi-Fi en mi GPS"
+          >
+            <Wifi className="w-4 h-4" />
+            <span className="hidden sm:inline">AP Wi-Fi</span>
+          </Button>
+
+          <Button 
+            onClick={() => {
+              setFollowUser(true);
+              if (map && userLocation) map.panTo(userLocation);
+            }}
+            size="icon"
+            className={`w-14 h-14 rounded-full border-2 shadow-lg transition-colors ${
+              followUser ? 'bg-brand-blue border-white text-slate-950' : 'bg-slate-900 border-slate-700 text-slate-300'
+            }`}
+            title="Centrar en mi ubicación GPS"
+          >
+            <LocateFixed className="w-5 h-5" />
           </Button>
         </div>
       )}
@@ -881,10 +1189,67 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
               <LocateFixed className="w-5 h-5 md:w-4 md:h-4" />
             </button>
           </div>
+
+          {/* Real-time GPS Accuracy & Heading Pill */}
+          {gpsTracking && (
+            <div className="hidden lg:flex items-center gap-1.5 bg-slate-900/90 border border-brand-blue/40 px-3 py-1.5 rounded-lg text-xs font-tech shadow-lg">
+              <Radio className="w-3.5 h-3.5 text-brand-blue animate-pulse" />
+              <span className="text-brand-blue font-bold">
+                {userLocation ? `GPS: ±${gpsAccuracy ? Math.round(gpsAccuracy) : 0}m` : 'Buscando satélites...'}
+              </span>
+              {userHeading !== null && (
+                <span className="text-slate-400 border-l border-slate-700 pl-2 flex items-center gap-1">
+                  <Compass className="w-3 h-3 text-cyan-400" /> {userHeading}°
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
-        {/* Right Side: MapType, Load, Save, Quote */}
+        {/* Right Side: MapType, Offline Extract, PWA, Load, Save, Quote */}
         <div className="flex items-center gap-1.5 md:gap-2 pointer-events-auto">
+          {/* Offline Extract Download Button */}
+          <Button 
+            onClick={() => setShowExtractModal(true)}
+            variant="outline" 
+            size="icon"
+            className="w-10 h-10 md:w-auto md:px-3 bg-slate-900/80 border-amber-500/50 text-amber-300 hover:bg-amber-500/10 hover:text-amber-200 backdrop-blur-sm rounded-lg"
+            title="Descargar Extracto de Mapa Offline para Terreno"
+          >
+            <DownloadCloud className="w-5 h-5 md:w-4 md:h-4 md:mr-1.5" /> 
+            <span className="hidden md:inline">Extracto Offline</span>
+          </Button>
+
+          {/* Offline Field Mode Switch Button (visible if an extract is saved) */}
+          {activeExtract && (
+            <Button 
+              onClick={() => setOfflineModeActive(true)}
+              variant="outline" 
+              size="icon"
+              className="w-10 h-10 md:w-auto md:px-3 bg-amber-950/40 border-amber-500/60 text-amber-300 hover:bg-amber-900/50 rounded-lg"
+              title="Abrir Visor de Terreno Offline (Salara)"
+            >
+              <WifiOff className="w-5 h-5 md:w-4 md:h-4 md:mr-1.5" /> 
+              <span className="hidden md:inline">Modo Terreno</span>
+            </Button>
+          )}
+
+          {/* Pending Offline Sync Button */}
+          {pendingOfflineBuffer && (
+            <Button 
+              onClick={handleSyncOfflineBufferToCloud}
+              size="icon"
+              className="w-10 h-10 md:w-auto md:px-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg shadow-lg shadow-emerald-500/20 animate-pulse"
+              title="Sincronizar cambios offline pendientes a la nube"
+            >
+              <CloudUpload className="w-5 h-5 md:w-4 md:h-4 md:mr-1.5" /> 
+              <span className="hidden md:inline">Subir Terreno</span>
+            </Button>
+          )}
+
+          {/* PWA Installer Button */}
+          <PWAInstaller />
+
           <Button 
             onClick={() => setMapType(t => t === 'satellite' ? 'roadmap' : 'satellite')}
             variant="outline" 
@@ -1720,6 +2085,69 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
           </div>
         </div>
       )}
+      {/* Extract Download Modal */}
+      {showExtractModal && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative text-white">
+            <button onClick={() => setShowExtractModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white">
+              <X className="w-5 h-5" />
+            </button>
+            <div className="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 mb-4">
+              <DownloadCloud className="w-6 h-6" />
+            </div>
+            <h2 className="text-lg font-bold font-tech uppercase tracking-wider text-amber-300 mb-1">
+              Descargar Extracto para Terreno
+            </h2>
+            <p className="text-xs text-slate-300 mb-4 leading-relaxed">
+              Guarda el mapa satelital de la vista actual en la memoria de la tablet para poder hacer el levantamiento en <strong>Salara</strong> sin conexión a internet.
+            </p>
+
+            <div className="space-y-3 mb-6">
+              <div>
+                <label className="text-xs text-slate-400 block mb-1">Nombre del Extracto</label>
+                <input
+                  type="text"
+                  value={extractName}
+                  onChange={e => setExtractName(e.target.value)}
+                  placeholder="Ej. Salara Levantamiento"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-sm text-white outline-none focus:border-amber-400"
+                />
+              </div>
+              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 text-[11px] text-slate-400 space-y-1">
+                <p>• Zoom: <strong>{map?.getZoom()}</strong></p>
+                <p>• Equipos actuales: <strong>{cameras.length}</strong></p>
+                <p>• Centro: <strong>{map?.getCenter()?.lat().toFixed(5)}, {map?.getCenter()?.lng().toFixed(5)}</strong></p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setShowExtractModal(false)}
+                variant="outline"
+                className="flex-1 border-slate-700 text-slate-300"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleDownloadExtract}
+                disabled={isExtracting}
+                className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold"
+              >
+                {isExtracting ? 'Generando extracto...' : 'Descargar Ahora'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Extract Success Toast */}
+      {extractSuccess && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-emerald-950/95 border border-emerald-500 text-emerald-300 px-5 py-3 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2 animate-bounce">
+          <DownloadCloud className="w-4 h-4 text-emerald-400" />
+          <span>{extractSuccess}</span>
+        </div>
+      )}
+
       {/* Bottom Mobile Action Bar */}
       <div className={`fixed bottom-24 left-4 right-4 flex items-center justify-center gap-4 z-40 md:hidden pointer-events-none transition-opacity duration-300 ${mobilePanel !== 'none' ? 'opacity-0' : 'opacity-100'}`}>
         <Button 
