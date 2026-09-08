@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Polygon, Circle, Autocomplete } from '@react-google-maps/api';
 import { Button } from '@/components/ui/button';
-import { Plus, Save, Layers, Map as MapIcon, Crosshair, ChevronLeft, X, LocateFixed, RotateCcw, RotateCw, FolderOpen, FileText, Trash2, Search, DownloadCloud, WifiOff, CloudUpload, Radio, Compass, Wifi, Camera } from 'lucide-react';
+import { Plus, Save, Layers, Map as MapIcon, Crosshair, ChevronLeft, ChevronDown, Settings, X, LocateFixed, RotateCcw, RotateCw, FolderOpen, FileText, Trash2, Search, DownloadCloud, WifiOff, CloudUpload, Radio, Compass, Wifi, Camera } from 'lucide-react';
 import Link from 'next/link';
 import html2canvas from 'html2canvas';
 import { getClients } from '@/app/actions/clients';
@@ -139,6 +139,8 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
   const [activeExtract, setActiveExtract] = useState<OfflineMapExtract | null>(null);
   const [offlineModeActive, setOfflineModeActive] = useState(false);
   const [pendingOfflineBuffer, setPendingOfflineBuffer] = useState<any | null>(null);
+  const [showTerrainMenu, setShowTerrainMenu] = useState(false);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
 
   // Map View State
   const [mapHeading, setMapHeading] = useState(0);
@@ -858,91 +860,6 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
 
   return (
     <div className="relative w-full h-full bg-slate-900">
-      
-      {/* Top Banner indicating current project */}
-      <div className="absolute top-16 md:top-4 left-1/2 -translate-x-1/2 z-20 flex flex-col md:flex-row items-center gap-2 md:gap-4 pointer-events-auto w-[90%] md:w-auto">
-        {loadedProjectInfo && (
-          <div className="bg-slate-900/90 backdrop-blur-md border border-brand-blue/30 px-4 md:px-6 py-2 rounded-full shadow-[0_0_15px_rgba(0,163,255,0.15)] flex items-center justify-between md:justify-start gap-2 md:gap-3 w-full md:w-auto">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></div>
-              <span className="text-white text-xs md:text-sm font-bold truncate max-w-[100px] md:max-w-none">{loadedProjectInfo.nombre}</span>
-              <span className="text-slate-500 text-[10px] md:text-xs px-2 border-l border-slate-700 truncate hidden md:inline">{loadedProjectInfo.clientName}</span>
-            </div>
-            <div className="flex items-center">
-              {!clientMode && loadedProjectInfo.hasClientChanges && (
-                <Button 
-                  onClick={async () => {
-                    try {
-                      await fetch('/api/cctv', {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          id: loadedProjectInfo.id,
-                          nombre: loadedProjectInfo.nombre,
-                          mapState: loadedProjectInfo.proposedMapState,
-                          hasClientChanges: false,
-                          proposedMapState: null
-                        })
-                      });
-                      setLoadedProjectInfo({ ...loadedProjectInfo, hasClientChanges: false });
-                      handleLoadProject({ ...loadedProjectInfo, mapState: loadedProjectInfo.proposedMapState });
-                    } catch (e) {
-                      console.error(e);
-                    }
-                  }}
-                  className="bg-orange-500 hover:bg-orange-400 text-white text-[10px] md:text-xs py-1 px-2 md:px-3 ml-2 h-6 md:h-7"
-                >
-                  <span className="hidden md:inline">Aceptar Propuesta</span>
-                  <span className="md:hidden">Aceptar</span>
-                </Button>
-              )}
-              <button 
-                onClick={() => {
-                  setLoadedProjectInfo(null);
-                  setProjectName('');
-                  setCameras([]);
-                  setMapHeading(0);
-                  if (map) map.setHeading(0);
-                  setActiveCamId(null);
-                }}
-                className="ml-2 text-slate-400 hover:text-white"
-                title="Cerrar Proyecto"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        )}
-        
-        {syncWarnings.length > 0 && !clientMode && (
-          <div className="bg-red-950/90 backdrop-blur-md border border-red-500/50 px-4 py-2 rounded-full shadow-lg flex items-center gap-2 max-w-lg cursor-help group relative">
-            <span className="text-red-400 font-bold text-xs whitespace-nowrap">⚠️ Equipos removidos en Cotizador</span>
-            
-            {/* Tooltip con los detalles */}
-            <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 p-3 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[250px]">
-              <p className="text-[10px] text-slate-400 mb-2 border-b border-slate-800 pb-1">Detectamos que se borraron cámaras en el cotizador comercial. Revisa tu diseño y actualiza los cambios (Botón azul de Guardar).</p>
-              <ul className="text-xs text-red-300 space-y-1">
-                {syncWarnings.map((warn, i) => (
-                  <li key={i}>• {warn}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
-
-        {/* Demo Mode Toggle */}
-        <div className="bg-slate-900/90 backdrop-blur-md border border-slate-700 px-3 md:px-4 py-1.5 md:py-2 rounded-full flex items-center gap-2 shadow-lg">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={demoMode} 
-              onChange={e => setDemoMode(e.target.checked)} 
-              className="accent-brand-blue w-3 h-3 md:w-4 md:h-4 cursor-pointer"
-            />
-            <span className="text-white text-[10px] md:text-sm font-bold tracking-wide">Demo <span className="hidden md:inline">Cliente</span></span>
-          </label>
-        </div>
-      </div>
 
       <div ref={mapRef} className="w-full h-full">
         <GoogleMap
@@ -1133,33 +1050,112 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
         </div>
       )}
 
-      {/* Top Floating Bar */}
-      <div className="absolute top-4 left-2 right-2 md:left-4 md:right-4 flex items-center justify-between pointer-events-none z-10">
+      {/* Click outside backdrop for dropdown menus */}
+      {(showTerrainMenu || showOptionsMenu) && (
+        <div 
+          className="fixed inset-0 z-25 bg-transparent" 
+          onClick={() => {
+            setShowTerrainMenu(false);
+            setShowOptionsMenu(false);
+          }} 
+        />
+      )}
+
+      {/* Top Unified Header Bar */}
+      <div className="absolute top-3 left-2 right-2 md:left-4 md:right-4 flex items-center justify-between pointer-events-none z-30 gap-2">
         
-        {/* Left Side: Back, Name, Search, GPS */}
-        <div className="flex items-center gap-1.5 md:gap-4 pointer-events-auto">
+        {/* Left Group: Volver, Project Info, Warnings, Search, GPS */}
+        <div className="flex items-center gap-1.5 md:gap-2.5 pointer-events-auto min-w-0 shrink">
           <Link href="/admin/dashboard">
-            <Button variant="outline" size="icon" className="w-10 h-10 md:w-auto md:px-4 bg-slate-900/80 border-slate-700 text-white backdrop-blur-sm rounded-lg">
-              <ChevronLeft className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">Volver</span>
+            <Button variant="outline" size="sm" className="h-10 px-2.5 md:px-3.5 bg-slate-950/90 border-slate-700 text-white backdrop-blur-md rounded-xl hover:bg-slate-800 shrink-0">
+              <ChevronLeft className="w-4 h-4 md:mr-1" />
+              <span className="hidden md:inline text-xs font-bold font-tech uppercase">Volver</span>
             </Button>
           </Link>
-          
-          <div className="hidden md:flex bg-slate-900/80 backdrop-blur-sm border border-slate-700 px-4 py-2 rounded-lg items-center gap-3 h-10">
-            <Crosshair className="w-5 h-5 text-brand-blue" />
-            <h1 className="font-tech font-bold uppercase tracking-widest text-white text-sm">Proyecto CCTV</h1>
-          </div>
-          
-          <div className="relative flex items-center bg-slate-900/80 backdrop-blur-sm border border-slate-700 rounded-lg overflow-hidden group h-10">
-            {/* Mobile Search Toggle */}
+
+          {/* Project Indicator or Default Title */}
+          {loadedProjectInfo ? (
+            <div className="bg-slate-950/90 backdrop-blur-md border border-brand-blue/40 px-3 py-1.5 rounded-xl shadow-lg flex items-center gap-2 max-w-[170px] sm:max-w-[220px] md:max-w-[280px] shrink truncate">
+              <div className="w-2 h-2 rounded-full bg-brand-blue animate-pulse shrink-0" />
+              <div className="min-w-0 flex items-baseline gap-1.5 truncate">
+                <span className="text-white text-xs font-bold truncate">{loadedProjectInfo.nombre}</span>
+                <span className="text-slate-500 text-[10px] hidden sm:inline truncate">• {loadedProjectInfo.clientName}</span>
+              </div>
+              {!clientMode && loadedProjectInfo.hasClientChanges && (
+                <Button 
+                  onClick={async () => {
+                    try {
+                      await fetch('/api/cctv', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          id: loadedProjectInfo.id,
+                          nombre: loadedProjectInfo.nombre,
+                          mapState: loadedProjectInfo.proposedMapState,
+                          hasClientChanges: false,
+                          proposedMapState: null
+                        })
+                      });
+                      setLoadedProjectInfo({ ...loadedProjectInfo, hasClientChanges: false });
+                      handleLoadProject({ ...loadedProjectInfo, mapState: loadedProjectInfo.proposedMapState });
+                    } catch (e) {
+                      console.error(e);
+                    }
+                  }}
+                  className="bg-orange-500 hover:bg-orange-400 text-white text-[10px] py-0.5 px-2 h-5 rounded shrink-0"
+                >
+                  Propuesta
+                </Button>
+              )}
+              <button 
+                onClick={() => {
+                  setLoadedProjectInfo(null);
+                  setProjectName('');
+                  setCameras([]);
+                  setMapHeading(0);
+                  if (map) map.setHeading(0);
+                  setActiveCamId(null);
+                }}
+                className="text-slate-400 hover:text-white shrink-0 ml-1"
+                title="Cerrar Proyecto"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="hidden lg:flex bg-slate-950/90 backdrop-blur-md border border-slate-800 px-3 py-2 rounded-xl items-center gap-2 h-10 shrink-0">
+              <Crosshair className="w-4 h-4 text-brand-blue" />
+              <span className="font-tech font-bold uppercase tracking-wider text-white text-xs">Proyecto CCTV</span>
+            </div>
+          )}
+
+          {/* Warning Pill if Cotizador removed items */}
+          {syncWarnings.length > 0 && !clientMode && (
+            <div className="bg-red-950/90 backdrop-blur-md border border-red-500/50 px-2.5 py-1 rounded-xl shadow-lg flex items-center gap-1.5 cursor-help group relative shrink-0">
+              <span className="text-red-400 font-bold text-xs">⚠️</span>
+              <span className="text-red-400 font-bold text-xs hidden xl:inline">Aviso Cotizador</span>
+              
+              <div className="absolute top-full mt-2 left-0 bg-slate-900 border border-slate-700 p-3 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 min-w-[250px]">
+                <p className="text-[10px] text-slate-400 mb-2 border-b border-slate-800 pb-1">Detectamos que se borraron cámaras en el cotizador comercial. Revisa tu diseño y actualiza los cambios (Guardar).</p>
+                <ul className="text-xs text-red-300 space-y-1">
+                  {syncWarnings.map((warn, i) => (
+                    <li key={i}>• {warn}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {/* Search Bar */}
+          <div className="relative flex items-center bg-slate-950/90 backdrop-blur-md border border-slate-700 rounded-xl overflow-hidden h-10 shrink min-w-[120px] max-w-[200px] lg:max-w-[240px]">
             <button 
               onClick={() => setShowMobileSearch(!showMobileSearch)} 
-              className="md:hidden p-2.5 text-slate-400 hover:text-white transition-colors"
+              className="md:hidden p-2 text-slate-400 hover:text-white"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4" />
             </button>
             
-            {/* Desktop Search */}
-            <div className="hidden md:block">
+            <div className="hidden md:block w-full">
               <Autocomplete
                 onLoad={(autocomplete) => { searchBoxRef.current = autocomplete; }}
                 onPlaceChanged={onPlaceChanged}
@@ -1170,30 +1166,28 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
                   value={searchText}
                   onChange={e => setSearchText(e.target.value)}
                   onKeyDown={handleSearchInputKeyDown}
-                  className="bg-transparent border-none outline-none text-white text-sm px-3 py-2.5 w-72 placeholder:text-slate-500 transition-all focus:w-72"
+                  className="bg-transparent border-none outline-none text-white text-xs px-3 py-2 w-full placeholder:text-slate-500"
                 />
               </Autocomplete>
             </div>
-            
+
             {/* GPS Toggle */}
             <button 
               onClick={toggleGpsTracking} 
-              className={`p-2.5 transition-colors border-l border-slate-700 ${gpsTracking ? 'text-brand-blue bg-brand-blue/10' : 'text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700'}`}
-              title="Modo Sembrado GPS"
+              className={`p-2 transition-colors border-l border-slate-800 ${gpsTracking ? 'text-brand-blue bg-brand-blue/15' : 'text-slate-400 hover:text-white bg-slate-900/60'}`}
+              title="Modo GPS en vivo"
             >
-              <LocateFixed className="w-5 h-5 md:w-4 md:h-4" />
+              <LocateFixed className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Real-time GPS Accuracy & Heading Pill */}
+          {/* GPS Info Pill (if GPS active) */}
           {gpsTracking && (
-            <div className="hidden lg:flex items-center gap-1.5 bg-slate-900/90 border border-brand-blue/40 px-3 py-1.5 rounded-lg text-xs font-tech shadow-lg">
-              <Radio className="w-3.5 h-3.5 text-brand-blue animate-pulse" />
-              <span className="text-brand-blue font-bold">
-                {userLocation ? `GPS: ±${gpsAccuracy ? Math.round(gpsAccuracy) : 0}m` : 'Buscando satélites...'}
-              </span>
+            <div className="hidden xl:flex items-center gap-1.5 bg-slate-950/90 border border-brand-blue/40 px-2.5 py-1 rounded-xl text-[11px] font-tech text-brand-blue shrink-0 shadow-lg">
+              <Radio className="w-3 h-3 text-brand-blue animate-pulse" />
+              <span className="font-bold">{userLocation ? `±${gpsAccuracy ? Math.round(gpsAccuracy) : 0}m` : 'Satélites...'}</span>
               {userHeading !== null && (
-                <span className="text-slate-400 border-l border-slate-700 pl-2 flex items-center gap-1">
+                <span className="text-slate-400 border-l border-slate-800 pl-1.5 flex items-center gap-0.5">
                   <Compass className="w-3 h-3 text-cyan-400" /> {userHeading}°
                 </span>
               )}
@@ -1201,92 +1195,206 @@ export default function CCTVMap({ clientMode = false, shareToken }: CCTVMapProps
           )}
         </div>
 
-        {/* Right Side: MapType, Offline Extract, PWA, Load, Save, Quote */}
-        <div className="flex items-center gap-1.5 md:gap-2 pointer-events-auto">
-          {/* Offline Extract Download Button */}
-          <Button 
-            onClick={() => setShowExtractModal(true)}
-            variant="outline" 
-            size="icon"
-            className="w-10 h-10 md:w-auto md:px-3 bg-slate-900/80 border-amber-500/50 text-amber-300 hover:bg-amber-500/10 hover:text-amber-200 backdrop-blur-sm rounded-lg"
-            title="Descargar Extracto de Mapa Offline para Terreno"
-          >
-            <DownloadCloud className="w-5 h-5 md:w-4 md:h-4 md:mr-1.5" /> 
-            <span className="hidden md:inline">Extracto Offline</span>
-          </Button>
-
-          {/* Offline Field Mode Switch Button (visible if an extract is saved) */}
-          {activeExtract && (
-            <Button 
-              onClick={() => setOfflineModeActive(true)}
-              variant="outline" 
-              size="icon"
-              className="w-10 h-10 md:w-auto md:px-3 bg-amber-950/40 border-amber-500/60 text-amber-300 hover:bg-amber-900/50 rounded-lg"
-              title="Abrir Visor de Terreno Offline (Salara)"
-            >
-              <WifiOff className="w-5 h-5 md:w-4 md:h-4 md:mr-1.5" /> 
-              <span className="hidden md:inline">Modo Terreno</span>
-            </Button>
-          )}
-
-          {/* Pending Offline Sync Button */}
-          {pendingOfflineBuffer && (
-            <Button 
-              onClick={handleSyncOfflineBufferToCloud}
-              size="icon"
-              className="w-10 h-10 md:w-auto md:px-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg shadow-lg shadow-emerald-500/20 animate-pulse"
-              title="Sincronizar cambios offline pendientes a la nube"
-            >
-              <CloudUpload className="w-5 h-5 md:w-4 md:h-4 md:mr-1.5" /> 
-              <span className="hidden md:inline">Subir Terreno</span>
-            </Button>
-          )}
-
-          {/* PWA Installer Button */}
-          <PWAInstaller />
-
+        {/* Right Group: Vista, Terreno Dropdown, Opciones Dropdown, Cargar, Guardar, Cotizar */}
+        <div className="flex items-center gap-1.5 md:gap-2 pointer-events-auto shrink-0 relative">
+          
+          {/* Vista Satelite / Mapa */}
           <Button 
             onClick={() => setMapType(t => t === 'satellite' ? 'roadmap' : 'satellite')}
             variant="outline" 
-            size="icon"
-            className="w-10 h-10 md:w-auto md:px-4 bg-slate-900/80 border-slate-700 text-slate-300 hover:text-white backdrop-blur-sm rounded-lg"
-            title="Cambiar Vista"
+            size="sm"
+            className="h-10 px-2.5 md:px-3 bg-slate-950/90 border-slate-700 text-slate-300 hover:text-white rounded-xl text-xs backdrop-blur-md"
+            title="Cambiar Vista Satélite / Mapa"
           >
-            <MapIcon className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">{mapType === 'satellite' ? 'Vista Vector' : 'Vista Satélite'}</span>
+            <MapIcon className="w-4 h-4 md:mr-1.5" />
+            <span className="hidden lg:inline">{mapType === 'satellite' ? 'Satélite' : 'Mapa'}</span>
           </Button>
 
+          {/* DESPLEGABLE: Terreno & Offline */}
+          <div className="relative">
+            <Button
+              onClick={() => {
+                setShowTerrainMenu(!showTerrainMenu);
+                setShowOptionsMenu(false);
+              }}
+              variant="outline"
+              size="sm"
+              className={`h-10 px-2.5 md:px-3 rounded-xl text-xs font-tech font-bold uppercase tracking-wider flex items-center gap-1.5 border transition-all ${
+                showTerrainMenu || pendingOfflineBuffer
+                  ? 'bg-amber-500/20 border-amber-500 text-amber-300'
+                  : 'bg-slate-950/90 border-slate-700 text-slate-300 hover:text-white'
+              }`}
+              title="Herramientas de Terreno, GPS y Modo Offline"
+            >
+              <DownloadCloud className="w-4 h-4 text-amber-400" />
+              <span className="hidden sm:inline">Terreno</span>
+              {pendingOfflineBuffer && <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />}
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showTerrainMenu ? 'rotate-180' : ''}`} />
+            </Button>
+
+            {/* Menú Desplegable Terreno */}
+            {showTerrainMenu && (
+              <div className="absolute top-12 right-0 w-64 bg-slate-950/95 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl p-2 z-50 text-white animate-in slide-in-from-top-2 duration-150 space-y-1">
+                <div className="px-3 py-1.5 text-[10px] font-tech uppercase tracking-widest text-slate-500 border-b border-slate-800 font-bold flex justify-between items-center">
+                  <span>Modo Terreno & Offline</span>
+                  <span className="text-amber-400 font-bold">Salara</span>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setShowTerrainMenu(false);
+                    setShowExtractModal(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-left hover:bg-slate-900 transition-colors text-slate-200 hover:text-white group"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-400 group-hover:scale-105 transition-transform">
+                    <DownloadCloud className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="font-bold">Descargar Extracto</div>
+                    <div className="text-[10px] text-slate-500">Guardar mapa satelital para usar sin internet</div>
+                  </div>
+                </button>
+
+                {activeExtract && (
+                  <button
+                    onClick={() => {
+                      setShowTerrainMenu(false);
+                      setOfflineModeActive(true);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-left hover:bg-slate-900 transition-colors text-slate-200 hover:text-white group"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-amber-950/60 border border-amber-500/50 flex items-center justify-center text-amber-300 group-hover:scale-105 transition-transform">
+                      <WifiOff className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="font-bold">Abrir Modo Terreno</div>
+                      <div className="text-[10px] text-amber-400/80">Ver extracto guardado ({activeExtract.name})</div>
+                    </div>
+                  </button>
+                )}
+
+                {pendingOfflineBuffer && (
+                  <button
+                    onClick={() => {
+                      setShowTerrainMenu(false);
+                      handleSyncOfflineBufferToCloud();
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs text-left bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-500/40 transition-colors text-emerald-200 group"
+                  >
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
+                      <CloudUpload className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-emerald-300">Subir Cambios a la Nube</div>
+                      <div className="text-[10px] text-emerald-400/70">Hay modificaciones locales pendientes</div>
+                    </div>
+                  </button>
+                )}
+
+                <div className="border-t border-slate-800/80 pt-1">
+                  <PWAInstaller />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* DESPLEGABLE: Opciones / Demo */}
+          <div className="relative">
+            <Button
+              onClick={() => {
+                setShowOptionsMenu(!showOptionsMenu);
+                setShowTerrainMenu(false);
+              }}
+              variant="outline"
+              size="sm"
+              className={`h-10 px-2.5 md:px-3 rounded-xl text-xs font-tech font-bold uppercase tracking-wider flex items-center gap-1.5 border transition-all ${
+                showOptionsMenu
+                  ? 'bg-slate-800 border-slate-600 text-white'
+                  : 'bg-slate-950/90 border-slate-700 text-slate-300 hover:text-white'
+              }`}
+              title="Opciones de visualización y modo demo"
+            >
+              <Settings className="w-4 h-4" />
+              <span className="hidden md:inline">Opciones</span>
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showOptionsMenu ? 'rotate-180' : ''}`} />
+            </Button>
+
+            {/* Menú Desplegable Opciones */}
+            {showOptionsMenu && (
+              <div className="absolute top-12 right-0 w-56 bg-slate-950/95 backdrop-blur-xl border border-slate-800 rounded-2xl shadow-2xl p-3 z-50 text-white animate-in slide-in-from-top-2 duration-150 space-y-3">
+                <div className="text-[10px] font-tech uppercase tracking-widest text-slate-500 border-b border-slate-800 pb-1.5 font-bold">
+                  Ajustes de Vista
+                </div>
+
+                <label className="flex items-center justify-between cursor-pointer group">
+                  <div>
+                    <div className="text-xs font-bold text-slate-200 group-hover:text-white">Modo Demo Cliente</div>
+                    <div className="text-[10px] text-slate-500">Nombres comerciales sencillos</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={demoMode}
+                    onChange={e => setDemoMode(e.target.checked)}
+                    className="accent-brand-blue w-4 h-4 cursor-pointer"
+                  />
+                </label>
+
+                <label className="flex items-center justify-between cursor-pointer group pt-2 border-t border-slate-800">
+                  <div>
+                    <div className="text-xs font-bold text-slate-200 group-hover:text-white">Zonas DORI (IEC)</div>
+                    <div className="text-[10px] text-slate-500">Colores de detección y apertura</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={showDori}
+                    onChange={e => setShowDori(e.target.checked)}
+                    className="accent-brand-blue w-4 h-4 cursor-pointer"
+                  />
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* Cargar */}
           <Button 
             onClick={() => {
               setShowLoadModal(true);
               fetchSavedProjects();
             }}
             variant="outline" 
-            size="icon"
-            className="w-10 h-10 md:w-auto md:px-4 bg-slate-900/80 border-brand-blue text-brand-blue hover:bg-brand-blue hover:text-slate-950 transition-all shadow-lg shadow-brand-blue/10 backdrop-blur-sm rounded-lg"
-            title="Cargar Proyecto"
+            size="sm"
+            className="h-10 px-2.5 md:px-3.5 bg-slate-950/90 border-brand-blue/50 text-brand-blue hover:bg-brand-blue hover:text-slate-950 transition-all rounded-xl text-xs font-tech font-bold uppercase"
+            title="Cargar Proyecto Guardado"
           >
-            <FolderOpen className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">Cargar</span>
+            <FolderOpen className="w-4 h-4 md:mr-1.5" />
+            <span className="hidden sm:inline">Cargar</span>
           </Button>
 
+          {/* Guardar */}
           <Button 
             onClick={handleUserClickSave}
-            size="icon"
-            className="w-10 h-10 md:w-auto md:px-4 bg-brand-blue text-slate-950 font-bold hover:bg-brand-blue/90 shadow-lg rounded-lg"
-            title={clientMode ? 'Propuesta' : 'Guardar'}
+            size="sm"
+            className="h-10 px-3 md:px-4 bg-brand-blue text-slate-950 font-tech font-bold uppercase tracking-wider text-xs hover:bg-brand-blue/90 shadow-lg rounded-xl"
+            title={clientMode ? 'Propuesta' : 'Guardar Diseño'}
           >
-            <Save className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">{clientMode ? 'Propuesta' : 'Guardar'}</span>
+            <Save className="w-4 h-4 md:mr-1.5" />
+            <span className="hidden sm:inline">{clientMode ? 'Propuesta' : 'Guardar'}</span>
           </Button>
 
+          {/* Cotizar */}
           {!clientMode && (
             <Button 
               onClick={handleConvertToQuote}
-              size="icon"
-              className="w-10 h-10 md:w-auto md:px-4 bg-emerald-500 text-blue-950 font-bold hover:bg-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.5)] md:ml-4 rounded-lg"
-              title="Cotizar Cámaras"
+              size="sm"
+              className="h-10 px-3 md:px-4 bg-emerald-500 text-slate-950 font-tech font-bold uppercase tracking-wider text-xs hover:bg-emerald-400 transition-all shadow-[0_0_15px_rgba(16,185,129,0.4)] rounded-xl"
+              title="Generar Presupuesto Comercial de Cámaras"
             >
-              <FileText className="w-5 h-5 md:w-4 md:h-4 md:mr-2" /> <span className="hidden md:inline">Cotizar Cámaras</span>
+              <FileText className="w-4 h-4 md:mr-1.5" />
+              <span className="hidden sm:inline">Cotizar</span>
             </Button>
           )}
+
         </div>
       </div>
 
