@@ -369,48 +369,67 @@ export function QuoteBuilder({
   const baseSubtotal = adjustedItems.reduce((s, i) => s + (Number(i.product.precio_base) * i.qty), 0)
   const subtotalCost = adjustedItems.reduce((s, i) => s + (Number(i.product.costo_estimado || 0) * i.qty), 0)
 
+  // Calculate base groups sum from items
+  const baseGroupsSum = useMemo(() => {
+    const calculatedGroups: Record<string, number> = {};
+    items.forEach((i: any) => {
+      const groupName = i.product?.grupo_impresion || i.seccion || (items.length === 1 ? i.product?.nombre : 'Concepto General');
+      if (calculatedGroups[groupName] === undefined) {
+        calculatedGroups[groupName] = 0;
+      }
+      calculatedGroups[groupName] += Number(i.product.precio_base) * i.qty;
+    });
+    return calculatedGroups;
+  }, [items]);
+
+  // Baseline reference for items cost per group to detect when cart items change
   const prevCalculatedGroupsRef = useRef<Record<string, number>>({});
 
-  // Use an effect to auto-populate groupPrices with the base calculated values when items change
-  // so the user can then override them.
+  // Track which groups the user has manually edited in this session
+  const userEditedGroupsRef = useRef<Set<string>>(new Set(Object.keys(initialQuote?.group_prices || {})));
+
+  // Auto-populate or synchronize group prices when items in the cart actually change
   useEffect(() => {
     if (!mostrarDesglose) {
-      const calculatedGroups: Record<string, number> = {};
-      
-      items.forEach((i: any) => {
-        const groupName = i.product?.grupo_impresion || i.seccion || (items.length === 1 ? i.product?.nombre : 'Concepto General');
-        if (calculatedGroups[groupName] === undefined) {
-          calculatedGroups[groupName] = 0;
-        }
-        calculatedGroups[groupName] += Number(i.product.precio_base) * i.qty;
-      });
-      
       setGroupPrices((prev) => {
         const next = { ...prev };
         let changed = false;
-        
-        // Remove keys that no longer exist in the cart
+
+        // Remove keys that no longer exist in the cart items
         for (const key of Object.keys(next)) {
-          if (calculatedGroups[key] === undefined) {
+          if (baseGroupsSum[key] === undefined) {
             delete next[key];
+            userEditedGroupsRef.current.delete(key);
             changed = true;
           }
         }
 
-        // Update if the underlying items cost changed for this group, OR if it's new
-        for (const [gName, val] of Object.entries(calculatedGroups)) {
-          const prevCalc = prevCalculatedGroupsRef.current[gName];
-          if (next[gName] === undefined || prevCalc !== val) {
-            next[gName] = val;
+        // For each group currently in cart
+        for (const [gName, baseSum] of Object.entries(baseGroupsSum)) {
+          const prevBaseSum = prevCalculatedGroupsRef.current[gName];
+          const hasUserOverride = userEditedGroupsRef.current.has(gName);
+
+          // If group is brand new and not yet in groupPrices:
+          if (next[gName] === undefined) {
+            next[gName] = baseSum;
+            changed = true;
+          } else if (!hasUserOverride && prevBaseSum !== undefined && prevBaseSum !== baseSum) {
+            // Only update automatic price if the user has NOT manually set an override for this group
+            next[gName] = baseSum;
             changed = true;
           }
         }
-        
-        prevCalculatedGroupsRef.current = calculatedGroups;
+
+        prevCalculatedGroupsRef.current = { ...baseGroupsSum };
         return changed ? next : prev;
       });
     }
-  }, [items, mostrarDesglose]);
+  }, [baseGroupsSum, mostrarDesglose]);
+
+  const handleGroupPriceChange = (gName: string, val: number) => {
+    userEditedGroupsRef.current.add(gName);
+    setGroupPrices(p => ({ ...p, [gName]: val }));
+  };
 
   // Actual subtotal calculation logic
   const customSubtotal = Object.values(groupPrices).reduce((s, val) => s + (Number(val) || 0), 0);
@@ -629,7 +648,7 @@ export function QuoteBuilder({
           total={total}
           originalSubtotal={baseSubtotal}
           groupPrices={groupPrices}
-          onGroupPriceChange={(gName, val) => setGroupPrices(p => ({ ...p, [gName]: val }))}
+          onGroupPriceChange={handleGroupPriceChange}
           onSave={handleSave}
           isSaving={isSaving}
           isSaved={saved}
