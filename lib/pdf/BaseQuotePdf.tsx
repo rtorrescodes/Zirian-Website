@@ -478,7 +478,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData, agentName }: 
   const calculatedTotal = calculatedSubtotal + calculatedIva;
 
   const isEn = quote?.template === 'ev_charger_en';
-  const isDistribuidor = quote?.template === 'general_distribuidor' || quote?.template === 'general_distribuidor_fotos' || client?.assignedUserId !== null;
+  const isDistribuidor = quote?.template === 'general_distribuidor' || quote?.template === 'general_distribuidor_fotos';
   const showPhotos = quote?.template === 'general_distribuidor_fotos';
   const isGeneral = quote?.template === 'general' || isDistribuidor;
 
@@ -542,7 +542,7 @@ export const BaseQuotePdf = ({ quote, client, logoData, stripData, agentName }: 
             <View style={styles.infoBlockContentRight}>
               <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Date: ' : 'Fecha: '}</Text>{createdAt.toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
               <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Valid until: ' : 'Validez: '}</Text>{validUntil.toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</Text>
-              <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Agent: ' : 'Agente: '}</Text>{agentName || client?.assignedUser?.name || 'Ing. Rodrigo Torres'}</Text>
+              <Text style={styles.emissionDetail}><Text style={styles.emissionBold}>{isEn ? 'Agent: ' : 'Agente: '}</Text>{agentName || client?.assignedUser?.nombre || client?.assignedUser?.name || 'Ing. Rodrigo Torres'}</Text>
             </View>
           </View>
         </View>

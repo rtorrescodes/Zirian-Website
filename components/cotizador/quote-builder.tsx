@@ -38,8 +38,9 @@ import { Switch } from '@/components/ui/switch'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
-import { createQuote, updateQuote } from '@/app/actions/quotes'
+import { createQuote, updateQuote, deleteQuote } from '@/app/actions/quotes'
 import { searchSyscomForQuote } from '@/app/actions/syscom'
+import { useRouter } from 'next/navigation'
 
 
 interface Category {
@@ -120,6 +121,7 @@ export function QuoteBuilder({
   initialClientId,
   initialQuote,
 }: QuoteBuilderProps) {
+  const router = useRouter()
   const getInitialClient = () => {
     if (initialQuote?.clientId) return initialClients.find(c => c.id === initialQuote.clientId) || null
     if (initialClientId) return initialClients.find(c => c.id === initialClientId) || null
@@ -522,6 +524,18 @@ export function QuoteBuilder({
     }
   }
 
+  const handleDeleteCurrentQuote = async () => {
+    if (!savedQuoteId) return;
+    if (confirm('¿Estás seguro de que deseas eliminar esta cotización de forma permanente? Se borrarán todas las partidas asociadas.')) {
+      try {
+        await deleteQuote(savedQuoteId);
+        router.push('/admin/cotizaciones');
+      } catch (e) {
+        console.error("Error deleting quote", e);
+        alert('Hubo un error al eliminar la cotización.');
+      }
+    }
+  };
 
   return (
     <>
@@ -591,53 +605,6 @@ export function QuoteBuilder({
           </Button>
         </div>
 
-        <QuoteCart 
-          items={items}
-          updateQty={updateQty}
-          updatePrice={updatePrice}
-          removeItem={removeItem}
-          onFiles={async (files) => {
-            if (files) {
-              for (const f of Array.from(files)) {
-                const formData = new FormData();
-                formData.append('file', f);
-                formData.append('folder', 'documentos');
-                formData.append('nombre', f.name.replace('.pdf', ''));
-                try {
-                  const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                  const data = await res.json();
-                  if (data.brochure) {
-                    setAttachments(prev => [...prev, { id: String(data.brochure.id), name: data.brochure.nombre, size: 'PDF' }]);
-                  }
-                } catch (error) {
-                  console.error("Error uploading file", error);
-                }
-              }
-            }
-          }}
-          removeFile={(id) => setAttachments(prev => prev.filter(a => a.id !== id))}
-            availableBrochures={initialBrochures}
-            onAddBrochure={(b) => setAttachments(prev => [...prev, { id: String(b.id), name: b.nombre, size: 'PDF' }])}
-          attachments={attachments}
-          addDirectItem={addDirectItem}
-          secciones={secciones}
-          onRemoveSeccion={(nombre) => {
-            setSecciones(prev => prev.filter(s => s !== nombre));
-            setItems(prev => prev.map(item => item.seccion === nombre ? { ...item, seccion: undefined } : item));
-          }}
-          onUpdateItemSeccion={(itemId, seccion) => {
-            setItems(prev => prev.map(item => item.product.id === itemId ? { ...item, seccion } : item));
-          }}
-          onReorderSecciones={(sourceIdx, destIdx) => {
-            setSecciones(prev => {
-              const newSecs = [...prev];
-              const [removed] = newSecs.splice(sourceIdx, 1);
-              newSecs.splice(destIdx, 0, removed);
-              return newSecs;
-            });
-          }}
-        />
-
         <QuoteSummary 
           userRole={userRole}
           items={items}
@@ -670,7 +637,55 @@ export function QuoteBuilder({
           handleSave={handleSave}
           handleViewPdf={handleViewPdf}
           selectedClient={selectedClient}
-        />
+          onDeleteQuote={savedQuoteId ? handleDeleteCurrentQuote : undefined}
+        >
+          <QuoteCart 
+            items={items}
+            updateQty={updateQty}
+            updatePrice={updatePrice}
+            removeItem={removeItem}
+            onFiles={async (files) => {
+              if (files) {
+                for (const f of Array.from(files)) {
+                  const formData = new FormData();
+                  formData.append('file', f);
+                  formData.append('folder', 'documentos');
+                  formData.append('nombre', f.name.replace('.pdf', ''));
+                  try {
+                    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                    const data = await res.json();
+                    if (data.brochure) {
+                      setAttachments(prev => [...prev, { id: String(data.brochure.id), name: data.brochure.nombre, size: 'PDF' }]);
+                    }
+                  } catch (error) {
+                    console.error("Error uploading file", error);
+                  }
+                }
+              }
+            }}
+            removeFile={(id) => setAttachments(prev => prev.filter(a => a.id !== id))}
+            availableBrochures={initialBrochures}
+            onAddBrochure={(b) => setAttachments(prev => [...prev, { id: String(b.id), name: b.nombre, size: 'PDF' }])}
+            attachments={attachments}
+            addDirectItem={addDirectItem}
+            secciones={secciones}
+            onRemoveSeccion={(nombre) => {
+              setSecciones(prev => prev.filter(s => s !== nombre));
+              setItems(prev => prev.map(item => item.seccion === nombre ? { ...item, seccion: undefined } : item));
+            }}
+            onUpdateItemSeccion={(itemId, seccion) => {
+              setItems(prev => prev.map(item => item.product.id === itemId ? { ...item, seccion } : item));
+            }}
+            onReorderSecciones={(sourceIdx, destIdx) => {
+              setSecciones(prev => {
+                const newSecs = [...prev];
+                const [removed] = newSecs.splice(sourceIdx, 1);
+                newSecs.splice(destIdx, 0, removed);
+                return newSecs;
+              });
+            }}
+          />
+        </QuoteSummary>
       </div>
       </div>
       

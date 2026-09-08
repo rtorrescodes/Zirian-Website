@@ -380,53 +380,52 @@ export function QuoteCart({
   };
 
   return (
-    <>
-      <div className="flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-6">
-        {items.length === 0 && secciones.length === 0 ? (
-          <div className="flex h-full flex-col items-center justify-center text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-900 border border-slate-800 mb-4 shadow-[0_0_30px_rgba(0,163,255,0.1)]">
-              <Package className="h-8 w-8 text-brand-blue/50" />
-            </div>
-            <p className="text-lg font-tech font-bold uppercase tracking-widest text-white">Carrito Vacío</p>
-            <p className="mt-2 text-sm text-slate-400 max-w-[250px]">Busca productos en el panel izquierdo para comenzar a armar tu cotización.</p>
+    <div className="p-4 md:p-6 space-y-6">
+      {items.length === 0 && secciones.length === 0 ? (
+        <div className="flex min-h-[140px] flex-col items-center justify-center text-center py-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-900 border border-slate-800 mb-3 shadow-[0_0_30px_rgba(0,163,255,0.1)]">
+            <Package className="h-6 w-6 text-brand-blue/50" />
           </div>
-        ) : (
-          <div className="space-y-2">
-            {/* Render the default general section if there are unassigned items */}
-            {renderSection(undefined, items.filter(i => !i.seccion), -1)}
-            
-            {/* Render custom sections */}
-            {secciones.map((s, idx) => renderSection(s, items.filter(i => i.seccion === s), idx))}
-          </div>
-        )}
-      </div>
+          <p className="text-base font-tech font-bold uppercase tracking-widest text-white">Carrito Vacío</p>
+          <p className="mt-1 text-xs text-slate-400 max-w-[260px]">Busca productos en el catálogo de la izquierda para agregarlos a la cotización.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {/* Render the default general section if there are unassigned items */}
+          {renderSection(undefined, items.filter(i => !i.seccion), -1)}
+          
+          {/* Render custom sections */}
+          {secciones.map((s, idx) => renderSection(s, items.filter(i => i.seccion === s), idx))}
+        </div>
+      )}
 
-      <div className="mt-auto border-t border-brand-cyan/20 bg-slate-950 p-4">
-                  <div className="flex items-center justify-between mb-4">
-            <p className="font-tech text-xs font-bold uppercase tracking-widest text-slate-400">Archivos Adjuntos</p>
-            <select
-              onChange={(e) => {
-                if(e.target.value && onAddBrochure) {
-                  const b = availableBrochures.find(x => String(x.id) === e.target.value);
-                  if (b && !attachments.find(a => String(a.id) === String(b.id))) {
-                    onAddBrochure(b);
-                  }
-                  e.target.value = "";
+      {/* Archivos Adjuntos */}
+      <div className="border-t border-slate-800/80 pt-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="font-tech text-xs font-bold uppercase tracking-widest text-slate-400">Archivos Adjuntos (PDFs)</p>
+          <select
+            onChange={(e) => {
+              if (e.target.value && onAddBrochure) {
+                const b = availableBrochures.find(x => String(x.id) === e.target.value);
+                if (b && !attachments.find(a => String(a.id) === String(b.id))) {
+                  onAddBrochure(b);
                 }
-              }}
-              className="bg-slate-900 border border-brand-cyan/30 text-xs text-brand-blue rounded px-2 py-1 outline-none"
-            >
-              <option value="">+ Seleccionar de Biblioteca</option>
-              {availableBrochures.map(b => (
-                <option key={b.id} value={b.id}>{b.nombre}</option>
-              ))}
-            </select>
-          </div>
-        
+                e.target.value = "";
+              }
+            }}
+            className="bg-slate-900 border border-brand-cyan/30 text-xs text-brand-blue rounded px-2 py-1 outline-none"
+          >
+            <option value="">+ Seleccionar de Biblioteca</option>
+            {availableBrochures.map(b => (
+              <option key={b.id} value={b.id}>{b.nombre}</option>
+            ))}
+          </select>
+        </div>
+      
         {attachments.length > 0 && (
-          <div className="space-y-2 max-h-32 overflow-y-auto pr-2">
+          <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
             {attachments.map((file) => (
-              <div key={file.id} className="flex items-center justify-between rounded bg-slate-900 p-2 border border-slate-800">
+              <div key={file.id} className="flex items-center justify-between rounded bg-slate-900/80 p-2 border border-slate-800">
                 <div className="flex items-center gap-2 overflow-hidden">
                   <FileText className="h-4 w-4 shrink-0 text-slate-400" />
                   <span className="truncate text-xs text-slate-300">{file.name}</span>
@@ -444,6 +443,6 @@ export function QuoteCart({
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }

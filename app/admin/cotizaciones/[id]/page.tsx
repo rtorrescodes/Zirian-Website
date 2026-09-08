@@ -4,6 +4,7 @@ import { QuoteManager } from "@/components/cotizador/quote-manager"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { AppShell } from "@/components/panel/app-shell"
+import { QuoteDetailHeaderActions } from "@/components/cotizador/quote-detail-header-actions"
 
 export default async function QuoteDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params
@@ -85,15 +86,7 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
               Cliente: {quote.client.nombre} | {new Date(quote.fecha_creacion).toLocaleDateString('es-MX')}
             </p>
           </div>
-          <div className="flex gap-3">
-            <a 
-              href={`/api/quotes/${quote.id}/pdf`}
-              target="_blank"
-              className="inline-flex items-center justify-center rounded-md border border-brand-blue bg-brand-blue/10 px-4 py-2 text-sm font-tech font-bold uppercase tracking-wider text-brand-blue transition-colors hover:bg-brand-blue hover:text-slate-950 hover:bg-brand-cyan"
-            >
-              Ver PDF
-            </a>
-          </div>
+          <QuoteDetailHeaderActions quoteId={quote.id} />
         </div>
       </div>
 

@@ -37,7 +37,7 @@ export function QuotePreview({
   attachments = [],
 }: QuotePreviewProps) {
   const isEn = template === 'ev_charger_en';
-  const isDistribuidor = template === 'general_distribuidor' || template === 'general_distribuidor_fotos' || selectedClient?.assignedUserId !== null;
+  const isDistribuidor = template === 'general_distribuidor' || template === 'general_distribuidor_fotos';
   const showPhotos = template === 'general_distribuidor_fotos';
   const isGeneral = template === 'general' || isDistribuidor;
 
@@ -164,7 +164,7 @@ export function QuotePreview({
           <div className="flex flex-col gap-8 w-full md:w-auto overflow-hidden md:overflow-visible">
               {(() => {
                 const isEn = template === 'ev_charger_en';
-                const isDistribuidor = template === 'general_distribuidor' || template === 'general_distribuidor_fotos' || selectedClient?.assignedUserId !== null;
+                const isDistribuidor = template === 'general_distribuidor' || template === 'general_distribuidor_fotos';
                 const showPhotos = template === 'general_distribuidor_fotos';
                 const isGeneral = template === 'general' || isDistribuidor;
                 return (
@@ -214,7 +214,7 @@ export function QuotePreview({
                     <div className="p-2 text-xs flex flex-col gap-1 border-l border-slate-300 h-[calc(100%-24px)]">
                       <p suppressHydrationWarning><span className="font-bold">{isEn ? 'Date:' : 'Fecha:'}</span> {new Date().toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
                       <p suppressHydrationWarning><span className="font-bold">{isEn ? 'Valid until:' : 'Validez:'}</span> {new Date(Date.now() + 15 * 86400000).toLocaleDateString(isEn ? 'en-US' : 'es-MX', { year: 'numeric', month: '2-digit', day: '2-digit' })}</p>
-                      <p className="mb-0.5"><span className="font-bold">Agente:</span> {isDistribuidor ? 'Polo Esponda' : (selectedClient?.assignedUser?.name || 'Ing. Rodrigo Torres')}</p>
+                      <p className="mb-0.5"><span className="font-bold">Agente:</span> {isDistribuidor ? (selectedClient?.assignedUser?.nombre || selectedClient?.assignedUser?.name || 'Polo Esponda') : (selectedClient?.assignedUser?.nombre || selectedClient?.assignedUser?.name || 'Ing. Rodrigo Torres')}</p>
                     </div>
                   </div>
                 </div>

@@ -92,15 +92,7 @@ export async function GET(
     }
 
     let agentName = quote.client?.assignedUser?.nombre || 'Ing. Rodrigo Torres';
-    let template = quote.template;
-    
-    // Check if client is owned by a distributor
-    if (quote.client?.assignedUser?.role === 'Distribuidor') {
-      agentName = quote.client.assignedUser.nombre;
-      if (template !== 'general_distribuidor_fotos') {
-        template = 'general_distribuidor';
-      }
-    }
+    let template = quote.template || 'general';
 
     try {
       const cookieStore = await cookies();
@@ -108,16 +100,19 @@ export async function GET(
       if (session) {
         const payload = await verifyAuth(session.value);
         if (payload.role === 'Distribuidor') {
-          agentName = payload.name;
+          agentName = payload.name || (payload as any).nombre || 'Polo Esponda';
           if (template !== 'general_distribuidor_fotos') {
             template = 'general_distribuidor';
           }
+        } else if (payload.role === 'SuperAdmin' || payload.role === 'Admin') {
+          // If a SuperAdmin generated or views, keep their explicit template choice
+          agentName = payload.name || (payload as any).nombre || quote.client?.assignedUser?.nombre || 'Ing. Rodrigo Torres';
         }
       }
     } catch(e) {}
     
-    if (template === 'general_distribuidor' || template === 'general_distribuidor_fotos') {
-      agentName = 'Polo Esponda';
+    if ((template === 'general_distribuidor' || template === 'general_distribuidor_fotos') && (!agentName || agentName === 'Ing. Rodrigo Torres')) {
+      agentName = quote.client?.assignedUser?.nombre || 'Polo Esponda';
     }
     
     quote.template = template;

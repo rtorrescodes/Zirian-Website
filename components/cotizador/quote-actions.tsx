@@ -82,6 +82,7 @@ export function QuoteActions({ quoteId, token, status }: { quoteId: number, toke
           size="sm" 
           onClick={handleDelete}
           disabled={isDeleting}
+          title="Eliminar Cotización"
           className="w-8 h-8 p-0 text-slate-400 border-slate-700 bg-slate-900 hover:text-red-400 hover:bg-red-950/30 hover:border-red-900/50 transition-colors shrink-0"
         >
           <Trash2 className="w-4 h-4" />
