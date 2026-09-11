@@ -4,6 +4,9 @@ import { generateText, tool, jsonSchema } from 'ai';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { verifyAuth } from '@/lib/auth';
+import { searchSyscomForQuote } from '@/app/actions/syscom';
 import fs from 'fs';
 import path from 'path';
 
@@ -14,6 +17,20 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
+
+    // Obtener sesión del usuario y determinar rol
+    const cookieStore = await cookies();
+    const session = cookieStore.get('zirian_session');
+    let currentUser: any = null;
+    if (session) {
+      try {
+        const payload = await verifyAuth(session.value);
+        currentUser = await prisma.user.findUnique({ where: { id: payload.id || payload.userId } });
+      } catch (e) {
+        console.warn('Error verificando sesión en chat:', e);
+      }
+    }
+    const isDistributor = currentUser?.role === 'Distribuidor';
 
     // Cargar instrucciones base
     let baseInstructions = '';
@@ -29,7 +46,11 @@ export async function POST(req: Request) {
       select: { id: true, nombre: true, codigo: true, precio_base: true }
     });
     
-    const catalogContext = `\n\nCATÁLOGO DE PRODUCTOS DISPONIBLES:\n${JSON.stringify(productos, null, 2)}`;
+    const roleNotice = isDistributor 
+      ? `\n\n[AVISO DE SESIÓN]: El usuario actual es un DISTRIBUIDOR. Nunca reveles costos mayoristas internos, márgenes directos ni precios que no sean los precios de venta para su perfil.`
+      : `\n\n[AVISO DE SESIÓN]: El usuario actual es ADMINISTRADOR (${currentUser?.name || 'Admin'}). Tienes acceso a información completa de costos y precios de lista.`;
+
+    const catalogContext = `\n\nCATÁLOGO DE PRODUCTOS DISPONIBLES EN SISTEMA LOCAL:\n${JSON.stringify(productos, null, 2)}${roleNotice}`;
     const systemPrompt = baseInstructions + catalogContext;
     const deepseekMessages = [
       { role: 'system', content: systemPrompt },
@@ -132,6 +153,20 @@ export async function POST(req: Request) {
               notas: { type: 'string', description: 'Notas internas o links de referencia para el equipo' }
             },
             required: ['nombre', 'precio_base']
+          }
+        }
+      },
+      {
+        type: 'function',
+        function: {
+          name: 'searchSyscom',
+          description: 'Busca productos directamente en la API de Syscom en tiempo real (ej. aires acondicionados, cámaras, cables, equipos de red, baterías, etc.). Devuelve modelo, marca, stock en vivo y precio en MXN calculado para el usuario según su perfil.',
+          parameters: {
+            type: 'object',
+            properties: {
+              query: { type: 'string', description: 'Términos de búsqueda (ej. "aufit 12000", "minisplit", "inverter", "camara hikvision")' }
+            },
+            required: ['query']
           }
         }
       }
@@ -357,6 +392,54 @@ export async function POST(req: Request) {
                 });
                 
                 result = { success: true, message: `Producto creado exitosamente con ID: ${product.id} y guardado en la base de datos.` };
+              } else if (tc.function.name === 'searchSyscom') {
+                const searchRes = await searchSyscomForQuote(args.query);
+                const rawItems = searchRes.items || [];
+                
+                // Mapear y sanitizar resultados según el rol del usuario
+                const sanitizedItems = rawItems.slice(0, 10).map((item: any) => {
+                  if (isDistributor) {
+                    // CENSURA TOTAL DE COSTOS MAYORISTAS PARA DISTRIBUIDORES
+                    return {
+                      id: item.id,
+                      syscomId: item.syscomId,
+                      nombre: item.nombre,
+                      modelo: item.modelo,
+                      marca: item.marca,
+                      stock: item.stock,
+                      precio_venta_mxn: Math.round(item.precioListaMXN * 100) / 100
+                    };
+                  } else {
+                    // SUPERADMIN / ADMIN: Información completa de costos y lista
+                    return {
+                      id: item.id,
+                      syscomId: item.syscomId,
+                      nombre: item.nombre,
+                      modelo: item.modelo,
+                      marca: item.marca,
+                      stock: item.stock,
+                      precio_lista_mxn: Math.round(item.precioListaMXN * 100) / 100,
+                      costo_zirian_mxn: Math.round(item.costoRawMXN * 100) / 100,
+                      precio_lista_usd: item.precioListaUSD,
+                      precio_especial_usd: item.precioEspecialUSD
+                    };
+                  }
+                });
+
+                if (sanitizedItems.length === 0) {
+                  result = {
+                    success: true,
+                    total_encontrados: 0,
+                    mensaje: `No se encontraron productos con existencia para "${args.query}" en Syscom que coincidan con las marcas o modelos habilitados.`,
+                    productos: []
+                  };
+                } else {
+                  result = {
+                    success: true,
+                    total_encontrados: sanitizedItems.length,
+                    productos: sanitizedItems
+                  };
+                }
               }
             } catch (err: any) {
               result = { success: false, error: err.message };
