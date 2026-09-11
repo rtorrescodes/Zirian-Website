@@ -5,6 +5,7 @@ import { getSyscomSettings } from "./syscom-settings";
 import { cookies } from 'next/headers';
 import { verifyAuth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { calculateAufitPricing, isAufitProduct } from "@/lib/aufit";
 
 export async function searchSyscomForQuote(query: string) {
   if (!query || query.length < 3) return { items: [], filteredOut: 0 };
@@ -31,22 +32,44 @@ export async function searchSyscomForQuote(query: string) {
   const items = products.map(p => {
     let rawListaUSD = p.precios?.precio_lista ? parseFloat(p.precios.precio_lista.toString().replace(/,/g, '')) : 0;
     let rawEspecialUSD = (p.precios as any)?.precio_especial ? parseFloat((p.precios as any).precio_especial.toString().replace(/,/g, '')) : 0;
+    let rawDescuentoUSD = (p.precios as any)?.precio_descuento ? parseFloat((p.precios as any).precio_descuento.toString().replace(/,/g, '')) : 0;
     
-    const rawCostMXN = rawEspecialUSD * tc;
+    const rawCostMXN = (rawDescuentoUSD > 0 ? rawDescuentoUSD : rawEspecialUSD) * tc;
+    const rawEspecialMXN = rawEspecialUSD * tc;
     const rawListaMXN = rawListaUSD * tc;
 
     let finalCostMXN = rawCostMXN;
     let finalSaleMXN = rawCostMXN;
 
-    if (isDistributor) {
+    const aufitCalc = calculateAufitPricing({
+      modelo: p.modelo,
+      marca: p.marca,
+      titulo: p.titulo,
+      precioEspecialMXN: rawEspecialMXN,
+      costoDescuentoMXN: rawCostMXN,
+    });
+
+    if (aufitCalc) {
+      // Para productos AUFIT:
+      // Se ofrece el precio especial (no el precio de lista que es excesivo).
+      // Para distribuidores, su comisión es la estipulada en la hoja de comisiones AUFIT.
+      finalSaleMXN = aufitCalc.precioVentaMXN;
+      if (isDistributor) {
+        finalCostMXN = aufitCalc.costoDistribuidorMXN; // finalSaleMXN - comisionDistribuidor
+      } else {
+        finalCostMXN = rawCostMXN;
+      }
+    } else if (isDistributor) {
+      // Para otros productos Syscom en cuenta de distribuidor:
+      // Se les ofrece únicamente el precio especial (no precio de lista que es demasiado alto).
       finalCostMXN = rawCostMXN * (1 + marginZirian / 100);
-      finalSaleMXN = finalCostMXN * (1 + marginDistributor / 100);
-      if (limitPrice && rawListaMXN > 0 && finalSaleMXN > rawListaMXN) {
-        finalSaleMXN = rawListaMXN;
+      finalSaleMXN = rawEspecialMXN > 0 ? rawEspecialMXN : finalCostMXN * (1 + marginDistributor / 100);
+      if (limitPrice && rawEspecialMXN > 0 && finalSaleMXN > rawEspecialMXN) {
+        finalSaleMXN = rawEspecialMXN;
       }
     } else {
       finalCostMXN = rawCostMXN;
-      finalSaleMXN = rawListaMXN;
+      finalSaleMXN = rawListaMXN > 0 ? rawListaMXN : rawEspecialMXN;
     }
 
     return {
@@ -75,6 +98,8 @@ export async function searchSyscomForQuote(query: string) {
       syscom_precio_lista: finalSaleMXN,
       syscom_precio_especial: finalCostMXN,
       codigo: p.modelo,
+      esAufit: !!aufitCalc,
+      comisionDistribuidor: aufitCalc ? aufitCalc.comisionDistribuidor : undefined,
     };
   });
 

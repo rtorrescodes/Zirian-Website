@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { verifyAuth } from "@/lib/auth";
+import { calculateAufitPricing } from "@/lib/aufit";
 
 function serializeQuote(quote: any) {
   if (!quote) return quote;
@@ -81,19 +82,29 @@ export async function createQuote(data: {
   
   if (user?.role === 'Distribuidor') {
     const marginZ = Number(user.margen_zirian || 0);
-    // Calcular costos inversos (de abajo hacia arriba)
     items.forEach(item => {
       const costoDistribuidor = Number(item.costo_unitario || 0);
       const ventaCliente = Number(item.precio_unitario || 0);
       const qty = Number(item.cantidad || 1);
       
-      const rawCost = marginZ > 0 ? costoDistribuidor / (1 + (marginZ / 100)) : costoDistribuidor;
-      
-      const miUtilidadUnitariaZirian = costoDistribuidor - rawCost;
-      const utilidadDistribuidor = ventaCliente - costoDistribuidor;
-      
-      utilidad_real += (miUtilidadUnitariaZirian * qty);
-      comision_partner += (utilidadDistribuidor * qty);
+      const aufitCalc = calculateAufitPricing({
+        modelo: item.descripcion,
+        titulo: item.descripcion,
+        precioEspecialMXN: ventaCliente,
+        costoDescuentoMXN: costoDistribuidor,
+      });
+
+      if (aufitCalc) {
+        utilidad_real += (aufitCalc.gananciaAlddea * qty);
+        comision_partner += (aufitCalc.comisionDistribuidor * qty);
+      } else {
+        const rawCost = marginZ > 0 ? costoDistribuidor / (1 + (marginZ / 100)) : costoDistribuidor;
+        const miUtilidadUnitariaZirian = costoDistribuidor - rawCost;
+        const utilidadDistribuidor = ventaCliente - costoDistribuidor;
+        
+        utilidad_real += (miUtilidadUnitariaZirian * qty);
+        comision_partner += (utilidadDistribuidor * qty);
+      }
     });
   }
 
@@ -295,13 +306,24 @@ export async function updateQuote(id: number, data: any) {
       const ventaCliente = Number(item.precio_unitario || 0);
       const qty = Number(item.cantidad || 1);
       
-      const rawCost = marginZ > 0 ? costoDistribuidor / (1 + (marginZ / 100)) : costoDistribuidor;
-      
-      const miUtilidadUnitariaZirian = costoDistribuidor - rawCost;
-      const utilidadDistribuidor = ventaCliente - costoDistribuidor;
-      
-      utilidad_real += (miUtilidadUnitariaZirian * qty);
-      comision_partner += (utilidadDistribuidor * qty);
+      const aufitCalc = calculateAufitPricing({
+        modelo: item.descripcion,
+        titulo: item.descripcion,
+        precioEspecialMXN: ventaCliente,
+        costoDescuentoMXN: costoDistribuidor,
+      });
+
+      if (aufitCalc) {
+        utilidad_real += (aufitCalc.gananciaAlddea * qty);
+        comision_partner += (aufitCalc.comisionDistribuidor * qty);
+      } else {
+        const rawCost = marginZ > 0 ? costoDistribuidor / (1 + (marginZ / 100)) : costoDistribuidor;
+        const miUtilidadUnitariaZirian = costoDistribuidor - rawCost;
+        const utilidadDistribuidor = ventaCliente - costoDistribuidor;
+        
+        utilidad_real += (miUtilidadUnitariaZirian * qty);
+        comision_partner += (utilidadDistribuidor * qty);
+      }
     });
   }
 

@@ -273,6 +273,11 @@ export function ProductSearch({
                     <span className="block font-mono text-sm font-bold text-emerald-400">
                       {currencyExact(p.precioListaMXN)}
                     </span>
+                    {p.comisionDistribuidor && (
+                      <span className="text-[10px] font-mono font-semibold text-brand-cyan">
+                        Comisión: +{currencyExact(p.comisionDistribuidor)}
+                      </span>
+                    )}
                     <a
                       href={`https://www.syscom.mx/producto/${p.syscomId}`}
                       target="_blank"

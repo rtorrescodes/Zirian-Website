@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
 import { Minus, Plus, Trash2, Package, Battery, Cpu, Box, Cloud, Network, Wind, Sun, Video, Check, Upload, FileText, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface QuoteCartProps {
+  userRole?: string;
   items: any[];
   updateQty: (id: number, delta: number) => void;
   updatePrice?: (id: number, price: number) => void;
@@ -128,10 +130,11 @@ function PriceEditor({
 }
 
 export function QuoteCart({ 
-  items, updateQty, updatePrice, removeItem, onFiles, removeFile, attachments, addDirectItem,
+  userRole, items, updateQty, updatePrice, removeItem, onFiles, removeFile, attachments, addDirectItem,
   secciones = [], onAddSeccion, onRemoveSeccion, onUpdateItemSeccion, onReorderSecciones, availableBrochures = [], onAddBrochure
 }: QuoteCartProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const canEditPrice = userRole !== 'Distribuidor';
   
   const [dragType, setDragType] = useState<'item' | 'section' | null>(null);
   const [draggedSectionIdx, setDraggedSectionIdx] = useState<number | null>(null);
@@ -318,34 +321,43 @@ export function QuoteCart({
                     )}
                     
                     {Number(i.product.precio_base) === 0 ? (
-                      <div className="flex items-center group relative">
-                        <span className="text-brand-cyan font-bold mr-1">$</span>
-                        <input
-                          type="number"
-                          className="w-20 bg-slate-800 text-brand-cyan font-mono text-sm font-bold rounded px-1 py-0.5 outline-none border border-brand-cyan/50 focus:border-brand-cyan text-right placeholder:text-brand-cyan/50"
-                          placeholder="Sin precio"
-                          defaultValue=""
-                          onBlur={(e) => {
-                            if (e.target.value && updatePrice) updatePrice(i.product.id, Number(e.target.value));
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              if (e.currentTarget.value && updatePrice) updatePrice(i.product.id, Number(e.currentTarget.value));
-                              e.currentTarget.blur();
-                            }
-                          }}
-                        />
-                      </div>
+                      canEditPrice ? (
+                        <div className="flex items-center group relative">
+                          <span className="text-brand-cyan font-bold mr-1">$</span>
+                          <input
+                            type="number"
+                            className="w-20 bg-slate-800 text-brand-cyan font-mono text-sm font-bold rounded px-1 py-0.5 outline-none border border-brand-cyan/50 focus:border-brand-cyan text-right placeholder:text-brand-cyan/50"
+                            placeholder="Sin precio"
+                            defaultValue=""
+                            onBlur={(e) => {
+                              if (e.target.value && updatePrice) updatePrice(i.product.id, Number(e.target.value));
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                if (e.currentTarget.value && updatePrice) updatePrice(i.product.id, Number(e.currentTarget.value));
+                                e.currentTarget.blur();
+                              }
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <span className="font-mono text-sm font-bold text-slate-500">$0.00</span>
+                      )
                     ) : (
                       <div className="relative">
                         <p 
-                          className="font-mono text-sm font-bold text-brand-cyan cursor-pointer hover:bg-slate-800 px-2 py-1 rounded transition-colors"
-                          onClick={() => setEditingPriceId(i.product.id)}
-                          title="Click para editar precio"
+                          className={cn(
+                            "font-mono text-sm font-bold text-brand-cyan px-2 py-1 rounded transition-colors",
+                            canEditPrice ? "cursor-pointer hover:bg-slate-800" : "select-none cursor-default"
+                          )}
+                          onClick={() => {
+                            if (canEditPrice) setEditingPriceId(i.product.id);
+                          }}
+                          title={canEditPrice ? "Click para editar precio" : undefined}
                         >
                           {currencyExact(Number(i.product.precio_base) * i.qty)}
                         </p>
-                        {editingPriceId === i.product.id && (
+                        {canEditPrice && editingPriceId === i.product.id && (
                           <PriceEditor
                             product={i.product}
                             currencyExact={currencyExact}

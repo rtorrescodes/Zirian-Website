@@ -329,6 +329,7 @@ export function QuoteBuilder({
   }
 
   const updatePrice = (id: number, newPrice: number) => {
+    if (userRole === 'Distribuidor') return;
     setItems((prev) =>
       prev.map((i) => (i.product.id === id ? { ...i, product: { ...i.product, precio_base: newPrice } } : i))
     )
@@ -516,6 +517,7 @@ export function QuoteBuilder({
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
           cantidad: i.qty,
           precio_unitario: Number(i.product.precio_base),
+          costo_unitario: Number(i.product.costo_estimado || 0),
           total: Number(i.product.precio_base) * i.qty, seccion: i.seccion || null, imagen_url: i.product.img_portada || null
         }))
       }
@@ -659,6 +661,7 @@ export function QuoteBuilder({
           onDeleteQuote={savedQuoteId ? handleDeleteCurrentQuote : undefined}
         >
           <QuoteCart 
+            userRole={userRole}
             items={items}
             updateQty={updateQty}
             updatePrice={updatePrice}
