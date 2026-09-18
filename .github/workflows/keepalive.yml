@@ -1,0 +1,10 @@
+name: Supabase Keep Alive
+on:
+  schedule:
+    - cron: '0 12 * * 1,3,5'
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -sS https://zirianweb-119662538691.us-central1.run.app/api/keepalive | jq
