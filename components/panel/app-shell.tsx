@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge'
 import { ZirianLogo } from './zirian-logo'
 import AIChatWidget from '@/components/ai/AIChatWidget'
 import { NotificationsDropdown } from './notifications-dropdown'
+import { WorldClocks } from './world-clocks'
 
 interface NavItem {
   label: string
@@ -278,11 +279,13 @@ export function AppShell({
               )}
             </div>
 
-            <div className="relative hidden md:block">
+            <WorldClocks />
+
+            <div className="relative hidden xl:block">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
               <Input
                 placeholder="Buscar clientes, cotizaciones…"
-                className="h-9 w-64 bg-slate-900/80 border-slate-800 text-white placeholder:text-slate-500 pl-9 focus-visible:ring-brand-blue"
+                className="h-9 w-60 bg-slate-900/80 border-slate-800 text-white placeholder:text-slate-500 pl-9 focus-visible:ring-brand-blue"
               />
             </div>
 
