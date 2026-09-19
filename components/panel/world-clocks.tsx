@@ -32,12 +32,14 @@ export function WorldClocks() {
 
   const formatTime = (timeZone: string) => {
     if (!mounted) return '--:--'
-    return time.toLocaleTimeString('es-MX', {
-      timeZone,
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    })
+    return time
+      .toLocaleTimeString('en-US', {
+        timeZone,
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+      .toLowerCase()
   }
 
   return (
