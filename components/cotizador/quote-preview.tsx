@@ -114,7 +114,7 @@ export function QuotePreview({
     });
 
     items.forEach((i: any) => {
-      const groupName = i.product?.grupo_impresion || 'Concepto General';
+      const groupName = i.product?.grupo_impresion || i.seccion || (items.length === 1 ? (i.product?.nombre || i.descripcion) : 'Concepto General');
       
       // Initialize if missing
       if (!groups[groupName]) {
@@ -265,6 +265,12 @@ export function QuotePreview({
                           );
                         }
                         
+                        const unitPrice = Number(item.product.precio_base);
+                        const rowBase = unitPrice * item.qty;
+                        const hasTax = (requiereFactura || impuestosIniciales > 0);
+                        const rowTax = hasTax ? Math.round(rowBase * 16) / 100 : 0;
+                        const rowTotal = Math.round((rowBase + rowTax) * 100) / 100;
+                        
                         return (
                           <tr key={idx} className={idx % 2 === 0 ? 'bg-slate-50' : 'bg-white'}>
                             <td className="py-2 px-2 border border-slate-300 text-center font-bold">{item.qty}</td>
@@ -274,9 +280,9 @@ export function QuotePreview({
                             <td className="py-2 px-2 border border-slate-300 text-slate-600 text-[10px] whitespace-pre-wrap leading-tight">
                                {item.detalles || (!item.isGroup && item.product?.descripcion) || ''}
                             </td>
-                            <td className="py-2 px-2 border border-slate-300 text-right">${Number(item.product.precio_base).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
-                            <td className="py-2 px-2 border border-slate-300 text-center">{(requiereFactura || impuestosIniciales > 0) ? '16%' : '0%'}</td>
-                            <td className="py-2 px-2 border border-slate-300 text-right font-bold bg-slate-100">${(Number(item.product.precio_base) * item.qty * ((requiereFactura || impuestosIniciales > 0) ? 1.16 : 1)).toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
+                            <td className="py-2 px-2 border border-slate-300 text-right">${unitPrice.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                            <td className="py-2 px-2 border border-slate-300 text-center">{hasTax ? '16%' : '0%'}</td>
+                            <td className="py-2 px-2 border border-slate-300 text-right font-bold bg-slate-100">${rowTotal.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                           </tr>
                         );
                       })}
@@ -294,15 +300,15 @@ export function QuotePreview({
                         <tbody>
                           <tr>
                             <td className="py-1 px-2 font-bold w-1/2">Subtotal</td>
-                            <td className="py-1 px-2">${subtotal.toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
+                            <td className="py-1 px-2">${subtotal.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                           </tr>
                           <tr>
                             <td className="py-1 px-2 font-bold">{isEn ? 'Tax (16%)' : 'I.V.A. (16%)'}</td>
-                            <td className="py-1 px-2">${iva.toLocaleString('es-MX', {minimumFractionDigits: 2})}</td>
+                            <td className="py-1 px-2">${iva.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                           </tr>
                           <tr className="text-lg text-[#1C497B]">
                             <td className="py-2 px-2 font-black uppercase tracking-wider">Total</td>
-                            <td className="py-2 px-2 font-black">${total.toLocaleString('es-MX', {minimumFractionDigits: 2})} {moneda || 'MXN'}</td>
+                            <td className="py-2 px-2 font-black">${total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {moneda || 'MXN'}</td>
                           </tr>
                         </tbody>
                       </table>

@@ -46,7 +46,7 @@ export default async function EditClientPage(props: { params: Promise<{ id: stri
   return (
     <AppShell title={`Editar Cliente: ${client.nombre}`} subtitle="Actualiza la información del cliente y revisa su historial">
       <div className="py-6">
-        <ClientEditor initialData={client} partners={plainPartners} initialActivities={activities} />
+        <ClientEditor key={client.id} initialData={client} partners={plainPartners} initialActivities={activities} />
       </div>
     </AppShell>
   );

@@ -16,7 +16,7 @@ export function QuoteManager({ quote }: QuoteManagerProps) {
   const [itemsStatus, setItemsStatus] = useState<Record<number, 'stock' | 'buy'>>(
     quote.items.reduce((acc: any, item: any) => {
       // Por defecto, si hay stock_general > 0, lo ponemos como stock, si no a buy
-      acc[item.id] = (item.product.stock_general && item.product.stock_general > 0) ? 'stock' : 'buy';
+      acc[item.id] = (item.product?.stock_general && item.product.stock_general > 0) ? 'stock' : 'buy';
       return acc;
     }, {})
   )
@@ -35,18 +35,19 @@ export function QuoteManager({ quote }: QuoteManagerProps) {
     // que el usuario elige a quién mandarle qué.
     // Filtrar los que coincidan con el providerName, o mandar la lista completa si no tienen provider_default
     const providerItems = itemsToBuy.filter((item: any) => 
-      !item.product.proveedor_default || item.product.proveedor_default.includes(providerName)
+      !item.product?.proveedor_default || item.product.proveedor_default.includes(providerName)
     )
 
     if (providerItems.length === 0) return ''
 
     let message = `Hola ${contactName} saludos, buen dia, espero que te encuentres bien. Me ayudas a cotizar lo siguiente por favor:\n\n`
     providerItems.forEach((item: any) => {
-      let unidad = item.product.unidad_medida || 'Pieza';
-      if (item.product.nombre.toLowerCase().includes('cable')) {
+      let unidad = item.product?.unidad_medida || 'Pieza';
+      const productName = item.product?.nombre || item.descripcion || 'Producto';
+      if (productName.toLowerCase().includes('cable')) {
         unidad = 'metros';
       }
-      message += `* ${item.cantidad} ${unidad} de ${item.product.nombre}\n`
+      message += `* ${item.cantidad} ${unidad} de ${productName}\n`
     })
 
     return message
@@ -86,9 +87,9 @@ export function QuoteManager({ quote }: QuoteManagerProps) {
           {quote.items.map((item: any) => (
             <div key={item.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-800 bg-slate-950/50">
               <div>
-                <p className="text-sm font-medium text-white">{item.product.nombre}</p>
+                <p className="text-sm font-medium text-white">{item.product?.nombre || item.descripcion || 'Producto'}</p>
                 <p className="text-xs text-slate-500 font-mono mt-1">
-                  Req: {item.cantidad} {item.product.unidad_medida} | Stock Actual: {item.product.stock_general || 0}
+                  Req: {item.cantidad} {item.product?.unidad_medida || 'Pieza'} | Stock Actual: {item.product?.stock_general || 0}
                 </p>
               </div>
               <div className="flex bg-slate-900 rounded-md p-1 border border-slate-700">

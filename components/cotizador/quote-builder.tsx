@@ -434,11 +434,11 @@ export function QuoteBuilder({
 
   // Actual subtotal calculation logic
   const customSubtotal = Object.values(groupPrices).reduce((s, val) => s + (Number(val) || 0), 0);
-  const subtotal = mostrarDesglose ? baseSubtotal : (Object.keys(groupPrices).length > 0 ? customSubtotal : baseSubtotal);
+  const subtotal = Math.round((mostrarDesglose ? baseSubtotal : (Object.keys(groupPrices).length > 0 ? customSubtotal : baseSubtotal)) * 100) / 100;
   
   const ganancia = userRole === 'Distribuidor' ? subtotal - subtotalCost : subtotal - (subtotalCost * 1.16);
-  const iva = requiereFactura ? subtotal * 0.16 : 0
-  const total = subtotal + iva
+  const iva = requiereFactura ? Math.round(subtotal * 16) / 100 : 0;
+  const total = Math.round((subtotal + iva) * 100) / 100;
 
   const handleSave = async () => {
     if (!selectedClient || items.length === 0) return
@@ -449,6 +449,7 @@ export function QuoteBuilder({
         subtotal: subtotal,
         impuestos: iva,
         total: total,
+        notas_cliente: notasCliente || null,
         mostrar_desglose: mostrarDesglose,
         group_prices: groupPrices,
         template: template,
@@ -465,9 +466,11 @@ export function QuoteBuilder({
             syscom_id: typeof i.product.id === 'string' ? String(i.product.id).replace('syscom-', '') : null,
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
           cantidad: i.qty,
-          precio_unitario: Number(i.product.precio_base),
-            costo_unitario: Number(i.product.costo_estimado || 0),
-            total: Number(i.product.precio_base) * i.qty, seccion: i.seccion || null, imagen_url: i.product.img_portada || null
+          precio_unitario: Math.round(Number(i.product.precio_base) * 100) / 100,
+          costo_unitario: Math.round(Number(i.product.costo_estimado || 0) * 100) / 100,
+          total: Math.round(Number(i.product.precio_base) * i.qty * 100) / 100,
+          seccion: i.seccion || null, 
+          imagen_url: i.product.img_portada || null
         }))
       }
       
@@ -502,6 +505,7 @@ export function QuoteBuilder({
         subtotal: subtotal,
         impuestos: iva,
         total: total,
+        notas_cliente: notasCliente || null,
         mostrar_desglose: mostrarDesglose,
         group_prices: groupPrices,
         template: template,
@@ -516,9 +520,11 @@ export function QuoteBuilder({
             syscom_id: typeof i.product.id === 'string' ? String(i.product.id).replace('syscom-', '') : null,
           descripcion: i.product.nombre + (i.detalles ? "\n" + i.detalles : ""),
           cantidad: i.qty,
-          precio_unitario: Number(i.product.precio_base),
-          costo_unitario: Number(i.product.costo_estimado || 0),
-          total: Number(i.product.precio_base) * i.qty, seccion: i.seccion || null, imagen_url: i.product.img_portada || null
+          precio_unitario: Math.round(Number(i.product.precio_base) * 100) / 100,
+          costo_unitario: Math.round(Number(i.product.costo_estimado || 0) * 100) / 100,
+          total: Math.round(Number(i.product.precio_base) * i.qty * 100) / 100,
+          seccion: i.seccion || null, 
+          imagen_url: i.product.img_portada || null
         }))
       }
       

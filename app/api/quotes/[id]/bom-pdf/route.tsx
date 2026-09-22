@@ -45,8 +45,8 @@ export async function GET(
         total: Number(item.total),
         product: item.product ? {
           ...item.product,
-          precio_base: Number(item.product.precio_base),
-          stock_general: Number(item.product.stock_general),
+          precio_base: item.product.precio_base ? Number(item.product.precio_base) : 0,
+          stock_general: item.product.stock_general ? Number(item.product.stock_general) : 0,
         } : undefined
       }))
     };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,11 +45,34 @@ export function ClientEditor({ initialData, partners, initialActivities = [] }: 
     status: initialData?.status || 'Lead',
     origen: initialData?.origen || 'Directo',
     notas: initialData?.notas || '',
-    partnerId: initialData?.partnerId?.toString() || '',
+    partnerId: initialData?.partnerId ? initialData.partnerId.toString() : 'none',
     fecha_creacion: initialData?.fecha_creacion 
       ? new Date(initialData.fecha_creacion).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0]
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        nombre: initialData.nombre || '',
+        empresa: initialData.empresa || '',
+        telefono: initialData.telefono || '',
+        email: initialData.email || '',
+        marca_ev: initialData.marca_ev || '',
+        tipo_instalacion: initialData.tipo_instalacion || '',
+        distancia_centro_carga: initialData.distancia_centro_carga || '',
+        ubicacion: initialData.ubicacion || '',
+        ciudad: initialData.ciudad || '',
+        status: initialData.status || 'Lead',
+        origen: initialData.origen || 'Directo',
+        notas: initialData.notas || '',
+        partnerId: initialData.partnerId ? initialData.partnerId.toString() : 'none',
+        fecha_creacion: initialData.fecha_creacion 
+          ? new Date(initialData.fecha_creacion).toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0]
+      });
+    }
+  }, [initialData]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -84,7 +107,7 @@ export function ClientEditor({ initialData, partners, initialActivities = [] }: 
     try {
       const dataToSubmit = {
         ...formData,
-        partnerId: formData.partnerId ? parseInt(formData.partnerId, 10) : undefined,
+        partnerId: (formData.partnerId && formData.partnerId !== 'none') ? parseInt(formData.partnerId, 10) : undefined,
         fecha_creacion: new Date(formData.fecha_creacion + 'T00:00:00')
       };
 
@@ -143,7 +166,15 @@ export function ClientEditor({ initialData, partners, initialActivities = [] }: 
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-tech font-bold uppercase tracking-wider text-slate-400">Email</label>
-                  <Input name="email" type="email" value={formData.email} onChange={handleChange} className="" />
+                  <Input 
+                    name="email" 
+                    type="email" 
+                    value={formData.email || ''} 
+                    onChange={handleChange} 
+                    autoComplete="off"
+                    placeholder="correo@ejemplo.com"
+                    className="" 
+                  />
                 </div>
               </div>
 
@@ -213,7 +244,7 @@ export function ClientEditor({ initialData, partners, initialActivities = [] }: 
                       <SelectValue placeholder="Ninguno" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Ninguno</SelectItem>
+                      <SelectItem value="none">Ninguno</SelectItem>
                       {partners.map(p => (
                         <SelectItem key={p.id} value={p.id.toString()}>{p.nombre}</SelectItem>
                       ))}

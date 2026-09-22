@@ -43,10 +43,15 @@ export async function createQuote(data: {
   total: number;
   mostrar_desglose: boolean;
   notas_internas?: string;
+  notas_cliente?: string | null;
   condiciones?: string;
   validez_dias?: number;
   template?: string;
   requiere_factura?: boolean;
+  group_prices?: any;
+  status?: string;
+  motivo_rechazo?: string | null;
+  cobro_tarjeta?: boolean;
   items: {
     productId: number | null;
     descripcion: string;
